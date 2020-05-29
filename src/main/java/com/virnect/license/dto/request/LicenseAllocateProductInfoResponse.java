@@ -15,4 +15,6 @@ public class LicenseAllocateProductInfoResponse {
     private String productName;
     @ApiModelProperty(value = "상품 수량")
     private int productAmount;
+    @ApiModelProperty(value = "상품 타입 식별자")
+    private long productTypeId;
 }

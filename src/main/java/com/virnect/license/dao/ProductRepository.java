@@ -1,6 +1,7 @@
 package com.virnect.license.dao;
 
 import com.virnect.license.domain.Product;
+import com.virnect.license.domain.ProductDisplayStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -16,4 +17,6 @@ import java.util.Set;
  */
 public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Set<Product>> findByProductType_NameAndNameIsIn(String productType, List<String> productNameList);
+
+    List<Product> findAllByDisplayStatus(ProductDisplayStatus status);
 }

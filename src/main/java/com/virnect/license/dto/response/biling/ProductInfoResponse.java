@@ -25,4 +25,6 @@ public class ProductInfoResponse {
     private long productTypeId;
     @ApiModelProperty(value = "상품 타입명", position = 7)
     private String productTypeName;
+//    @ApiModelProperty(value = "상품 표시 여부", position = 8)
+//    private String displayStatus;
 }

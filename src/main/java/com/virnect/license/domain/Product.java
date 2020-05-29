@@ -46,9 +46,14 @@ public class Product extends BaseTimeEntity {
     @JoinColumn(name = "product_type_id")
     private ProductType productType;
 
+    @Column(name = "display", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ProductDisplayStatus displayStatus;
+
     public Product(String name, Long price, ProductType productType) {
         this.name = name;
         this.price = price;
         this.productType = productType;
+        this.displayStatus = ProductDisplayStatus.HIDE; // new product info is will not displayed by default
     }
 }

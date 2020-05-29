@@ -6,7 +6,6 @@ import org.springframework.data.annotation.LastModifiedBy;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -21,7 +20,7 @@ import java.util.Set;
 @Setter
 @Audited
 @Table(name = "license_plan", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"workspace_id", "status"}),
+        @UniqueConstraint(columnNames = {"workspace_id", "status", "created_at"}),
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LicensePlan extends BaseTimeEntity {
@@ -63,6 +62,9 @@ public class LicensePlan extends BaseTimeEntity {
     @Column(name = "status")
     private PlanStatus planStatus = PlanStatus.INACTIVE;
 
+    @Column(name = "payment_id")
+    private long paymentId;
+
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "licensePlan")
     @JoinColumn(name = "coupon_id")
     private Coupon coupon;
@@ -71,7 +73,7 @@ public class LicensePlan extends BaseTimeEntity {
     private Set<LicenseProduct> licenseProductList;
 
     @Builder
-    public LicensePlan(String userId, String workspaceId, LocalDateTime startDate, LocalDateTime endDate, PlanStatus planStatus, Coupon coupon, Long maxDownloadHit, Long maxStorageSize, Long maxCallTime) {
+    public LicensePlan(String userId, String workspaceId, LocalDateTime startDate, LocalDateTime endDate, PlanStatus planStatus, Coupon coupon, Long maxDownloadHit, Long maxStorageSize, Long maxCallTime, Long paymentId, Long maxUserAmount) {
         this.userId = userId;
         this.workspaceId = workspaceId;
         this.startDate = startDate;
@@ -82,5 +84,7 @@ public class LicensePlan extends BaseTimeEntity {
         this.maxCallTime = maxCallTime;
         this.maxStorageSize = maxStorageSize;
         this.modifiedUser = userId;
+        this.paymentId = paymentId;
+        this.maxUserAmount = maxUserAmount;
     }
 }

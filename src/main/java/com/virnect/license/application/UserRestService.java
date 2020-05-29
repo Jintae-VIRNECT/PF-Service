@@ -24,5 +24,14 @@ public interface UserRestService {
      */
     @GetMapping("/users/{userId}")
     ApiResponse<UserInfoRestResponse> getUserInfoByUserId(@PathVariable("userId") String userId);
+
+    /**
+     * 유저 정보 조회
+     *
+     * @param userId - 유저 고유 아이디
+     * @return - 유저 정보
+     */
+    @GetMapping("/users/billing/{userId}")
+    ApiResponse<UserInfoRestResponse> getUserInfoByUserPrimaryId(@PathVariable("userId") long userId);
 }
 

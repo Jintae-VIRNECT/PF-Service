@@ -22,4 +22,10 @@ public interface LicensePlanRepository extends JpaRepository<LicensePlan, Long>,
     Optional<LicensePlan> findByUserIdAndWorkspaceId(String userId, String workspaceId);
 
     Optional<LicensePlan> findByWorkspaceIdAndPlanStatus(String workspaceId, PlanStatus planStatus);
+
+    Optional<LicensePlan> findByUserIdAndPaymentId(String userId, long paymentId);
+
+    LicensePlan findByUserIdAndPlanStatus(String userUUID, PlanStatus status);
+
+    Boolean existsByUserIdAndWorkspaceIdAndPlanStatus(String userUUID, String workspaceId, PlanStatus status);
 }

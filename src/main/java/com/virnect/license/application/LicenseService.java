@@ -2,9 +2,7 @@ package com.virnect.license.application;
 
 import com.virnect.license.dao.*;
 import com.virnect.license.domain.*;
-import com.virnect.license.dto.request.CouponActiveRequest;
-import com.virnect.license.dto.request.CouponRegisterRequest;
-import com.virnect.license.dto.request.EventCouponRequest;
+import com.virnect.license.dto.request.*;
 import com.virnect.license.dto.response.*;
 import com.virnect.license.dto.response.admin.AdminCouponInfoListResponse;
 import com.virnect.license.dto.response.admin.AdminCouponInfoResponse;
@@ -13,6 +11,9 @@ import com.virnect.license.dto.response.biling.ProductInfoResponse;
 import com.virnect.license.dto.response.biling.ProductTypeInfoListResponse;
 import com.virnect.license.dto.response.biling.ProductTypeInfoResponse;
 import com.virnect.license.dto.rest.UserInfoRestResponse;
+import com.virnect.license.dto.rest.WorkspaceInfoListResponse;
+import com.virnect.license.dto.rest.WorkspaceInfoResponse;
+import com.virnect.license.exception.LicenseAllocateDeniedException;
 import com.virnect.license.exception.LicenseServiceException;
 import com.virnect.license.global.common.ApiResponse;
 import com.virnect.license.global.common.PageMetadataResponse;
@@ -50,8 +51,14 @@ public class LicenseService {
     private final LicenseProductRepository licenseProductRepository;
     private final LicenseRepository licenseRepository;
     private final UserRestService userRestService;
+    private final WorkspaceRestService workspaceRestService;
     private final EmailService emailService;
     private final ModelMapper modelMapper;
+
+    private static long MAX_USER_AMOUNT = 9; // 9 명
+    private static long MAX_CALL_TIME = 270; // 270 시간
+    private static long MAX_STORAGE_AMOUNT = 9; // 90 기가
+    private static long MAX_DOWNLOAD_HITS = 1000000; // 10만 회
 
     /**
      * 이벤트 쿠폰 생성
@@ -450,6 +457,7 @@ public class LicenseService {
 
     @Transactional(readOnly = true)
     public ApiResponse<ProductInfoListResponse> getAllProductInfo() {
+//        List<Product> productList = productRepository.findAllByDisplayStatus(ProductDisplayStatus.DISPLAY);
         List<Product> productList = productRepository.findAll();
         List<ProductInfoResponse> productInfoList = new ArrayList<>();
         productList.forEach(product -> {
@@ -471,5 +479,240 @@ public class LicenseService {
         return new ApiResponse<>(new ProductTypeInfoListResponse(productTypeInfoList));
     }
 
+    @Transactional
+    public ApiResponse<ProductInfoResponse> updateProductInfo(ProductInfoUpdateRequest updateRequest) {
+        Product product = productRepository.findById(updateRequest.getProductId())
+                .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_NOT_FOUND));
 
+        // price update
+        if (updateRequest.getPrice() > 0) {
+            product.setPrice(updateRequest.getPrice());
+        }
+        // max call time update
+        if (updateRequest.getMaxCallTime() > 0) {
+            product.setMaxCallTime(updateRequest.getMaxCallTime());
+        }
+        // max download hits update
+        if (updateRequest.getMaxDownloadHit() > 0) {
+            product.setMaxDownloadHit(updateRequest.getMaxDownloadHit());
+        }
+        // max storage update
+        if (updateRequest.getMaxStorageSize() > 0) {
+            product.setMaxStorageSize(updateRequest.getMaxStorageSize());
+        }
+        // productType update
+        if (updateRequest.getProductTypeId() > 0) {
+            ProductType productType = productTypeRepository.findById(updateRequest.getProductTypeId())
+                    .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_PRODUCT_INFO_UPDATE));
+            product.setProductType(productType);
+        }
+//        // product display option update
+//        if (updateRequest.getDisplayStatus() != null) {
+//            product.setDisplayStatus(ProductDisplayStatus.valueOf(updateRequest.getDisplayStatus()));
+//        }
+
+        productRepository.save(product);
+
+        ProductInfoResponse productInfoResponse = modelMapper.map(product, ProductInfoResponse.class);
+        productInfoResponse.setProductId(product.getId());
+        return new ApiResponse<>(productInfoResponse);
+    }
+
+    @Transactional
+    public ApiResponse<LicenseProductAllocateCheckResponse> licenseAllocateCheckRequest(LicenseAllocateCheckRequest allocateCheckRequest) {
+        ApiResponse<UserInfoRestResponse> userInfoApiResponse = this.userRestService.getUserInfoByUserPrimaryId(allocateCheckRequest.getUserId());
+        if (userInfoApiResponse.getCode() != 200 || userInfoApiResponse.getData().getEmail() == null) {
+            log.info("User service error response: [{}]", userInfoApiResponse.getMessage());
+            throw new LicenseServiceException(ErrorCode.ERR_BILLING_LICENSE_SERVER_ERROR);
+        }
+
+        UserInfoRestResponse requestUserInfo = userInfoApiResponse.getData();
+
+        // 현재 사용중인 라이선스 플랜 조회
+        LicensePlan licensePlan = licensePlanRepository.findByUserIdAndPlanStatus(requestUserInfo.getUuid(), PlanStatus.ACTIVE);
+
+
+        if (licensePlan != null) {
+            // 최대 사용자 수
+            // 현재 라이선스 플랜의 사용자 수 + 상품 주문의 수
+            long calculateUserAmount = licensePlan.getMaxUserAmount() + allocateCheckRequest.getProductList().size();
+
+            if (calculateUserAmount > MAX_USER_AMOUNT) {
+                throw new LicenseAllocateDeniedException(ErrorCode.ERR_BILLING_PRODUCT_ALLOCATE_DENIED, allocateCheckRequest.getUserId());
+            }
+
+            long calculateCallTime = licensePlan.getMaxCallTime();
+            long calculateMaxStorage = licensePlan.getMaxStorageSize();
+            long calculateMaxDownloadHits = licensePlan.getMaxDownloadHit();
+
+            // 상품별 계산
+            for (LicenseAllocateProductInfoResponse productRequest : allocateCheckRequest.getProductList()) {
+                Product product = productRepository.findById(productRequest.getProductId())
+                        .orElseThrow(() -> new LicenseAllocateDeniedException(ErrorCode.ERR_BILLING_PRODUCT_ALLOCATE_DENIED, allocateCheckRequest.getUserId()));
+                if (product.getName().equals("MAKE")) {
+                    calculateMaxStorage += product.getMaxStorageSize();
+                }
+                if (product.getName().equals("VIEW")) {
+                    calculateMaxDownloadHits += product.getMaxDownloadHit();
+                }
+                if (product.getName().equals("REMOTE")) {
+                    calculateCallTime += product.getMaxCallTime();
+                }
+            }
+
+            // 최대 통화 수 , 최대 용량, 최대 다운로드 횟수 비교
+            if (calculateCallTime > MAX_CALL_TIME || calculateMaxStorage > MAX_STORAGE_AMOUNT || calculateMaxDownloadHits > MAX_DOWNLOAD_HITS) {
+                throw new LicenseAllocateDeniedException(ErrorCode.ERR_BILLING_PRODUCT_ALLOCATE_DENIED, allocateCheckRequest.getUserId());
+            } else {
+                log.info("USER : [{}] -> CALCULATE CALL TIME : [{}] , CALCULATE STORAGE: [{}] , CALCULATE DOWNLOAD: [{}]", allocateCheckRequest.getUserId(), calculateCallTime, calculateMaxStorage, calculateMaxDownloadHits);
+            }
+        }
+
+        LicenseProductAllocateCheckResponse checkResponse = new LicenseProductAllocateCheckResponse();
+        checkResponse.setAssignable(true);
+        checkResponse.setUserId(allocateCheckRequest.getUserId());
+        checkResponse.setAssignableCheckDate(LocalDateTime.now());
+
+        return new ApiResponse<>(checkResponse);
+    }
+
+    @Transactional
+    public ApiResponse<LicenseProductDeallocateResponse> licenseDeallocateRequest(LicenseProductDeallocateRequest licenseDeallocateRequest) {
+        ApiResponse<UserInfoRestResponse> userInfoApiResponse = this.userRestService.getUserInfoByUserPrimaryId(licenseDeallocateRequest.getUserId());
+        if (userInfoApiResponse.getCode() != 200 || userInfoApiResponse.getData().getEmail() == null) {
+            log.info("User service error response: [{}]", userInfoApiResponse.getMessage());
+            throw new LicenseServiceException(ErrorCode.ERR_BILLING_LICENSE_SERVER_ERROR);
+        }
+
+        UserInfoRestResponse requestUserInfo = userInfoApiResponse.getData();
+
+
+        LicensePlan licensePlan = licensePlanRepository.findByUserIdAndPaymentId(requestUserInfo.getUuid(), licenseDeallocateRequest.getPaymentId())
+                .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_BILLING_LICENSE_SERVER_ERROR));
+
+        licensePlan.setModifiedUser(licenseDeallocateRequest.getOperatedBy());
+        licensePlan.setPlanStatus(PlanStatus.INACTIVE);
+        licensePlanRepository.save(licensePlan);
+
+        LicenseProductDeallocateResponse deallocateResponse = new LicenseProductDeallocateResponse();
+        deallocateResponse.setPaymentId(licenseDeallocateRequest.getPaymentId());
+        deallocateResponse.setUserId(licenseDeallocateRequest.getUserId());
+        deallocateResponse.setDeallocatedDate(LocalDateTime.now());
+        return new ApiResponse<>(deallocateResponse);
+    }
+
+    @Transactional
+    public ApiResponse<LicenseProductAllocateResponse> licenseAllocateRequest(LicenseProductAllocateRequest licenseAllocateRequest) {
+        ApiResponse<UserInfoRestResponse> userInfoApiResponse = this.userRestService.getUserInfoByUserPrimaryId(licenseAllocateRequest.getUserId());
+        if (userInfoApiResponse.getCode() != 200 || userInfoApiResponse.getData().getEmail() == null) {
+            log.info("User service error response: [{}]", userInfoApiResponse.getMessage());
+            throw new LicenseServiceException(ErrorCode.ERR_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+        }
+
+        UserInfoRestResponse requestUserInfo = userInfoApiResponse.getData();
+
+        ApiResponse<WorkspaceInfoListResponse> workspaceApiResponse = this.workspaceRestService.getMyWorkspaceInfoList(requestUserInfo.getUuid());
+        if (workspaceApiResponse.getCode() != 200 || workspaceApiResponse.getData().getWorkspaceList() == null) {
+            log.info("User service error response: [{}]", workspaceApiResponse.getMessage());
+            throw new LicenseServiceException(ErrorCode.ERR_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+        }
+        WorkspaceInfoResponse workspaceInfo = workspaceApiResponse.getData().getWorkspaceList().stream()
+                .filter(w -> w.getRole().equals("MASTER")).findFirst().orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_ALLOCATE_DENIED));
+
+        boolean licensePlanExist = licensePlanRepository.existsByUserIdAndWorkspaceIdAndPlanStatus(requestUserInfo.getUuid(), workspaceInfo.getUuid(), PlanStatus.ACTIVE);
+        long calculateMaxCallTime = 0L;
+        long calculateMaxStorage = 0L;
+        long calculateMaxDownloadHits = 0L;
+
+        // 상품별 계산
+        for (LicenseAllocateProductInfoResponse productRequest : licenseAllocateRequest.getProductList()) {
+            Product product = productRepository.findById(productRequest.getProductId())
+                    .orElseThrow(() -> new LicenseAllocateDeniedException(ErrorCode.ERR_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT, licenseAllocateRequest.getUserId()));
+            if (product.getName().equals("MAKE")) {
+                calculateMaxStorage += product.getMaxStorageSize();
+            }
+            if (product.getName().equals("VIEW")) {
+                calculateMaxDownloadHits += product.getMaxDownloadHit();
+            }
+            if (product.getName().equals("REMOTE")) {
+                calculateMaxCallTime += product.getMaxCallTime();
+            }
+        }
+
+        if (licensePlanExist) {
+            LicensePlan licensePlan = licensePlanRepository.findByUserIdAndWorkspaceIdAndPlanStatus(requestUserInfo.getUuid(), workspaceInfo.getUuid(), PlanStatus.ACTIVE)
+                    .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT));
+            licenseRegisterByProduct(licenseAllocateRequest.getProductList(), licensePlan);
+
+            licensePlan.setMaxCallTime(licensePlan.getMaxCallTime() + calculateMaxCallTime);
+            licensePlan.setMaxDownloadHit(licensePlan.getMaxDownloadHit() + calculateMaxDownloadHits);
+            licensePlan.setMaxStorageSize(licensePlan.getMaxStorageSize() + calculateMaxStorage);
+            licensePlan.setMaxUserAmount(licensePlan.getMaxUserAmount() + licenseAllocateRequest.getProductList().size());
+
+            licensePlanRepository.save(licensePlan);
+
+            LicenseProductAllocateResponse allocateResponse = new LicenseProductAllocateResponse();
+            allocateResponse.setUserId(licenseAllocateRequest.getUserId());
+            allocateResponse.setPaymentId(licenseAllocateRequest.getPaymentId());
+            allocateResponse.setAllocatedDate(licensePlan.getUpdatedDate());
+            allocateResponse.setAllocatedProductList(licenseAllocateRequest.getProductList());
+
+            return new ApiResponse<>(allocateResponse);
+        }
+
+        LicensePlan licensePlan = LicensePlan.builder()
+                .userId(requestUserInfo.getUuid())
+                .workspaceId(workspaceInfo.getUuid())
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now().plusDays(30))
+                .planStatus(PlanStatus.ACTIVE)
+                .maxCallTime(calculateMaxCallTime)
+                .maxDownloadHit(calculateMaxDownloadHits)
+                .maxStorageSize(calculateMaxStorage)
+                .maxUserAmount(new Long(licenseAllocateRequest.getProductList().size()))
+                .build();
+
+        licensePlanRepository.save(licensePlan);
+        licenseRegisterByProduct(licenseAllocateRequest.getProductList(), licensePlan);
+
+
+        LicenseProductAllocateResponse allocateResponse = new LicenseProductAllocateResponse();
+        allocateResponse.setUserId(licenseAllocateRequest.getUserId());
+        allocateResponse.setPaymentId(licenseAllocateRequest.getPaymentId());
+        allocateResponse.setAllocatedDate(licensePlan.getUpdatedDate());
+        allocateResponse.setAllocatedProductList(licenseAllocateRequest.getProductList());
+
+        return new ApiResponse<>(allocateResponse);
+    }
+
+    private void licenseRegisterByProduct(List<LicenseAllocateProductInfoResponse> productList, LicensePlan licensePlan) {
+        if (productList == null || productList.size() <= 0) {
+            throw new LicenseServiceException(ErrorCode.ERR_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+        }
+        productList.forEach(productInfo -> {
+            Product product = this.productRepository.findById(productInfo.getProductId())
+                    .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT));
+
+            LicenseProduct licenseProduct = LicenseProduct.builder()
+                    .product(product)
+                    .licensePlan(licensePlan)
+                    .price(product.getPrice())
+                    .quantity(productInfo.getProductAmount())
+                    .build();
+            licenseProductRepository.save(licenseProduct);
+
+            licenseGenerateAndRegisterByLicenseProduct(licenseProduct);
+        });
+    }
+
+    private void licenseGenerateAndRegisterByLicenseProduct(LicenseProduct licenseProduct) {
+        for (int i = 0; i < licenseProduct.getQuantity(); i++) {
+            License license = License.builder()
+                    .status(LicenseStatus.UNUSE)
+                    .serialKey(UUID.randomUUID().toString().toUpperCase())
+                    .licenseProduct(licenseProduct)
+                    .build();
+            this.licenseRepository.save(license);
+        }
+    }
 }
