@@ -11,7 +11,9 @@ spring:
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     show-sql: true
     properties:
-      format_sql: true
+      hibernate:
+        format_sql: true
+    open-in-view: false
   mail:
     host: email-smtp.us-west-2.amazonaws.com
     port: 587

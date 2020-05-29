@@ -1,0 +1,15 @@
+RELEASE
+
+New Features
+- 워크스페이스 라이선스 플랜 조회 기능
+- 라이선스 할당 기능
+- 라이선스 할당 해제 기능
+- 워크스페이스 내 내 라이선스 정보 조회 기능
+
+Bug Fixes
+- 없음
+
+Limitation
+- 없음
+
+Copyright (C) 2020, VIRNECT CO., LTD. - All Rights Reserved

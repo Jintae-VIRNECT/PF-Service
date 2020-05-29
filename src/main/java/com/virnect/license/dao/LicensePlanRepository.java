@@ -14,9 +14,12 @@ import java.util.Optional;
  * @description
  * @since 2020.04.09
  */
-public interface LicensePlanRepository extends JpaRepository<LicensePlan, Long> {
+public interface LicensePlanRepository extends JpaRepository<LicensePlan, Long>, CustomLicensePlanRepository {
     @Transactional(readOnly = true)
     Optional<LicensePlan> findByUserIdAndWorkspaceIdAndPlanStatus(String userId, String workspaceId, PlanStatus status);
+
     @Transactional(readOnly = true)
     Optional<LicensePlan> findByUserIdAndWorkspaceId(String userId, String workspaceId);
+
+    Optional<LicensePlan> findByWorkspaceIdAndPlanStatus(String workspaceId, PlanStatus planStatus);
 }

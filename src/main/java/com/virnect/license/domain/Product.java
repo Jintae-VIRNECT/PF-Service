@@ -31,13 +31,22 @@ public class Product extends BaseTimeEntity {
     private String name;
 
     @Column(name = "price")
-    Integer price;
+    Long price;
+
+    @Column(name = "max_storage_size", nullable = false)
+    private Long maxStorageSize;
+
+    @Column(name = "max_download_hit", nullable = false)
+    private Long maxDownloadHit;
+
+    @Column(name = "max_call_time", nullable = false)
+    private Long maxCallTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_type_id")
     private ProductType productType;
 
-    public Product(String name, Integer price, ProductType productType) {
+    public Product(String name, Long price, ProductType productType) {
         this.name = name;
         this.price = price;
         this.productType = productType;

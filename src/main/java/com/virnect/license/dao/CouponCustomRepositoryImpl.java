@@ -1,9 +1,7 @@
 package com.virnect.license.dao;
 
 import com.querydsl.jpa.JPQLQuery;
-import com.virnect.license.domain.Coupon;
-import com.virnect.license.domain.QCoupon;
-import com.virnect.license.domain.QLicensePlan;
+import com.virnect.license.domain.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +26,20 @@ public class CouponCustomRepositoryImpl extends QuerydslRepositorySupport implem
         QCoupon qCoupon = QCoupon.coupon;
         QLicensePlan qLicensePlan = QLicensePlan.licensePlan;
         JPQLQuery<Coupon> query = from(qCoupon).innerJoin(qCoupon.licensePlan, qLicensePlan).where(qCoupon.userId.eq(userId));
+        final List<Coupon> couponList = getQuerydsl().applyPagination(pageable, query).fetch();
+        return new PageImpl<>(couponList, pageable, query.fetchCount());
+    }
+
+    @Override
+    public Page<Coupon> findAllCouponInfo(Pageable pageable) {
+        QCoupon qCoupon = QCoupon.coupon;
+        QLicenseProduct qLicenseProduct = QLicenseProduct.licenseProduct;
+        QProduct qProduct = QProduct.product;
+        JPQLQuery<Coupon> query = from(qCoupon)
+                .innerJoin(qCoupon.couponProductList, qLicenseProduct)
+                .fetchJoin()
+                .innerJoin(qLicenseProduct.product, qProduct)
+                .fetchJoin();
         final List<Coupon> couponList = getQuerydsl().applyPagination(pageable, query).fetch();
         return new PageImpl<>(couponList, pageable, query.fetchCount());
     }

@@ -23,8 +23,16 @@ public enum ErrorCode {
     ERR_COUPON_ALREADY_ACTIVATED(2003, "Coupon is already activated"),
 
 
-    // 라이선스 관련
-    ERR_LICENSE_PLAN_NOT_FOUND(3000, "License plant not found"),
+    // 라이선스 조회 관련
+    ERR_LICENSE_PLAN_NOT_FOUND(3000, "License plan not found"),
+    ERR_LICENSE_PRODUCT_NOT_FOUND(3001,"License Product not found"),
+
+    // 상품 라이선스 등록 관련
+    ERR_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT(4000, "Product license assignment failed."),
+
+    // 라이선스 할당 관련
+    ERR_LICENSE_ALREADY_GRANTED(5000,"License is already granted"),
+    ERR_USEFUL_LICENSE_NOT_FOUND(5001,"Useful License not found"),
 
     // 공통 에러
     ERR_API_AUTHENTICATION(8003, "Authentication Error"),

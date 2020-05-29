@@ -5,6 +5,7 @@ import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author jeonghyeon.chang (johnmark)
@@ -32,6 +33,10 @@ public class LicenseProduct extends BaseTimeEntity {
     private Integer price;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coupon_id")
+    private Coupon coupon;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "license_plan_id")
     private LicensePlan licensePlan;
 
@@ -44,14 +49,15 @@ public class LicenseProduct extends BaseTimeEntity {
     private LicenseType licenseType;
 
     @OneToMany(mappedBy = "licenseProduct", fetch = FetchType.LAZY)
-    private List<License> licenseList;
+    private Set<License> licenseList;
 
     @Builder
-    public LicenseProduct(Integer quantity, Integer price, LicensePlan licensePlan, Product product, LicenseType licenseType) {
+    public LicenseProduct(Integer quantity, Integer price, LicensePlan licensePlan, Product product, LicenseType licenseType, Coupon coupon) {
         this.quantity = quantity;
         this.price = price;
         this.licensePlan = licensePlan;
         this.product = product;
+        this.coupon = coupon;
         this.licenseType = licenseType;
     }
 }

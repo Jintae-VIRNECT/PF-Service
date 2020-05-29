@@ -5,7 +5,6 @@ import com.virnect.license.dao.LicenseTypeRepository;
 import com.virnect.license.dao.ProductRepository;
 import com.virnect.license.dao.ProductTypeRepository;
 import com.virnect.license.domain.Coupon;
-import com.virnect.license.domain.LicenseType;
 import com.virnect.license.domain.Product;
 import com.virnect.license.domain.ProductType;
 import org.apache.commons.lang.StringUtils;

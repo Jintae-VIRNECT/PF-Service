@@ -13,4 +13,6 @@ import org.springframework.data.domain.Pageable;
  */
 public interface CouponCustomRepository {
     Page<Coupon> findMyCouponListByUserIdAndPageable(String userId, Pageable pageable);
+
+    Page<Coupon> findAllCouponInfo(Pageable pageable);
 }

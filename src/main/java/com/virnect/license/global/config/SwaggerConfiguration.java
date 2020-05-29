@@ -1,6 +1,9 @@
 package com.virnect.license.global.config;
 
-import com.fasterxml.classmate.TypeResolver;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.virnect.license.global.error.ErrorCode;
+import com.virnect.license.global.error.ErrorResponseMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +20,7 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,10 +35,10 @@ import java.util.List;
 @EnableSwagger2
 @RequiredArgsConstructor
 public class SwaggerConfiguration {
-    private final TypeResolver typeResolver;
+    private final ObjectMapper objectMapper;
 
     @Bean
-    public Docket docket() {
+    public Docket docket() throws JsonProcessingException {
         Contact contact = new Contact("장정현", "https://virnect.com", "sky456139@vinrect.com");
 
         ApiInfo apiInfo = new ApiInfoBuilder()
@@ -46,10 +49,15 @@ public class SwaggerConfiguration {
                 .license("VIRNECT INC All rights reserved.")
                 .build();
 
-        List<ResponseMessage> responseMessages = Arrays.asList(new ResponseMessageBuilder().code(400).message("요청 에러").build());
+
+        List<ResponseMessage> responseMessages = new ArrayList<>();
+        for (ErrorCode errorCode : ErrorCode.values()) {
+            responseMessages.add(new ResponseMessageBuilder().code(errorCode.getCode()).message(objectMapper.writeValueAsString(new ErrorResponseMessage(errorCode))).build());
+        }
+        responseMessages.add(new ResponseMessageBuilder().code(200).message("success").build());
 
         return new Docket(DocumentationType.SWAGGER_2)
-                .useDefaultResponseMessages(true)
+                .useDefaultResponseMessages(false)
                 .globalResponseMessage(RequestMethod.GET, responseMessages)
                 .globalResponseMessage(RequestMethod.POST, responseMessages)
                 .globalResponseMessage(RequestMethod.PUT, responseMessages)

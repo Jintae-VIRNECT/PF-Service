@@ -46,9 +46,6 @@ public class Coupon extends BaseTimeEntity {
     @Column(name = "company_site")
     private String companySite;
 
-    @Column(name = "company_category")
-    private String companyCategory;
-
     @Column(name = "company_service")
     private String companyService;
 
@@ -58,10 +55,6 @@ public class Coupon extends BaseTimeEntity {
     @Lob
     @Column(name = "content")
     private String content;
-
-    @Column(name = "personal_info_policy", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Status personalInfoPolicy = Status.REJECT;
 
     @Column(name = "market_info_receive", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -99,8 +92,8 @@ public class Coupon extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private CouponStatus status = CouponStatus.UNUSE;
 
-    @OneToMany(mappedBy = "coupon")
-    List<CouponProduct> couponProductList = new ArrayList<>();
+    @OneToMany(mappedBy = "coupon", fetch = FetchType.LAZY)
+    List<LicenseProduct> couponProductList = new ArrayList<>();
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "license_plan_id")
@@ -108,9 +101,8 @@ public class Coupon extends BaseTimeEntity {
 
     @Builder
     public Coupon(String company, String department, String position, String companyEmail,
-                  String callNumber, String companySite, String companyCategory,
-                  String companyService, String companyWorker, String content,
-                  Status personalInfoPolicy, Status marketInfoReceive, LocalDateTime expiredDate, Long duration,
+                  String callNumber, String companySite, String companyService,
+                  String companyWorker, String content, Status marketInfoReceive, LocalDateTime expiredDate, Long duration,
                   CouponPeriodType periodType, CouponStatus couponStatus, String userId, String serialKey, String name) {
         this.company = company;
         this.department = department;
@@ -118,11 +110,9 @@ public class Coupon extends BaseTimeEntity {
         this.companyEmail = companyEmail;
         this.callNumber = callNumber;
         this.companySite = companySite;
-        this.companyCategory = companyCategory;
         this.companyService = companyService;
         this.companyWorker = companyWorker;
         this.content = content;
-        this.personalInfoPolicy = personalInfoPolicy;
         this.marketInfoReceive = marketInfoReceive;
         this.duration = duration;
         this.couponPeriodType = periodType;

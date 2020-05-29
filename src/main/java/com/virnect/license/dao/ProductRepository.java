@@ -3,7 +3,9 @@ package com.virnect.license.dao;
 import com.virnect.license.domain.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author jeonghyeon.chang (johnmark)
@@ -13,5 +15,5 @@ import java.util.Optional;
  * @since 2020.04.13
  */
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    Optional<Product> findByProductType_NameAndName(String productType, String productName);
+    Optional<Set<Product>> findByProductType_NameAndNameIsIn(String productType, List<String> productNameList);
 }
