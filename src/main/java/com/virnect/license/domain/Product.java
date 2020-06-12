@@ -1,9 +1,6 @@
 package com.virnect.license.domain;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
@@ -50,9 +47,13 @@ public class Product extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private ProductDisplayStatus displayStatus;
 
-    public Product(String name, Long price, ProductType productType) {
+    @Builder
+    public Product(String name, Long price, Long maxStorageSize, Long maxDownloadHit, Long maxCallTime, ProductType productType) {
         this.name = name;
         this.price = price;
+        this.maxStorageSize = maxStorageSize;
+        this.maxDownloadHit = maxDownloadHit;
+        this.maxCallTime = maxCallTime;
         this.productType = productType;
         this.displayStatus = ProductDisplayStatus.HIDE; // new product info is will not displayed by default
     }

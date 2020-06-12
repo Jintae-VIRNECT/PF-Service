@@ -28,16 +28,20 @@ public enum ErrorCode {
     ERR_LICENSE_PRODUCT_NOT_FOUND(3001, "License Product not found"),
 
     // 상품 라이선스 등록 관련
-    ERR_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT(4000, "Product license assignment failed."),
-    ERR_PRODUCT_LICENSE_ASSIGNMENT_ROLLBACK_FROM_PAYMENT(4100, "Product license deallocation failed."),
+    ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT(4000, "Product license assignment failed."),
+    ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_ROLLBACK_FROM_PAYMENT(4100, "Product license deallocation failed."),
 
     // 상품 지급 여부 검사
     ERR_BILLING_PRODUCT_ALLOCATE_DENIED(4200, "License allocation imposible"),
 
-    // 상품 조회 관련
+    // 상품 관련
     ERR_BILLING_PRODUCT_NOT_FOUND(4300, "Product Not found."),
-    ERR_PRODUCT_INFO_UPDATE(4301, "Product info update faild."),
+    ERR_BILLING_PRODUCT_INFO_UPDATE(4301, "Product info update fail."),
+    ERR_BILLING_PRODUCT_DISABLE(4302, "Product delete fail."),
+    ERR_BILLING_PRODUCT_CREATE(4303, "Create new Product fail"),
 
+    // 상품 타입 관련
+    ERR_BILLING_PRODUCT_TYPE_INFO_UPDATE(4400, "Product type info update fail."),
 
     // 라이선스 할당 관련
     ERR_LICENSE_ALREADY_GRANTED(5000, "License is already granted"),

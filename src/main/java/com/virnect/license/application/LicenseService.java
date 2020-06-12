@@ -384,17 +384,20 @@ public class LicenseService {
         for (LicenseProduct licenseProduct : licensePlan.getLicenseProductList()) {
             Product product = licenseProduct.getProduct();
             ProductType productType = product.getProductType();
-            licenseProduct.getLicenseList().stream().filter(license -> license.getUserId().equals(userId)).forEach(license -> {
-                MyLicenseInfoResponse licenseInfo = new MyLicenseInfoResponse();
-                licenseInfo.setId(license.getId());
-                licenseInfo.setSerialKey(license.getSerialKey());
-                licenseInfo.setCreatedDate(license.getCreatedDate());
-                licenseInfo.setProductName(product.getName());
-                licenseInfo.setUpdatedDate(license.getUpdatedDate());
-                licenseInfo.setLicenseType(productType.getName());
-                licenseInfo.setStatus(license.getStatus());
-                myLicenseInfoResponseList.add(licenseInfo);
-            });
+            if (licenseProduct.getLicenseList() != null && !licenseProduct.getLicenseList().isEmpty()) {
+                log.info(licenseProduct.getLicenseList().toString());
+                licenseProduct.getLicenseList().stream().filter(license -> license.getUserId() != null && license.getUserId().equals(userId)).forEach(license -> {
+                    MyLicenseInfoResponse licenseInfo = new MyLicenseInfoResponse();
+                    licenseInfo.setId(license.getId());
+                    licenseInfo.setSerialKey(license.getSerialKey());
+                    licenseInfo.setCreatedDate(license.getCreatedDate());
+                    licenseInfo.setProductName(product.getName());
+                    licenseInfo.setUpdatedDate(license.getUpdatedDate());
+                    licenseInfo.setLicenseType(productType.getName());
+                    licenseInfo.setStatus(license.getStatus());
+                    myLicenseInfoResponseList.add(licenseInfo);
+                });
+            }
         }
         return new ApiResponse<>(new MyLicenseInfoListResponse(myLicenseInfoResponseList));
     }
@@ -457,8 +460,8 @@ public class LicenseService {
 
     @Transactional(readOnly = true)
     public ApiResponse<ProductInfoListResponse> getAllProductInfo() {
-//        List<Product> productList = productRepository.findAllByDisplayStatus(ProductDisplayStatus.DISPLAY);
-        List<Product> productList = productRepository.findAll();
+        List<Product> productList = productRepository.findAllByDisplayStatus(ProductDisplayStatus.DISPLAY);
+//        List<Product> productList = productRepository.findAll();
         List<ProductInfoResponse> productInfoList = new ArrayList<>();
         productList.forEach(product -> {
             ProductInfoResponse productInfo = modelMapper.map(product, ProductInfoResponse.class);
@@ -485,31 +488,32 @@ public class LicenseService {
                 .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_NOT_FOUND));
 
         // price update
-        if (updateRequest.getPrice() > 0) {
-            product.setPrice(updateRequest.getPrice());
+        if (updateRequest.getProductPrice() > 0) {
+            product.setPrice(updateRequest.getProductPrice());
         }
         // max call time update
-        if (updateRequest.getMaxCallTime() > 0) {
-            product.setMaxCallTime(updateRequest.getMaxCallTime());
+        if (updateRequest.getProductMaxCallTime() > 0) {
+            product.setMaxCallTime(updateRequest.getProductMaxCallTime());
         }
         // max download hits update
-        if (updateRequest.getMaxDownloadHit() > 0) {
-            product.setMaxDownloadHit(updateRequest.getMaxDownloadHit());
+        if (updateRequest.getProductMaxDownloadHit() > 0) {
+            product.setMaxDownloadHit(updateRequest.getProductMaxDownloadHit());
         }
         // max storage update
-        if (updateRequest.getMaxStorageSize() > 0) {
-            product.setMaxStorageSize(updateRequest.getMaxStorageSize());
+        if (updateRequest.getProductMaxStorageSize() > 0) {
+            product.setMaxStorageSize(updateRequest.getProductMaxStorageSize());
         }
         // productType update
         if (updateRequest.getProductTypeId() > 0) {
             ProductType productType = productTypeRepository.findById(updateRequest.getProductTypeId())
-                    .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_PRODUCT_INFO_UPDATE));
+                    .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_INFO_UPDATE));
             product.setProductType(productType);
         }
-//        // product display option update
-//        if (updateRequest.getDisplayStatus() != null) {
-//            product.setDisplayStatus(ProductDisplayStatus.valueOf(updateRequest.getDisplayStatus()));
-//        }
+
+        // product display option update
+        if (updateRequest.getProductDisplayStatus() != null) {
+            product.setDisplayStatus(ProductDisplayStatus.valueOf(updateRequest.getProductDisplayStatus()));
+        }
 
         productRepository.save(product);
 
@@ -606,7 +610,7 @@ public class LicenseService {
         ApiResponse<UserInfoRestResponse> userInfoApiResponse = this.userRestService.getUserInfoByUserPrimaryId(licenseAllocateRequest.getUserId());
         if (userInfoApiResponse.getCode() != 200 || userInfoApiResponse.getData().getEmail() == null) {
             log.info("User service error response: [{}]", userInfoApiResponse.getMessage());
-            throw new LicenseServiceException(ErrorCode.ERR_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+            throw new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
         }
 
         UserInfoRestResponse requestUserInfo = userInfoApiResponse.getData();
@@ -614,7 +618,7 @@ public class LicenseService {
         ApiResponse<WorkspaceInfoListResponse> workspaceApiResponse = this.workspaceRestService.getMyWorkspaceInfoList(requestUserInfo.getUuid());
         if (workspaceApiResponse.getCode() != 200 || workspaceApiResponse.getData().getWorkspaceList() == null) {
             log.info("User service error response: [{}]", workspaceApiResponse.getMessage());
-            throw new LicenseServiceException(ErrorCode.ERR_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+            throw new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
         }
         WorkspaceInfoResponse workspaceInfo = workspaceApiResponse.getData().getWorkspaceList().stream()
                 .filter(w -> w.getRole().equals("MASTER")).findFirst().orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_ALLOCATE_DENIED));
@@ -627,7 +631,7 @@ public class LicenseService {
         // 상품별 계산
         for (LicenseAllocateProductInfoResponse productRequest : licenseAllocateRequest.getProductList()) {
             Product product = productRepository.findById(productRequest.getProductId())
-                    .orElseThrow(() -> new LicenseAllocateDeniedException(ErrorCode.ERR_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT, licenseAllocateRequest.getUserId()));
+                    .orElseThrow(() -> new LicenseAllocateDeniedException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT, licenseAllocateRequest.getUserId()));
             if (product.getName().equals("MAKE")) {
                 calculateMaxStorage += product.getMaxStorageSize();
             }
@@ -641,7 +645,7 @@ public class LicenseService {
 
         if (licensePlanExist) {
             LicensePlan licensePlan = licensePlanRepository.findByUserIdAndWorkspaceIdAndPlanStatus(requestUserInfo.getUuid(), workspaceInfo.getUuid(), PlanStatus.ACTIVE)
-                    .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT));
+                    .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT));
             licenseRegisterByProduct(licenseAllocateRequest.getProductList(), licensePlan);
 
             licensePlan.setMaxCallTime(licensePlan.getMaxCallTime() + calculateMaxCallTime);
@@ -669,7 +673,7 @@ public class LicenseService {
                 .maxCallTime(calculateMaxCallTime)
                 .maxDownloadHit(calculateMaxDownloadHits)
                 .maxStorageSize(calculateMaxStorage)
-                .maxUserAmount(new Long(licenseAllocateRequest.getProductList().size()))
+                .maxUserAmount((long) licenseAllocateRequest.getProductList().size())
                 .build();
 
         licensePlanRepository.save(licensePlan);
@@ -686,12 +690,12 @@ public class LicenseService {
     }
 
     private void licenseRegisterByProduct(List<LicenseAllocateProductInfoResponse> productList, LicensePlan licensePlan) {
-        if (productList == null || productList.size() <= 0) {
-            throw new LicenseServiceException(ErrorCode.ERR_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+        if (productList == null || productList.isEmpty()) {
+            throw new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
         }
         productList.forEach(productInfo -> {
             Product product = this.productRepository.findById(productInfo.getProductId())
-                    .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT));
+                    .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT));
 
             LicenseProduct licenseProduct = LicenseProduct.builder()
                     .product(product)
@@ -714,5 +718,48 @@ public class LicenseService {
                     .build();
             this.licenseRepository.save(license);
         }
+    }
+
+    @Transactional
+    public ApiResponse<ProductInfoListResponse> deleteProduct(long productId) {
+        long result = productRepository.updateProductDisplayStatusToHide(productId);
+        if (result <= 0) {
+            throw new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_DISABLE);
+        }
+        return getAllProductInfo();
+    }
+
+    @Transactional
+    public ApiResponse<ProductTypeInfoListResponse> updateProductTypeInfo(ProductTypeUpdateRequest productTypeUpdateRequest) {
+        ProductType productType = productTypeRepository.findById(productTypeUpdateRequest.getProductTypeId())
+                .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_TYPE_INFO_UPDATE));
+        productType.setName(productTypeUpdateRequest.getProductTypeName());
+        productTypeRepository.save(productType);
+
+        return getAllProductTypeInfo();
+    }
+
+    @Transactional
+    public ApiResponse<ProductInfoListResponse> createNewProductHandler(CreateNewProductRequest createNewProductRequest) {
+        ProductType productType = this.productTypeRepository.findById(createNewProductRequest.getProductTypeId())
+                .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_CREATE));
+        Product newProduct = Product.builder()
+                .name(createNewProductRequest.getProductName())
+                .price(createNewProductRequest.getPrice())
+                .maxStorageSize(createNewProductRequest.getMaxStorageSize())
+                .maxDownloadHit(createNewProductRequest.getMaxDownloadHit())
+                .maxCallTime(createNewProductRequest.getMaxCallTime())
+                .productType(productType)
+                .build();
+        productRepository.save(newProduct);
+
+        return getAllProductInfo();
+    }
+
+    @Transactional
+    public ApiResponse<ProductTypeInfoListResponse> createNewProductTypeHandler(CreateNewProductTypeRequest createNewProductTypeRequest) {
+        ProductType productType = new ProductType(createNewProductTypeRequest.getProductTypeName());
+        productTypeRepository.save(productType);
+        return getAllProductTypeInfo();
     }
 }
