@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -334,9 +335,13 @@ public class LicenseService {
         LicensePlan licensePlanInfo = licensePlan.get();
         Set<LicenseProduct> licenseProductList = licensePlanInfo.getLicenseProductList();
         List<LicenseProductInfoResponse> licenseProductInfoResponses = new ArrayList<>();
+
+
         licenseProductList.forEach(licenseProduct -> {
             LicenseProductInfoResponse licenseProductInfo = new LicenseProductInfoResponse();
             Product product = licenseProduct.getProduct();
+            AtomicInteger unUsedLicenseAmount = new AtomicInteger();
+            AtomicInteger usedLicenseAmount = new AtomicInteger();
 
             // Product Info
             licenseProductInfo.setProductId(product.getId());
@@ -349,6 +354,11 @@ public class LicenseService {
                 LicenseInfoResponse licenseInfoResponse = new LicenseInfoResponse();
                 licenseInfoResponse.setLicenseKey(license.getSerialKey());
                 licenseInfoResponse.setStatus(license.getStatus());
+                if (license.getStatus().equals(LicenseStatus.USE)) {
+                    usedLicenseAmount.getAndIncrement();
+                } else {
+                    unUsedLicenseAmount.getAndIncrement();
+                }
                 licenseInfoResponse.setUserId(license.getUserId() == null ? "" : license.getUserId());
                 licenseInfoResponse.setCreatedDate(license.getCreatedDate());
                 licenseInfoResponse.setUpdatedDate(license.getUpdatedDate());
@@ -357,6 +367,8 @@ public class LicenseService {
 
             licenseProductInfo.setLicenseInfoList(licenseInfoList);
             licenseProductInfo.setQuantity(licenseInfoList.size());
+            licenseProductInfo.setUnUseLicenseAmount(unUsedLicenseAmount.get());
+            licenseProductInfo.setUseLicenseAmount(usedLicenseAmount.get());
 
             licenseProductInfoResponses.add(licenseProductInfo);
         });
@@ -447,7 +459,7 @@ public class LicenseService {
             this.licenseRepository.save(updatedLicense);
 
             MyLicenseInfoResponse myLicenseInfoResponse = this.modelMapper.map(updatedLicense, MyLicenseInfoResponse.class);
-            myLicenseInfoResponse.setLicenseType(updatedLicense.getLicenseProduct().getLicenseType().getName());
+            //myLicenseInfoResponse.setLicenseType(updatedLicense.getLicenseProduct().getLicenseType().getName());
             return new ApiResponse<>(myLicenseInfoResponse);
         } else {
             oldLicense.setUserId(null);
@@ -461,7 +473,6 @@ public class LicenseService {
     @Transactional(readOnly = true)
     public ApiResponse<ProductInfoListResponse> getAllProductInfo() {
         List<Product> productList = productRepository.findAllByDisplayStatus(ProductDisplayStatus.DISPLAY);
-//        List<Product> productList = productRepository.findAll();
         List<ProductInfoResponse> productInfoList = new ArrayList<>();
         productList.forEach(product -> {
             ProductInfoResponse productInfo = modelMapper.map(product, ProductInfoResponse.class);
