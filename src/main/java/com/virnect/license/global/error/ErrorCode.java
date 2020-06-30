@@ -29,6 +29,7 @@ public enum ErrorCode {
 
     // 상품 라이선스 등록 관련
     ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT(4000, "Product license assignment failed."),
+    ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_AUTHENTICATION_CODE(4001, "Product license assignment authentication code invalid."),
     ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_ROLLBACK_FROM_PAYMENT(4100, "Product license deallocation failed."),
 
     // 상품 지급 여부 검사

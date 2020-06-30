@@ -13,8 +13,8 @@ import java.util.List;
 public class LicenseAllocateCheckRequest {
     @ApiModelProperty(value = "사용자 대표 식별자")
     private long userId;
-    @ApiModelProperty(value = "상품 정보 리스트")
+    @ApiModelProperty(value = "상품 정보 리스트", position = 1)
     private List<LicenseAllocateProductInfoResponse> productList;
-    @ApiModelProperty(value = "쿠폰 정보 리스트")
+    @ApiModelProperty(value = "쿠폰 정보 리스트", position = 2)
     private List<LicenseAllocateCouponInfoResponse> couponList;
 }

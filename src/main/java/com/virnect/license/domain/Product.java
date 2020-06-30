@@ -27,9 +27,6 @@ public class Product extends BaseTimeEntity {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "price")
-    Long price;
-
     @Column(name = "max_storage_size", nullable = false)
     private Long maxStorageSize;
 
@@ -38,6 +35,10 @@ public class Product extends BaseTimeEntity {
 
     @Column(name = "max_call_time", nullable = false)
     private Long maxCallTime;
+
+    @Column(name = "product_category")
+    private String category;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_type_id")
@@ -48,13 +49,13 @@ public class Product extends BaseTimeEntity {
     private ProductDisplayStatus displayStatus;
 
     @Builder
-    public Product(String name, Long price, Long maxStorageSize, Long maxDownloadHit, Long maxCallTime, ProductType productType) {
+    public Product(String name, Long maxStorageSize, Long maxDownloadHit, Long maxCallTime, ProductType productType, String category) {
         this.name = name;
-        this.price = price;
         this.maxStorageSize = maxStorageSize;
         this.maxDownloadHit = maxDownloadHit;
         this.maxCallTime = maxCallTime;
         this.productType = productType;
-        this.displayStatus = ProductDisplayStatus.HIDE; // new product info is will not displayed by default
+        this.displayStatus = ProductDisplayStatus.DISPLAY; // new product info is will not displayed by default
+        this.category = category;
     }
 }

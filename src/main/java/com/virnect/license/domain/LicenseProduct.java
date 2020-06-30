@@ -29,9 +29,6 @@ public class LicenseProduct extends BaseTimeEntity {
     @Column(name = "quantity")
     private Integer quantity;
 
-    @Column(name = "price")
-    private Long price;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coupon_id")
     private Coupon coupon;
@@ -52,9 +49,8 @@ public class LicenseProduct extends BaseTimeEntity {
     private Set<License> licenseList;
 
     @Builder
-    public LicenseProduct(Integer quantity, Long price, LicensePlan licensePlan, Product product, LicenseType licenseType, Coupon coupon) {
+    public LicenseProduct(Integer quantity, LicensePlan licensePlan, Product product, LicenseType licenseType, Coupon coupon) {
         this.quantity = quantity;
-        this.price = price;
         this.licensePlan = licensePlan;
         this.product = product;
         this.coupon = coupon;

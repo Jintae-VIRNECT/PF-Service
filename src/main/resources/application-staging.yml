@@ -14,6 +14,8 @@ spring:
       ddl-auto: validate
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     show-sql: true
+  redis:
+    host: virnect-qa-redis.b84gc2.0001.apn2.cache.amazonaws.com
   mail:
     host: email-smtp.us-west-2.amazonaws.com
     port: 587

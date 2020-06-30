@@ -62,8 +62,11 @@ public class LicensePlan extends BaseTimeEntity {
     @Column(name = "status")
     private PlanStatus planStatus = PlanStatus.INACTIVE;
 
+    @Column(name = "country_code")
+    private String countryCode;
+
     @Column(name = "payment_id")
-    private long paymentId;
+    private String paymentId;
 
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "licensePlan")
     @JoinColumn(name = "coupon_id")
@@ -73,7 +76,7 @@ public class LicensePlan extends BaseTimeEntity {
     private Set<LicenseProduct> licenseProductList;
 
     @Builder
-    public LicensePlan(String userId, String workspaceId, LocalDateTime startDate, LocalDateTime endDate, PlanStatus planStatus, Coupon coupon, Long maxDownloadHit, Long maxStorageSize, Long maxCallTime, Long paymentId, Long maxUserAmount) {
+    public LicensePlan(String userId, String workspaceId, LocalDateTime startDate, LocalDateTime endDate, PlanStatus planStatus, Coupon coupon, Long maxDownloadHit, Long maxStorageSize, Long maxCallTime, String paymentId, Long maxUserAmount) {
         this.userId = userId;
         this.workspaceId = workspaceId;
         this.startDate = startDate;

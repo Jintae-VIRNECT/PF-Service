@@ -17,6 +17,5 @@ import java.util.Set;
  */
 public interface ProductRepository extends JpaRepository<Product, Long>, ProductCustomRepository {
     Optional<Set<Product>> findByProductType_NameAndNameIsIn(String productType, List<String> productNameList);
-
     List<Product> findAllByDisplayStatus(ProductDisplayStatus status);
 }

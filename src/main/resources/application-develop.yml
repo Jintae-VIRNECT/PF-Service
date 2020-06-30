@@ -14,6 +14,8 @@ spring:
       hibernate:
         format_sql: true
     open-in-view: false
+  redis:
+    host: 192.168.6.3
   mail:
     host: email-smtp.us-west-2.amazonaws.com
     port: 587

@@ -16,7 +16,7 @@ public class LicenseProductAllocateResponse {
     @ApiModelProperty(value = "사용자 대표 식별자")
     private long userId;
     @ApiModelProperty(value = "결제 정보 식별자")
-    private long paymentId;
+    private String paymentId;
     @ApiModelProperty(value = "상품 지급 일자")
     private LocalDateTime allocatedDate;
     @ApiModelProperty(value = "지급 상품 정보")

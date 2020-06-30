@@ -18,8 +18,6 @@ public class ProductInfoUpdateRequest {
     private long productId;
     @ApiModelProperty(value = "상품명")
     private String productName;
-    @ApiModelProperty(value = "상품 가격")
-    private long productPrice;
     @ApiModelProperty(value = "상품 기본 최대 저장 용량")
     private long productMaxStorageSize;
     @ApiModelProperty(value = "상품 기본 최대 다운로드 가능 횟수")
