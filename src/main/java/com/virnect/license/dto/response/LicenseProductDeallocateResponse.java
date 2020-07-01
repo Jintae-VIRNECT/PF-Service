@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @ApiModel
 public class LicenseProductDeallocateResponse {
     private long userId;
-    private long paymentId;
+    private String paymentId;
     private LocalDateTime deallocatedDate;
 
     @Override

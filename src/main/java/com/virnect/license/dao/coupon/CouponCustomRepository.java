@@ -1,4 +1,4 @@
-package com.virnect.license.dao;
+package com.virnect.license.dao.coupon;
 
 import com.virnect.license.domain.Coupon;
 import org.springframework.data.domain.Page;

@@ -16,7 +16,7 @@ public class LicenseProductDeallocateRequest {
     @NotNull
     private long userId;
     @NotNull
-    private long paymentId;
+    private String paymentId;
     @NotNull
     private LocalDateTime paymentDate;
     @NotBlank

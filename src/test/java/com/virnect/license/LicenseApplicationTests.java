@@ -1,8 +1,8 @@
 package com.virnect.license;
 
-import com.virnect.license.dao.CouponRepository;
+import com.virnect.license.dao.coupon.CouponRepository;
 import com.virnect.license.dao.LicenseTypeRepository;
-import com.virnect.license.dao.ProductRepository;
+import com.virnect.license.dao.product.ProductRepository;
 import com.virnect.license.dao.ProductTypeRepository;
 import com.virnect.license.domain.Coupon;
 import com.virnect.license.domain.Product;

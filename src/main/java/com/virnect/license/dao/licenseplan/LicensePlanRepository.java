@@ -1,4 +1,4 @@
-package com.virnect.license.dao;
+package com.virnect.license.dao.licenseplan;
 
 import com.virnect.license.domain.LicensePlan;
 import com.virnect.license.domain.PlanStatus;
@@ -23,7 +23,7 @@ public interface LicensePlanRepository extends JpaRepository<LicensePlan, Long>,
 
     Optional<LicensePlan> findByWorkspaceIdAndPlanStatus(String workspaceId, PlanStatus planStatus);
 
-    Optional<LicensePlan> findByUserIdAndPaymentId(String userId, long paymentId);
+    Optional<LicensePlan> findByUserIdAndPaymentId(String userId, String paymentId);
 
     LicensePlan findByUserIdAndPlanStatus(String userUUID, PlanStatus status);
 }

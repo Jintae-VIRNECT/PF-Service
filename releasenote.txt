@@ -2,11 +2,10 @@
 RELEASE
 
 New Features
-- 없음
+- 라이선스 지급 여부 검사, 지급, 지급 취소 API 암호화 복호화 로직 추가
 
 Bug Fixes
-- 라이선스 지급 여부 검사 api 로직 및 파라미터 수정
-- 라이선스 지급 api 로직 및 파라미터 수정
+- 없음
 
 Limitation
 - 없음

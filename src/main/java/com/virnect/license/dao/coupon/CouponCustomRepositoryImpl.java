@@ -1,4 +1,4 @@
-package com.virnect.license.dao;
+package com.virnect.license.dao.coupon;
 
 import com.querydsl.jpa.JPQLQuery;
 import com.virnect.license.domain.*;

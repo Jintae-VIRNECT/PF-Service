@@ -17,4 +17,13 @@ public class LicenseAllocateCheckRequest {
     private List<LicenseAllocateProductInfoResponse> productList;
     @ApiModelProperty(value = "쿠폰 정보 리스트", position = 2)
     private List<LicenseAllocateCouponInfoResponse> couponList;
+
+    @Override
+    public String toString() {
+        return "LicenseAllocateCheckRequest{" +
+                "userId=" + userId +
+                ", productList=" + productList +
+                ", couponList=" + couponList +
+                '}';
+    }
 }

@@ -76,7 +76,7 @@ public class LicensePlan extends BaseTimeEntity {
     private Set<LicenseProduct> licenseProductList;
 
     @Builder
-    public LicensePlan(String userId, String workspaceId, LocalDateTime startDate, LocalDateTime endDate, PlanStatus planStatus, Coupon coupon, Long maxDownloadHit, Long maxStorageSize, Long maxCallTime, String paymentId, Long maxUserAmount) {
+    public LicensePlan(String userId, String workspaceId, LocalDateTime startDate, LocalDateTime endDate, PlanStatus planStatus, Coupon coupon, Long maxDownloadHit, Long maxStorageSize, Long maxCallTime, String paymentId, Long maxUserAmount, String countryCode) {
         this.userId = userId;
         this.workspaceId = workspaceId;
         this.startDate = startDate;
@@ -89,5 +89,6 @@ public class LicensePlan extends BaseTimeEntity {
         this.modifiedUser = userId;
         this.paymentId = paymentId;
         this.maxUserAmount = maxUserAmount;
+        this.countryCode = countryCode;
     }
 }
