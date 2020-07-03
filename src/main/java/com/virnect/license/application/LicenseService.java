@@ -579,7 +579,7 @@ public class LicenseService {
      * @return
      */
     @Transactional
-    public EncodingRequestResponse licenseAllocateCheckRequest(LicenseAllocateCheckRequest allocateCheckRequest) {
+    public ApiResponse<LicenseProductAllocateCheckResponse> licenseAllocateCheckRequest(LicenseAllocateCheckRequest allocateCheckRequest) {
         log.info("[BILLING][LICENSE ALLOCATE CHECK] -> [{}]", allocateCheckRequest.toString());
         ApiResponse<UserInfoRestResponse> userInfoApiResponse = this.userRestService.getUserInfoByUserPrimaryId(allocateCheckRequest.getUserId());
         if (userInfoApiResponse.getCode() != 200 || userInfoApiResponse.getData().getEmail() == null) {
@@ -639,18 +639,7 @@ public class LicenseService {
         checkResponse.setAssignAuthCode(assignAuthCoe);
         checkResponse.setUserId(allocateCheckRequest.getUserId());
         checkResponse.setAssignableCheckDate(LocalDateTime.now());
-        ApiResponse<LicenseProductAllocateCheckResponse> apiResponse = new ApiResponse<>(checkResponse);
-        EncodingRequestResponse encodingRequestResponse = new EncodingRequestResponse();
-        try {
-            String apiResponseString = objectMapper.writeValueAsString(apiResponse);
-            log.info("[LICENSE_ALLOCATE__CHECK_API_RESPONSE_STRING]- [{}]", apiResponseString);
-            encodingRequestResponse.setData(AES256Utils.encrypt(SECRET_KEY, apiResponseString));
-//            encodingRequestResponse.setData(AES256Utils.encrypt(SECRET_KEY, objectMapper.writeValueAsString(apiResponse)));
-            return encodingRequestResponse;
-        } catch (JsonProcessingException e) {
-            log.error("RESPONSE ENCRYPT FAIL.");
-            throw new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_ALLOCATE_DENIED);
-        }
+        return new ApiResponse<>(checkResponse);
     }
 
     /**
@@ -660,7 +649,7 @@ public class LicenseService {
      * @return
      */
     @Transactional
-    public EncodingRequestResponse licenseDeallocateRequest(LicenseProductDeallocateRequest licenseDeallocateRequest) {
+    public ApiResponse<LicenseProductDeallocateResponse> licenseDeallocateRequest(LicenseProductDeallocateRequest licenseDeallocateRequest) {
         ApiResponse<UserInfoRestResponse> userInfoApiResponse = this.userRestService.getUserInfoByUserPrimaryId(licenseDeallocateRequest.getUserId());
         if (userInfoApiResponse.getCode() != 200 || userInfoApiResponse.getData().getEmail() == null) {
             log.info("User service error response: [{}]", userInfoApiResponse.getMessage());
@@ -682,15 +671,7 @@ public class LicenseService {
         deallocateResponse.setPaymentId(licenseDeallocateRequest.getPaymentId());
         deallocateResponse.setUserId(licenseDeallocateRequest.getUserId());
         deallocateResponse.setDeallocatedDate(LocalDateTime.now());
-        ApiResponse<LicenseProductDeallocateResponse> apiResponse = new ApiResponse<>(deallocateResponse);
-        EncodingRequestResponse encodingRequestResponse = new EncodingRequestResponse();
-        try {
-            encodingRequestResponse.setData(AES256Utils.encrypt(SECRET_KEY, objectMapper.writeValueAsString(apiResponse)));
-            return encodingRequestResponse;
-        } catch (JsonProcessingException e) {
-            log.error("[LICENSE_PRODUCT_DEALLOCATE_RESPONSE][ENCRYPT FAIL.]");
-            throw new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_ALLOCATE_DENIED);
-        }
+        return new ApiResponse<>(deallocateResponse);
     }
 
     /**
@@ -700,7 +681,7 @@ public class LicenseService {
      * @return
      */
     @Transactional
-    public EncodingRequestResponse licenseAllocateRequest(LicenseProductAllocateRequest licenseAllocateRequest) {
+    public ApiResponse<LicenseProductAllocateResponse> licenseAllocateRequest(LicenseProductAllocateRequest licenseAllocateRequest) {
         // 1. 상품 지급 인증 정보 조회
         LicenseAssignAuthInfo licenseAssignAuthInfo = licenseAssignAuthInfoRepository.findById(licenseAllocateRequest.getAssignAuthCode())
                 .orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_AUTHENTICATION_CODE));
@@ -765,18 +746,9 @@ public class LicenseService {
             allocateResponse.setPaymentId(licenseAllocateRequest.getPaymentId());
             allocateResponse.setAllocatedDate(licensePlan.getUpdatedDate());
             allocateResponse.setAllocatedProductList(licenseAllocateRequest.getProductList());
-            EncodingRequestResponse encodingRequestResponse = new EncodingRequestResponse();
             licenseAssignAuthInfoRepository.deleteById(licenseAllocateRequest.getAssignAuthCode());
-            ApiResponse<LicenseProductAllocateResponse> apiResponse = new ApiResponse<>(allocateResponse);
-            try {
-                String apiResponseString = objectMapper.writeValueAsString(apiResponse);
-                log.info("[LICENSE_PLAN_EXIST][LICENSE_ALLOCATE_API_RESPONSE_STRING]- [{}]", apiResponseString);
-                encodingRequestResponse.setData(AES256Utils.encrypt(SECRET_KEY, apiResponseString));
-                return encodingRequestResponse;
-            } catch (JsonProcessingException e) {
-                log.error("[LICENSE_PLAN_EXIST][LICENSE_PRODUCT_DEALLOCATE_RESPONSE][ENCRYPT FAIL.]");
-                throw new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_ALLOCATE_DENIED);
-            }
+
+            return new ApiResponse<>(allocateResponse);
         }
 
 
@@ -807,17 +779,7 @@ public class LicenseService {
 
         licenseAssignAuthInfoRepository.deleteById(licenseAllocateRequest.getAssignAuthCode());
 
-        EncodingRequestResponse encodingRequestResponse = new EncodingRequestResponse();
-        ApiResponse<LicenseProductAllocateResponse> apiResponse = new ApiResponse<>(allocateResponse);
-        try {
-            String apiResponseString = objectMapper.writeValueAsString(apiResponse);
-            log.info("[LICENSE_PLAN_NOT_EXIST][LICENSE_ALLOCATE_API_RESPONSE_STRING]- [{}]", apiResponseString);
-            encodingRequestResponse.setData(objectMapper.writeValueAsString(apiResponse));
-            return encodingRequestResponse;
-        } catch (JsonProcessingException e) {
-            log.error("[LICENSE_PLAN_NOT_EXIST][LICENSE_PRODUCT_ALLOCATE_RESPONSE][ENCRYPT FAIL.]");
-            throw new LicenseServiceException(ErrorCode.ERR_BILLING_PRODUCT_ALLOCATE_DENIED);
-        }
+        return new ApiResponse<>(allocateResponse);
     }
 
     /**

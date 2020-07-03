@@ -1,5 +1,6 @@
 package com.virnect.license.global.error;
 
+import com.virnect.license.api.LicenseController;
 import com.virnect.license.exception.LicenseAllocateDeniedException;
 import com.virnect.license.exception.LicenseServiceException;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
  */
 
 @Slf4j
-@ControllerAdvice
+@ControllerAdvice(assignableTypes = LicenseController.class)
 public class GlobalExceptionHandler {
     @ExceptionHandler(LicenseServiceException.class)
     public ResponseEntity<ErrorResponseMessage> licenseServiceException(LicenseServiceException e) {
