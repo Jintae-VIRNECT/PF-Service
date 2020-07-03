@@ -42,6 +42,7 @@ import javax.validation.constraints.NotBlank;
 @RequestMapping("/licenses")
 public class LicenseController {
     private final LicenseService licenseService;
+    private static String PARAMETER_LOG_MESSAGE = "[PARAMETER ERROR]:: {}";
 
     @ApiOperation(value = "이벤트 쿠폰 발급 요청")
     @PostMapping("/event/coupon")
@@ -166,6 +167,7 @@ public class LicenseController {
     @PostMapping("/products")
     public ResponseEntity<ApiResponse<ProductInfoListResponse>> createNewProductRequest(@RequestBody CreateNewProductRequest createNewProductRequest, BindingResult result) {
         if (result.hasErrors()) {
+            result.getAllErrors().forEach(System.out::println);
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
         ApiResponse<ProductInfoListResponse> responseMessage = this.licenseService.createNewProductHandler(createNewProductRequest);
@@ -183,6 +185,7 @@ public class LicenseController {
     @PutMapping("/products")
     public ResponseEntity<ApiResponse<ProductInfoResponse>> changeProductInfoRequest(@RequestBody @Valid ProductInfoUpdateRequest productInfoUpdateRequest, BindingResult result) {
         if (result.hasErrors()) {
+            result.getAllErrors().forEach(System.out::println);
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
         ApiResponse<ProductInfoResponse> responseMessage = this.licenseService.updateProductInfo(productInfoUpdateRequest);
@@ -203,6 +206,7 @@ public class LicenseController {
     @PostMapping("/products/types")
     public ResponseEntity<ApiResponse<ProductTypeInfoListResponse>> createNewProductTypeInfo(@RequestBody @Valid CreateNewProductTypeRequest createNewProductTypeRequest, BindingResult result) {
         if (result.hasErrors()) {
+            result.getAllErrors().forEach(System.out::println);
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
         ApiResponse<ProductTypeInfoListResponse> responseMessage = this.licenseService.createNewProductTypeHandler(createNewProductTypeRequest);
@@ -220,6 +224,7 @@ public class LicenseController {
     @PutMapping("/products/types")
     public ResponseEntity<ApiResponse<ProductTypeInfoListResponse>> updateProductTypeInfoRequest(@RequestBody @Valid ProductTypeUpdateRequest productTypeUpdateRequest, BindingResult result) {
         if (result.hasErrors()) {
+            result.getAllErrors().forEach(System.out::println);
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
         ApiResponse<ProductTypeInfoListResponse> responseMessage = this.licenseService.updateProductTypeInfo(productTypeUpdateRequest);
@@ -230,6 +235,7 @@ public class LicenseController {
     @PostMapping("/allocate")
     public ResponseEntity<EncodingRequestResponse> licenseProductAllocateToUser(@RequestBody @Valid LicenseProductAllocateRequest licensePRoductAllocateRequest, BindingResult result) {
         if (result.hasErrors()) {
+            result.getAllErrors().forEach(message -> log.error(PARAMETER_LOG_MESSAGE, message));
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
         EncodingRequestResponse responseMessage = this.licenseService.licenseAllocateRequest(licensePRoductAllocateRequest);
@@ -240,6 +246,7 @@ public class LicenseController {
     @PostMapping("/deallocate")
     public ResponseEntity<EncodingRequestResponse> licenseProductDeallocateToUser(@RequestBody @Valid LicenseProductDeallocateRequest licenseDeallocateRequest, BindingResult result) {
         if (result.hasErrors()) {
+            result.getAllErrors().forEach(System.out::println);
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
         EncodingRequestResponse responseMessage = this.licenseService.licenseDeallocateRequest(licenseDeallocateRequest);
@@ -250,6 +257,7 @@ public class LicenseController {
     @PostMapping("/allocate/check")
     public ResponseEntity<EncodingRequestResponse> licenseAllocateCheckRequest(@RequestBody @Valid LicenseAllocateCheckRequest allocateCheckRequest, BindingResult result) {
         if (result.hasErrors()) {
+            result.getAllErrors().forEach(System.out::println);
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
         EncodingRequestResponse responseMessage = this.licenseService.licenseAllocateCheckRequest(allocateCheckRequest);

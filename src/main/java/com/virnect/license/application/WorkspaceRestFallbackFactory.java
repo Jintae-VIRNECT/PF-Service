@@ -22,7 +22,7 @@ public class WorkspaceRestFallbackFactory implements FallbackFactory<WorkspaceRe
     @Override
     public WorkspaceRestService create(Throwable cause) {
         log.error(cause.getMessage(), cause);
-        return userId -> {
+        return (userId, size) -> {
             log.info("[USER WORKSPACE LIST API FALLBACK] => USER_ID: {}", userId);
             WorkspaceInfoListResponse empty = new WorkspaceInfoListResponse();
             empty.setWorkspaceList(new ArrayList<>());

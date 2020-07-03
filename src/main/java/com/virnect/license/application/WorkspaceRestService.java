@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "workspace-server", fallbackFactory = WorkspaceRestFallbackFactory.class)
 public interface WorkspaceRestService {
     /**
-     * 소속된 워크스페이스 목록 조히 API
+     * 소속된 워크스페이스 목록 조회 API
      *
      * @param userId - 사용자 식별 고유 번호
      * @return - 워크스페이스 정보 목록
      */
     @GetMapping("/workspaces")
-    ApiResponse<WorkspaceInfoListResponse> getMyWorkspaceInfoList(@RequestParam("userId") String userId);
+    ApiResponse<WorkspaceInfoListResponse> getMyWorkspaceInfoList(@RequestParam("userId") String userId, @RequestParam("size") int size);
 }
