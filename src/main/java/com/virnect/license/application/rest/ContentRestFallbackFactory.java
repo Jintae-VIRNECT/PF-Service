@@ -14,6 +14,7 @@ public class ContentRestFallbackFactory implements FallbackFactory<ContentRestSe
 
     @Override
     public ContentRestService create(Throwable cause) {
+        log.info("[CONTENT_REST_SERVICE][FALL_BACK_FACTORY][ACTIVE]");
         log.error(cause.getMessage(), cause);
         return workspaceId -> {
             log.error("[CONTENT SERVER REST SERVICE FALLBACK ERROR][WORKSPACE_ID] -> [{}]", workspaceId);
