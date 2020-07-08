@@ -1,5 +1,6 @@
-package com.virnect.license.application;
+package com.virnect.license.application.rest;
 
+import com.virnect.license.application.rest.WorkspaceRestService;
 import com.virnect.license.dto.rest.WorkspaceInfoListResponse;
 import com.virnect.license.global.common.ApiResponse;
 import feign.hystrix.FallbackFactory;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
  * @author jeonghyeon.chang (johnmark)
  * @project PF-User
  * @email practice1356@gmail.com
- * @description
+ * @description workspace rest service fallback factory class
  * @since 2020.04.29
  */
 @Slf4j

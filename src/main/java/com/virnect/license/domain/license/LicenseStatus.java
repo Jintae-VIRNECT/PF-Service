@@ -1,4 +1,4 @@
-package com.virnect.license.domain;
+package com.virnect.license.domain.license;
 
 /**
  * @author jeonghyeon.chang (johnmark)

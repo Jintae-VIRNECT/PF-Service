@@ -2,6 +2,7 @@ package com.virnect.license.api.billing;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.virnect.license.exception.BillingServiceException;
 import com.virnect.license.exception.LicenseServiceException;
 import com.virnect.license.global.common.AES256Utils;
 import com.virnect.license.global.error.ErrorCode;
@@ -41,7 +42,7 @@ public class BillingControllerAdvice implements ResponseBodyAdvice<Object> {
             return encodingRequestResponse;
         } catch (JsonProcessingException e) {
             log.error("[BILLING_CONTROLLER_RESPONSE_ADVICE] - {}", e.getMessage());
-            throw new LicenseServiceException(ErrorCode.ERR_UNEXPECTED_SERVER_ERROR);
+            throw new BillingServiceException(ErrorCode.ERR_UNEXPECTED_SERVER_ERROR);
         }
     }
 }

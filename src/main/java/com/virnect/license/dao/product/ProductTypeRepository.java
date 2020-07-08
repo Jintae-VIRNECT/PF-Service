@@ -1,6 +1,6 @@
-package com.virnect.license.dao;
+package com.virnect.license.dao.product;
 
-import com.virnect.license.domain.ProductType;
+import com.virnect.license.domain.product.ProductType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

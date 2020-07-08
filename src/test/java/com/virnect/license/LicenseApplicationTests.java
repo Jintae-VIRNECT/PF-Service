@@ -1,12 +1,12 @@
 package com.virnect.license;
 
 import com.virnect.license.dao.coupon.CouponRepository;
-import com.virnect.license.dao.LicenseTypeRepository;
+import com.virnect.license.dao.license.LicenseTypeRepository;
 import com.virnect.license.dao.product.ProductRepository;
-import com.virnect.license.dao.ProductTypeRepository;
-import com.virnect.license.domain.Coupon;
-import com.virnect.license.domain.Product;
-import com.virnect.license.domain.ProductType;
+import com.virnect.license.dao.product.ProductTypeRepository;
+import com.virnect.license.domain.coupon.Coupon;
+import com.virnect.license.domain.product.Product;
+import com.virnect.license.domain.product.ProductType;
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

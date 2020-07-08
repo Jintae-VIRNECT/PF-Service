@@ -1,6 +1,6 @@
 package com.virnect.license.dto.response;
 
-import com.virnect.license.domain.CouponStatus;
+import com.virnect.license.domain.coupon.CouponStatus;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;

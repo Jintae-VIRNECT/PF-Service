@@ -1,5 +1,9 @@
-package com.virnect.license.domain;
+package com.virnect.license.domain.coupon;
 
+import com.virnect.license.domain.BaseTimeEntity;
+import com.virnect.license.domain.licenseplan.LicensePlan;
+import com.virnect.license.domain.product.LicenseProduct;
+import com.virnect.license.domain.Status;
 import lombok.*;
 import org.hibernate.envers.Audited;
 

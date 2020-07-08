@@ -1,6 +1,6 @@
 package com.virnect.license.dao.coupon;
 
-import com.virnect.license.domain.Coupon;
+import com.virnect.license.domain.coupon.Coupon;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;

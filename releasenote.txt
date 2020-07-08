@@ -2,7 +2,6 @@
 RELEASE
 
 New Features
-- 빌링 시스템 연동 API 암호화 복호화 알고리즘 수정
 - 빌링 시스템 연동 API 예외처리 수정
 
 Bug Fixes

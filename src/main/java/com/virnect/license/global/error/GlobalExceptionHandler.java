@@ -1,6 +1,6 @@
 package com.virnect.license.global.error;
 
-import com.virnect.license.api.LicenseController;
+import com.virnect.license.api.license.LicenseController;
 import com.virnect.license.exception.LicenseAllocateDeniedException;
 import com.virnect.license.exception.LicenseServiceException;
 import lombok.extern.slf4j.Slf4j;

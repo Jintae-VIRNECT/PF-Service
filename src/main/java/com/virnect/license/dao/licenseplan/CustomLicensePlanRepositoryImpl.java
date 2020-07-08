@@ -1,6 +1,12 @@
 package com.virnect.license.dao.licenseplan;
 
-import com.virnect.license.domain.*;
+import com.virnect.license.domain.license.QLicense;
+import com.virnect.license.domain.license.QLicenseType;
+import com.virnect.license.domain.licenseplan.LicensePlan;
+import com.virnect.license.domain.licenseplan.PlanStatus;
+import com.virnect.license.domain.licenseplan.QLicensePlan;
+import com.virnect.license.domain.product.QLicenseProduct;
+import com.virnect.license.domain.product.QProduct;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
 import java.util.List;

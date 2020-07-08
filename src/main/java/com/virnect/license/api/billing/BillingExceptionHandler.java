@@ -2,6 +2,7 @@ package com.virnect.license.api.billing;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.virnect.license.exception.BillingServiceException;
 import com.virnect.license.exception.LicenseAllocateDeniedException;
 import com.virnect.license.exception.LicenseServiceException;
 import com.virnect.license.global.common.AES256Utils;
@@ -29,10 +30,10 @@ public class BillingExceptionHandler {
     private final String SECRET_KEY = "$37$15$TceNRIvGL$37$15$TceNRIvGL";
     private final ObjectMapper objectMapper;
 
-    @ExceptionHandler(LicenseServiceException.class)
+    @ExceptionHandler(BillingServiceException.class)
     public ResponseEntity<EncodingRequestResponse> licenseServiceException(LicenseServiceException e) throws JsonProcessingException {
         log.error("[LICENSE_SERVICE - EXCEPTION] - MESSAGE: [{}] , DATA: [{}]", e.getMessage(), e.getError());
-        String responseJson = objectMapper.writeValueAsString(new ErrorResponseMessage(e.getError()));
+        String responseJson = convertErrorResponseMessageToJsonString(e.getError());
         log.info("[BILLING][ERROR_RESPONSE][JSON][NOT_ENCRYPTED] - {}", responseJson);
         String encryptedResponse = AES256Utils.encrypt(SECRET_KEY, responseJson);
         EncodingRequestResponse encodingRequestResponse = new EncodingRequestResponse();
@@ -46,7 +47,7 @@ public class BillingExceptionHandler {
         ErrorResponseMessage errorResponseMessage = new ErrorResponseMessage(e.getError());
         errorResponseMessage.getData().put("userId", e.getUserId());
         errorResponseMessage.getData().put("isAssignable", e.isAssignable());
-        String responseJson = objectMapper.writeValueAsString(new ErrorResponseMessage(e.getError()));
+        String responseJson = convertErrorResponseMessageToJsonString(e.getError());
         log.info("[BILLING][ERROR_RESPONSE][JSON][NOT_ENCRYPTED] - {}", responseJson);
         String encryptedResponse = AES256Utils.encrypt(SECRET_KEY, responseJson);
         EncodingRequestResponse encodingRequestResponse = new EncodingRequestResponse();
@@ -55,8 +56,18 @@ public class BillingExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponseMessage> generalExceptionHandler(Exception e) {
-        log.error(e.getMessage());
-        return ResponseEntity.ok(new ErrorResponseMessage(ErrorCode.ERR_UNEXPECTED_SERVER_ERROR));
+    public ResponseEntity<EncodingRequestResponse> generalExceptionHandler(Exception e) throws JsonProcessingException {
+        log.error("[LICENSE_SERVICE - EXCEPTION] - MESSAGE: [{}] , DATA: [{}]", e.getMessage(), ErrorCode.ERR_UNEXPECTED_SERVER_ERROR);
+        String responseJson = convertErrorResponseMessageToJsonString(ErrorCode.ERR_UNEXPECTED_SERVER_ERROR);
+        log.info("[BILLING][ERROR_RESPONSE][JSON][NOT_ENCRYPTED] - {}", responseJson);
+        String encryptedResponse = AES256Utils.encrypt(SECRET_KEY, responseJson);
+        EncodingRequestResponse encodingRequestResponse = new EncodingRequestResponse();
+        encodingRequestResponse.setData(encryptedResponse);
+        return ResponseEntity.ok(encodingRequestResponse);
     }
+
+    private String convertErrorResponseMessageToJsonString(ErrorCode error) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(new ErrorResponseMessage(error));
+    }
+
 }

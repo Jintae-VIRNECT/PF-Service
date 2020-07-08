@@ -1,7 +1,7 @@
 package com.virnect.license.global.middleware;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.virnect.license.exception.LicenseServiceException;
+import com.virnect.license.exception.BillingServiceException;
 import com.virnect.license.global.common.AES256Utils;
 import com.virnect.license.global.error.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ public class HttpServletRequestBodyDecodingWrapper extends HttpServletRequestWra
             rawData = IOUtils.toByteArray(inputStream);
         } catch (IOException e) {
             log.error("[BILLING] - REQUEST INPUT STREAM READ FAIL.");
-            throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
+            throw new BillingServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -47,7 +47,7 @@ public class HttpServletRequestBodyDecodingWrapper extends HttpServletRequestWra
         } catch (Exception e) {
             log.error("[BILLING] - REQUEST CONVERT OBJECT FAIL.");
             log.error(e.getMessage());
-            throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
+            throw new BillingServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
     }
 

@@ -1,5 +1,8 @@
-package com.virnect.license.domain;
+package com.virnect.license.domain.licenseplan;
 
+import com.virnect.license.domain.BaseTimeEntity;
+import com.virnect.license.domain.coupon.Coupon;
+import com.virnect.license.domain.product.LicenseProduct;
 import lombok.*;
 import org.hibernate.envers.Audited;
 import org.springframework.data.annotation.LastModifiedBy;

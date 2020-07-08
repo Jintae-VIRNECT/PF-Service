@@ -1,6 +1,6 @@
 package com.virnect.license.dao.licenseplan;
 
-import com.virnect.license.domain.LicensePlan;
+import com.virnect.license.domain.licenseplan.LicensePlan;
 
 import java.util.List;
 

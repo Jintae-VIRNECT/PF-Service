@@ -1,4 +1,4 @@
-package com.virnect.license.domain;
+package com.virnect.license.domain.coupon;
 
 /**
  * @author jeonghyeon.chang (johnmark)
@@ -7,8 +7,8 @@ package com.virnect.license.domain;
  * @description
  * @since 2020.04.09
  */
-public enum ProductName {
-    REMOTE,
-    MAKE,
-//    VIEW
+public enum CouponStatus {
+    USE,
+    UNUSE,
+    EXPIRED,
 }

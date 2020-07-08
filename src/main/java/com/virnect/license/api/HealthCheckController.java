@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  * @author jeonghyeon.chang (johnmark)
  * @project PF-License
  * @email practice1356@gmail.com
- * @description
+ * @description application health check request controller
  * @since 2020.05.14
  */
 @RestController

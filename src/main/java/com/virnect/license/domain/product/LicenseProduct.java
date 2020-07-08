@@ -1,10 +1,14 @@
-package com.virnect.license.domain;
+package com.virnect.license.domain.product;
 
+import com.virnect.license.domain.BaseTimeEntity;
+import com.virnect.license.domain.license.License;
+import com.virnect.license.domain.licenseplan.LicensePlan;
+import com.virnect.license.domain.license.LicenseType;
+import com.virnect.license.domain.coupon.Coupon;
 import lombok.*;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
-import java.util.List;
 import java.util.Set;
 
 /**

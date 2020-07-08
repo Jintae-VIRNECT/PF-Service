@@ -1,6 +1,6 @@
 package com.virnect.license.dto.request;
 
-import com.virnect.license.domain.ProductDisplayStatus;
+import com.virnect.license.domain.product.ProductDisplayStatus;
 import com.virnect.license.validator.ValueOfEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

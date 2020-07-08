@@ -1,6 +1,7 @@
 package com.virnect.license.dto.response;
 
-import com.virnect.license.domain.PlanStatus;
+import com.virnect.license.domain.licenseplan.PlanStatus;
+import com.virnect.license.dto.rest.ContentResourceUsageInfoResponse;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -32,12 +33,18 @@ public class WorkspaceLicensePlanInfoResponse {
     private Long maxDownloadHit = 0L;
     @ApiModelProperty(value = "워크스페이스 최대 통화 시간(Hour)", position = 5, example = "100")
     private Long maxCallTime = 0L;
-    @ApiModelProperty(value = "라이선스 플랜 시작일자", position = 6, example = "2020-05-15T13:00:00")
+    @ApiModelProperty(value = "워크스페이스 현재 다운로드 횟수 정보", position = 6)
+    private Long currentUsageDownloadHit = 0L;
+    @ApiModelProperty(value = "워크스페이스 현재 다운로드 횟수 정보", position = 7)
+    private Long currentUsageStorage = 0L;
+    @ApiModelProperty(value = "워크스페이스 현재 다운로드 횟수 정보", position = 8)
+    private Long currentUsageCallTime = 0L;
+    @ApiModelProperty(value = "라이선스 플랜 시작일자", position = 9, example = "2020-05-15T13:00:00")
     private LocalDateTime startDate = LocalDateTime.now();
-    @ApiModelProperty(value = "라이선스 플랜 종료일자", position = 7, example = "2020-05-15T13:00:00")
+    @ApiModelProperty(value = "라이선스 플랜 종료일자", position = 10, example = "2020-05-15T13:00:00")
     private LocalDateTime endDate = LocalDateTime.now();
-    @ApiModelProperty(value = "라이선스 플랜 상태", position = 8, example = "ACTIVE")
+    @ApiModelProperty(value = "라이선스 플랜 상태", position = 11, example = "ACTIVE")
     private PlanStatus planStatus = PlanStatus.INACTIVE;
-    @ApiModelProperty(value = "플랜 제품별 정보 라이선스 정보", position = 9)
+    @ApiModelProperty(value = "플랜 제품별 정보 라이선스 정보", position = 12)
     private List<LicenseProductInfoResponse> licenseProductInfoList;
 }

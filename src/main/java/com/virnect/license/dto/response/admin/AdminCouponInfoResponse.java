@@ -1,7 +1,7 @@
 package com.virnect.license.dto.response.admin;
 
-import com.virnect.license.domain.CouponPeriodType;
-import com.virnect.license.domain.CouponStatus;
+import com.virnect.license.domain.coupon.CouponPeriodType;
+import com.virnect.license.domain.coupon.CouponStatus;
 import com.virnect.license.domain.Status;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
