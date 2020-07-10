@@ -222,14 +222,14 @@ public class BillingService {
         ApiResponse<UserInfoRestResponse> userInfoApiResponse = this.userRestService.getUserInfoByUserPrimaryId(licenseDeallocateRequest.getUserId());
         if (userInfoApiResponse.getCode() != 200 || userInfoApiResponse.getData().getEmail() == null) {
             log.info("User service error response: [{}]", userInfoApiResponse.getMessage());
-            throw new BillingServiceException(ErrorCode.ERR_BILLING_LICENSE_SERVER_ERROR);
+            throw new BillingServiceException(ErrorCode.ERR_BILLING_LICENSE_DEALLOCATE_USER_NOT_FOUND);
         }
         // 1. 계정 정보 조회
         UserInfoRestResponse requestUserInfo = userInfoApiResponse.getData();
 
         // 2. 라이선스 플랜 정보 조회
         LicensePlan licensePlan = licensePlanRepository.findByUserIdAndPaymentId(requestUserInfo.getUuid(), licenseDeallocateRequest.getPaymentId())
-                .orElseThrow(() -> new BillingServiceException(ErrorCode.ERR_BILLING_LICENSE_SERVER_ERROR));
+                .orElseThrow(() -> new BillingServiceException(ErrorCode.ERR_BILLING_LICENSE_DEALLOCATE_PLAN_NOT_FOUND));
 
         // 3. 라이선스 플랜 정보 수정 기록 및 비활성화
         licensePlan.setModifiedUser(licenseDeallocateRequest.getOperatedBy());

@@ -15,7 +15,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 @Slf4j
-public class HttpServletRequestBodyDecodingWrapper extends HttpServletRequestWrapper {
+public class RequestBodyDecodingWrapper extends HttpServletRequestWrapper {
     private final String decodingBody;
 
     /**
@@ -24,7 +24,7 @@ public class HttpServletRequestBodyDecodingWrapper extends HttpServletRequestWra
      * @param request The request to wrap
      * @throws IllegalArgumentException if the request is null
      */
-    public HttpServletRequestBodyDecodingWrapper(HttpServletRequest request, final String decryptSecretKey) {
+    public RequestBodyDecodingWrapper(HttpServletRequest request, final String decryptSecretKey) {
         super(request);
         // Convert InputStream data to byte array and store it to this wrapper instance.
         byte[] rawData;
