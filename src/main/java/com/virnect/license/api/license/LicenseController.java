@@ -1,17 +1,15 @@
 package com.virnect.license.api.license;
 
 import com.virnect.license.application.LicenseService;
-import com.virnect.license.dto.request.*;
+import com.virnect.license.dto.request.CouponActiveRequest;
+import com.virnect.license.dto.request.CouponRegisterRequest;
+import com.virnect.license.dto.request.EventCouponRequest;
 import com.virnect.license.dto.response.*;
 import com.virnect.license.dto.response.admin.AdminCouponInfoListResponse;
-import com.virnect.license.dto.response.biling.ProductInfoListResponse;
-import com.virnect.license.dto.response.biling.ProductInfoResponse;
-import com.virnect.license.dto.response.biling.ProductTypeInfoListResponse;
 import com.virnect.license.exception.LicenseServiceException;
 import com.virnect.license.global.common.ApiResponse;
 import com.virnect.license.global.common.PageRequest;
 import com.virnect.license.global.error.ErrorCode;
-import com.virnect.license.global.middleware.EncodingRequestResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -162,107 +160,22 @@ public class LicenseController {
         ApiResponse<Boolean> responseMessage = this.licenseService.grantWorkspaceLicenseToUser(workspaceId, userId, productName, false);
         return ResponseEntity.ok(responseMessage);
     }
-//
-//    @ApiOperation(value = "신규 상품 등록", tags = "BillingSystem")
-//    @PostMapping("/products")
-//    public ResponseEntity<ApiResponse<ProductInfoListResponse>> createNewProductRequest(@RequestBody CreateNewProductRequest createNewProductRequest, BindingResult result) {
-//        if (result.hasErrors()) {
-//            result.getAllErrors().forEach(System.out::println);
-//            throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
-//        }
-//        ApiResponse<ProductInfoListResponse> responseMessage = this.licenseService.createNewProductHandler(createNewProductRequest);
-//        return ResponseEntity.ok(responseMessage);
-//    }
-//
-//    @ApiOperation(value = "상품 정보 조회", tags = "BillingSystem")
-//    @GetMapping("/products")
-//    public ResponseEntity<ApiResponse<ProductInfoListResponse>> getAllProductInfoRequest() {
-//        ApiResponse<ProductInfoListResponse> responseMessage = this.licenseService.getAllProductInfo();
-//        return ResponseEntity.ok(responseMessage);
-//    }
-//
-//    @ApiOperation(value = "상품 정보 수정", tags = "BillingSystem")
-//    @PutMapping("/products")
-//    public ResponseEntity<ApiResponse<ProductInfoResponse>> changeProductInfoRequest(@RequestBody @Valid ProductInfoUpdateRequest productInfoUpdateRequest, BindingResult result) {
-//        if (result.hasErrors()) {
-//            result.getAllErrors().forEach(System.out::println);
-//            throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
-//        }
-//        ApiResponse<ProductInfoResponse> responseMessage = this.licenseService.updateProductInfo(productInfoUpdateRequest);
-//        return ResponseEntity.ok(responseMessage);
-//    }
-//
-//    @ApiOperation(value = "상품 삭제", notes = "상품 데이터는 실제로 삭제되진 않으며, 목록에서 표출만 되지않는다", tags = "BillingSystem")
-//    @DeleteMapping("/product/{productId}")
-//    public ResponseEntity<ApiResponse<ProductInfoListResponse>> deleteProductRequest(@PathVariable("productId") long productId) {
-//        if (productId <= 0) {
-//            throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
-//        }
-//        ApiResponse<ProductInfoListResponse> responseMessage = this.licenseService.deleteProduct(productId);
-//        return ResponseEntity.ok(responseMessage);
-//    }
-//
-//    @ApiOperation(value = "상품 타입 등록", tags = "BillingSystem")
-//    @PostMapping("/products/types")
-//    public ResponseEntity<ApiResponse<ProductTypeInfoListResponse>> createNewProductTypeInfo(@RequestBody @Valid CreateNewProductTypeRequest createNewProductTypeRequest, BindingResult result) {
-//        if (result.hasErrors()) {
-//            result.getAllErrors().forEach(System.out::println);
-//            throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
-//        }
-//        ApiResponse<ProductTypeInfoListResponse> responseMessage = this.licenseService.createNewProductTypeHandler(createNewProductTypeRequest);
-//        return ResponseEntity.ok(responseMessage);
-//    }
-//
-//    @ApiOperation(value = "상품 타입 정보 조회", tags = "BillingSystem")
-//    @GetMapping("/products/types")
-//    public ResponseEntity<ApiResponse<ProductTypeInfoListResponse>> getAllProductTypeInRequest() {
-//        ApiResponse<ProductTypeInfoListResponse> responseMessage = this.licenseService.getAllProductTypeInfo();
-//        return ResponseEntity.ok(responseMessage);
-//    }
-//
-//    @ApiOperation(value = "상품 타입 정보 수정", tags = "BillingSystem")
-//    @PutMapping("/products/types")
-//    public ResponseEntity<ApiResponse<ProductTypeInfoListResponse>> updateProductTypeInfoRequest(@RequestBody @Valid ProductTypeUpdateRequest productTypeUpdateRequest, BindingResult result) {
-//        if (result.hasErrors()) {
-//            result.getAllErrors().forEach(System.out::println);
-//            throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
-//        }
-//        ApiResponse<ProductTypeInfoListResponse> responseMessage = this.licenseService.updateProductTypeInfo(productTypeUpdateRequest);
-//        return ResponseEntity.ok(responseMessage);
-//    }
-//
-//    @ApiOperation(value = "상품 지급", tags = "BillingSystem")
-//    @PostMapping("/allocate")
-//    public ResponseEntity<EncodingRequestResponse> licenseProductAllocateToUser(@RequestBody @Valid LicenseProductAllocateRequest licensePRoductAllocateRequest, BindingResult result) {
-//        if (result.hasErrors()) {
-//            result.getAllErrors().forEach(message -> log.error(PARAMETER_LOG_MESSAGE, message));
-//            throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
-//        }
-//        EncodingRequestResponse responseMessage = this.licenseService.licenseAllocateRequest(licensePRoductAllocateRequest);
-//        return ResponseEntity.ok(responseMessage);
-//    }
-//
-//    @ApiOperation(value = "상품 지급 취소", tags = "BillingSystem")
-//    @PostMapping("/deallocate")
-//    public ResponseEntity<EncodingRequestResponse> licenseProductDeallocateToUser(@RequestBody @Valid LicenseProductDeallocateRequest licenseDeallocateRequest, BindingResult result) {
-//        if (result.hasErrors()) {
-//            result.getAllErrors().forEach(System.out::println);
-//            throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
-//        }
-//        EncodingRequestResponse responseMessage = this.licenseService.licenseDeallocateRequest(licenseDeallocateRequest);
-//        return ResponseEntity.ok(responseMessage);
-//    }
-//
-//    @ApiOperation(value = "상품 지급 가능 여부 조회", tags = "BillingSystem")
-//    @PostMapping("/allocate/check")
-//    public ResponseEntity<EncodingRequestResponse> licenseAllocateCheckRequest(@RequestBody @Valid LicenseAllocateCheckRequest allocateCheckRequest, BindingResult result) {
-//        if (result.hasErrors()) {
-//            result.getAllErrors().forEach(System.out::println);
-//            throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
-//        }
-//        EncodingRequestResponse responseMessage = this.licenseService.licenseAllocateCheckRequest(allocateCheckRequest);
-//        return ResponseEntity.ok(responseMessage);
-//    }
 
+
+    @ApiOperation(value = "사용중인 플랜 목록 조회")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "userId", value = "사용자 식별자", paramType = "path", defaultValue = "498b1839dc29ed7bb2ee90ad6985c608"),
+            @ApiImplicitParam(name = "size", value = "페이징 사이즈", dataType = "number", paramType = "query", defaultValue = "20"),
+            @ApiImplicitParam(name = "page", value = "size 대로 나눠진 페이지를 조회할 번호(1부터 시작)", paramType = "query", defaultValue = "1"),
+            @ApiImplicitParam(name = "sort", value = "정렬 옵션 데이터", paramType = "query", defaultValue = "renewalDate,desc")
+    })
+    @GetMapping("/plan/{userId}")
+    public ResponseEntity<ApiResponse<MyLicensePlanInfoListResponse>> getMyLicensePlanInfoList(@PathVariable("userId") String userId, @ApiIgnore PageRequest pageRequest) {
+        if (StringUtils.isEmpty(userId)) {
+            throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
+        }
+        ApiResponse<MyLicensePlanInfoListResponse> responseMessage = licenseService.getMyLicensePlanInfoList(userId, pageRequest.of());
+        return ResponseEntity.ok(responseMessage);
+    }
 }
 

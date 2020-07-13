@@ -15,7 +15,7 @@ import java.util.List;
  * @description
  * @since 2020.04.16
  */
-public interface LicenseRepository extends JpaRepository<License, Long> {
+public interface LicenseRepository extends JpaRepository<License, Long>, CustomLicenseRepository {
     List<License> findAllByLicenseProduct_LicensePlan_WorkspaceIdAndLicenseProduct_LicensePlan_PlanStatusAndLicenseProduct_ProductAndStatus(String workspaceId, PlanStatus planStatus, Product product, LicenseStatus status);
     License findByUserIdAndLicenseProduct_LicensePlan_WorkspaceIdAndLicenseProduct_ProductAndStatus(String userId, String workspaceId, Product product, LicenseStatus status);
 }

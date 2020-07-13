@@ -1,6 +1,7 @@
 package com.virnect.license.application;
 
 import com.virnect.license.application.rest.UserRestService;
+import com.virnect.license.application.rest.WorkspaceRestService;
 import com.virnect.license.dao.coupon.CouponRepository;
 import com.virnect.license.dao.license.LicenseRepository;
 import com.virnect.license.dao.licenseplan.LicensePlanRepository;
@@ -16,14 +17,15 @@ import com.virnect.license.domain.licenseplan.PlanStatus;
 import com.virnect.license.domain.product.LicenseProduct;
 import com.virnect.license.domain.product.Product;
 import com.virnect.license.domain.product.ProductType;
+import com.virnect.license.dto.UserLicenseDetailsInfo;
 import com.virnect.license.dto.request.CouponActiveRequest;
 import com.virnect.license.dto.request.CouponRegisterRequest;
 import com.virnect.license.dto.request.EventCouponRequest;
 import com.virnect.license.dto.response.*;
 import com.virnect.license.dto.response.admin.AdminCouponInfoListResponse;
 import com.virnect.license.dto.response.admin.AdminCouponInfoResponse;
-import com.virnect.license.dto.rest.ContentResourceUsageInfoResponse;
 import com.virnect.license.dto.rest.UserInfoRestResponse;
+import com.virnect.license.dto.rest.WorkspaceInfoResponse;
 import com.virnect.license.exception.LicenseServiceException;
 import com.virnect.license.global.common.ApiResponse;
 import com.virnect.license.global.common.PageMetadataResponse;
@@ -62,7 +64,8 @@ public class LicenseService {
     private final LicenseRepository licenseRepository;
 
     private final UserRestService userRestService;
-//    private final ContentRestService contentRestService;
+    //    private final ContentRestService contentRestService;
+    private final WorkspaceRestService workspaceRestService;
     private final EmailService emailService;
     private final ModelMapper modelMapper;
 
@@ -489,5 +492,31 @@ public class LicenseService {
 
             return new ApiResponse<>(true);
         }
+    }
+
+    public ApiResponse<MyLicensePlanInfoListResponse> getMyLicensePlanInfoList(String userId, Pageable pageable) {
+        Page<UserLicenseDetailsInfo> licenseDetailsInfoList = licenseRepository.findAllMyLicenseInfo(userId, pageable);
+        List<MyLicensePlanInfoResponse> myLicensePlanInfoList = new ArrayList<>();
+
+        for (UserLicenseDetailsInfo detailsInfo : licenseDetailsInfoList) {
+            ApiResponse<WorkspaceInfoResponse> workspaceInfoResponseMessage = workspaceRestService.getWorkspaceInfo(detailsInfo.getWorkspaceId());
+            WorkspaceInfoResponse workspaceInfoResponse = workspaceInfoResponseMessage.getData();
+            MyLicensePlanInfoResponse licensePlanInfoResponse = new MyLicensePlanInfoResponse();
+            licensePlanInfoResponse.setWorkspaceId(workspaceInfoResponse.getUuid());
+            licensePlanInfoResponse.setWorkspaceName(workspaceInfoResponse.getName());
+            licensePlanInfoResponse.setPlanProduct(detailsInfo.getProductName());
+            licensePlanInfoResponse.setRenewalDate(detailsInfo.getEndDate());
+            licensePlanInfoResponse.setWorkspaceProfile(workspaceInfoResponse.getProfile());
+            myLicensePlanInfoList.add(licensePlanInfoResponse);
+        }
+
+        PageMetadataResponse pageMetadataResponse = PageMetadataResponse.builder()
+                .currentPage(pageable.getPageNumber())
+                .currentSize(pageable.getPageSize())
+                .totalPage(licenseDetailsInfoList.getTotalPages())
+                .totalElements(licenseDetailsInfoList.getTotalElements())
+                .build();
+
+        return new ApiResponse<>(new MyLicensePlanInfoListResponse(myLicensePlanInfoList, pageMetadataResponse));
     }
 }

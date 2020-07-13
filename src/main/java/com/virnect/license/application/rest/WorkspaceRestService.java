@@ -1,9 +1,11 @@
 package com.virnect.license.application.rest;
 
 import com.virnect.license.dto.rest.WorkspaceInfoListResponse;
+import com.virnect.license.dto.rest.WorkspaceInfoResponse;
 import com.virnect.license.global.common.ApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
@@ -24,4 +26,12 @@ public interface WorkspaceRestService {
      */
     @GetMapping("/workspaces")
     ApiResponse<WorkspaceInfoListResponse> getMyWorkspaceInfoList(@RequestParam("userId") String userId, @RequestParam("size") int size);
+
+    /**
+     * 워크스페이스 정보 조회 API
+     * @param workspaceId - 워크스페이스 식별자
+     * @return - 워크스페이스 정보
+     */
+    @GetMapping("/workspaces/{workspaceId}/info")
+    ApiResponse<WorkspaceInfoResponse> getWorkspaceInfo(@PathVariable("workspaceId") String workspaceId);
 }
