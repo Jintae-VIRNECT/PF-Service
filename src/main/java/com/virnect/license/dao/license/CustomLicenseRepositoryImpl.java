@@ -8,13 +8,16 @@ import com.virnect.license.domain.licenseplan.QLicensePlan;
 import com.virnect.license.domain.product.QLicenseProduct;
 import com.virnect.license.domain.product.QProduct;
 import com.virnect.license.dto.UserLicenseDetailsInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;    
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
+import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 public class CustomLicenseRepositoryImpl extends QuerydslRepositorySupport implements CustomLicenseRepository {
     public CustomLicenseRepositoryImpl() {
         super(License.class);
@@ -36,10 +39,11 @@ public class CustomLicenseRepositoryImpl extends QuerydslRepositorySupport imple
                 .join(qLicenseProduct).on(qLicense.licenseProduct.eq(qLicenseProduct)).fetchJoin()
                 .join(qProduct).on(qLicenseProduct.product.eq(qProduct)).fetchJoin()
                 .join(qLicensePlan).on(qLicenseProduct.licensePlan.eq(qLicensePlan)).fetchJoin()
-                .where(qLicense.userId.eq(userId));
+                .where(qLicense.userId.eq(userId).and(qProduct.name.in(Arrays.asList("MAKE", "VIEW", "REMOTE"))));
 
-        List<UserLicenseDetailsInfo> userLicenseDetailsInfoList = getQuerydsl().applyPagination(pageable, query).fetch();
-
+        query.offset(pageable.getOffset());
+        query.limit(pageable.getPageSize());
+        List<UserLicenseDetailsInfo> userLicenseDetailsInfoList = query.fetch();
         return new PageImpl<>(userLicenseDetailsInfoList, pageable, query.fetchCount());
     }
 }

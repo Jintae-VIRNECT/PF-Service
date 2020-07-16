@@ -1,4 +1,4 @@
-package com.virnect.license.application.rest;
+package com.virnect.license.application.rest.user;
 
 import com.virnect.license.dto.rest.UserInfoRestResponse;
 import com.virnect.license.global.common.ApiResponse;

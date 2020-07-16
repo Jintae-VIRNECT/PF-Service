@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
  */
 @RestController
 @RequestMapping("/")
+@ApiIgnore
 public class HealthCheckController {
     @GetMapping("/healthcheck")
     public ResponseEntity<String> healthCheck() {

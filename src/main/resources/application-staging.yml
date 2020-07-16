@@ -25,6 +25,8 @@ spring:
     loadbalancer:
       ribbon:
         enabled: false
+  zipkin:
+    base-url: http://stgzipkin.virnect.com
 
 eureka:
   instance:
@@ -36,3 +38,7 @@ eureka:
 server:
   port: 8632
 
+# feign configuration
+feign:
+  hystrix:
+    enabled: true

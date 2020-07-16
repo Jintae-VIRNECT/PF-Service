@@ -1,7 +1,7 @@
 package com.virnect.license.global.config;
 
+import feign.FeignException;
 import feign.Logger;
-import feign.RetryableException;
 import feign.Retryer;
 import feign.codec.ErrorDecoder;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -9,7 +9,6 @@ import org.springframework.cloud.openfeign.FeignFormatterRegistrar;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
-import org.springframework.http.HttpStatus;
 
 import static java.lang.String.format;
 

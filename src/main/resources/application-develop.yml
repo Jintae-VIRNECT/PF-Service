@@ -25,6 +25,8 @@ spring:
     loadbalancer:
       ribbon:
         enabled: false
+  zipkin:
+    base-url: http://192.168.6.3:9411
 
 eureka:
   instance:
@@ -39,3 +41,8 @@ server:
 # User Server Configuration
 user:
   serverUrl: "http://192.168.6.3:8081/users"
+
+# feign configuration
+feign:
+  hystrix:
+    enabled: true

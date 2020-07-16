@@ -24,7 +24,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer, WebMvcRegistration
     }
 
     @Bean
-    public FilterRegistrationBean<BillingResponseBodyEncryptFilter> encodingFilter(){
+    public FilterRegistrationBean<BillingResponseBodyEncryptFilter> encodingFilter() {
         FilterRegistrationBean<BillingResponseBodyEncryptFilter> responseEncodingFilterBean = new FilterRegistrationBean<>();
         responseEncodingFilterBean.setFilter(new BillingResponseBodyEncryptFilter());
         responseEncodingFilterBean.setUrlPatterns(BILLING_API_URLS);

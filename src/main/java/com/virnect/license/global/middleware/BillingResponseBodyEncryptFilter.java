@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 
 @Slf4j
 public class BillingResponseBodyEncryptFilter implements Filter {
-    private final String SECRET_KEY = "$37$15$TceNRIvGL$37$15$TceNRIvGL";
+        private final String SECRET_KEY = "$37$15$TceNRIvGL$37$15$TceNRIvGL";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override

@@ -1,10 +1,10 @@
-package com.virnect.license.api.billing;
+package com.virnect.license.api;
 
-import com.virnect.license.application.billing.BillingService;
-import com.virnect.license.dto.request.*;
-import com.virnect.license.dto.response.LicenseProductAllocateCheckResponse;
-import com.virnect.license.dto.response.LicenseProductAllocateResponse;
-import com.virnect.license.dto.response.LicenseProductDeallocateResponse;
+import com.virnect.license.application.ProductService;
+import com.virnect.license.dto.request.CreateNewProductRequest;
+import com.virnect.license.dto.request.CreateNewProductTypeRequest;
+import com.virnect.license.dto.request.billing.ProductInfoUpdateRequest;
+import com.virnect.license.dto.request.billing.ProductTypeUpdateRequest;
 import com.virnect.license.dto.response.biling.ProductInfoListResponse;
 import com.virnect.license.dto.response.biling.ProductInfoResponse;
 import com.virnect.license.dto.response.biling.ProductTypeInfoListResponse;
@@ -20,40 +20,39 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-
 @Api
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/licenses")
-public class BillingController {
-    private final BillingService billingService;
-    private static String PARAMETER_LOG_MESSAGE = "[PARAMETER ERROR]:: {}";
+public class ProductController {
+    private final ProductService productService;
+    private static String PARAMETER_LOG_MESSAGE = "[PRODUCT_CONTROLLER][PARAMETER ERROR]:: {}";
 
     @ApiOperation(value = "신규 상품 등록")
     @PostMapping("/products")
     public ApiResponse<ProductInfoListResponse> createNewProductRequest(@RequestBody CreateNewProductRequest createNewProductRequest, BindingResult result) {
         if (result.hasErrors()) {
-            result.getAllErrors().forEach(System.out::println);
+            result.getAllErrors().forEach(message -> log.error(PARAMETER_LOG_MESSAGE, message));
             throw new BillingServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        return this.billingService.createNewProductHandler(createNewProductRequest);
+        return productService.createNewProductHandler(createNewProductRequest);
     }
 
     @ApiOperation(value = "상품 정보 조회")
     @GetMapping("/products")
     public ApiResponse<ProductInfoListResponse> getAllProductInfoRequest() {
-        return this.billingService.getAllProductInfo();
+        return productService.getAllProductInfo();
     }
 
     @ApiOperation(value = "상품 정보 수정")
     @PutMapping("/products")
     public ApiResponse<ProductInfoResponse> changeProductInfoRequest(@RequestBody @Valid ProductInfoUpdateRequest productInfoUpdateRequest, BindingResult result) {
         if (result.hasErrors()) {
-            result.getAllErrors().forEach(System.out::println);
+            result.getAllErrors().forEach(message -> log.error(PARAMETER_LOG_MESSAGE, message));
             throw new BillingServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        return this.billingService.updateProductInfo(productInfoUpdateRequest);
+        return productService.updateProductInfo(productInfoUpdateRequest);
     }
 
     @ApiOperation(value = "상품 삭제", notes = "상품 데이터는 실제로 삭제되진 않으며, 목록에서 표출만 되지않는다")
@@ -62,62 +61,32 @@ public class BillingController {
         if (productId <= 0) {
             throw new BillingServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        return this.billingService.deleteProduct(productId);
+        return productService.deleteProduct(productId);
     }
 
     @ApiOperation(value = "상품 타입 등록")
     @PostMapping("/products/types")
     public ApiResponse<ProductTypeInfoListResponse> createNewProductTypeInfo(@RequestBody @Valid CreateNewProductTypeRequest createNewProductTypeRequest, BindingResult result) {
         if (result.hasErrors()) {
-            result.getAllErrors().forEach(System.out::println);
+            result.getAllErrors().forEach(message -> log.error(PARAMETER_LOG_MESSAGE, message));
             throw new BillingServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        return this.billingService.createNewProductTypeHandler(createNewProductTypeRequest);
+        return productService.createNewProductTypeHandler(createNewProductTypeRequest);
     }
 
     @ApiOperation(value = "상품 타입 정보 조회")
     @GetMapping("/products/types")
     public ApiResponse<ProductTypeInfoListResponse> getAllProductTypeInRequest() {
-        return this.billingService.getAllProductTypeInfo();
+        return productService.getAllProductTypeInfo();
     }
 
     @ApiOperation(value = "상품 타입 정보 수정")
     @PutMapping("/products/types")
     public ApiResponse<ProductTypeInfoListResponse> updateProductTypeInfoRequest(@RequestBody @Valid ProductTypeUpdateRequest productTypeUpdateRequest, BindingResult result) {
         if (result.hasErrors()) {
-            result.getAllErrors().forEach(System.out::println);
-            throw new BillingServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
-        }
-        return this.billingService.updateProductTypeInfo(productTypeUpdateRequest);
-    }
-
-    @ApiOperation(value = "상품 지급")
-    @PostMapping("/allocate")
-    public ApiResponse<LicenseProductAllocateResponse> licenseProductAllocateToUser(@RequestBody @Valid LicenseProductAllocateRequest licensePRoductAllocateRequest, BindingResult result) {
-        if (result.hasErrors()) {
             result.getAllErrors().forEach(message -> log.error(PARAMETER_LOG_MESSAGE, message));
             throw new BillingServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        return this.billingService.licenseAllocateRequest(licensePRoductAllocateRequest);
-    }
-
-    @ApiOperation(value = "상품 지급 취소")
-    @PostMapping("/deallocate")
-    public ApiResponse<LicenseProductDeallocateResponse> licenseProductDeallocateToUser(@RequestBody @Valid LicenseProductDeallocateRequest licenseDeallocateRequest, BindingResult result) {
-        if (result.hasErrors()) {
-            result.getAllErrors().forEach(System.out::println);
-            throw new BillingServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
-        }
-        return this.billingService.licenseDeallocateRequest(licenseDeallocateRequest);
-    }
-
-    @ApiOperation(value = "상품 지급 가능 여부 조회")
-    @PostMapping("/allocate/check")
-    public ApiResponse<LicenseProductAllocateCheckResponse> licenseAllocateCheckRequest(@RequestBody @Valid LicenseAllocateCheckRequest allocateCheckRequest, BindingResult result) {
-        if (result.hasErrors()) {
-            result.getAllErrors().forEach(System.out::println);
-            throw new BillingServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
-        }
-        return this.billingService.licenseAllocateCheckRequest(allocateCheckRequest);
+        return productService.updateProductTypeInfo(productTypeUpdateRequest);
     }
 }

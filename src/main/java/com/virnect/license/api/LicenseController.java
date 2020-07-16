@@ -1,4 +1,4 @@
-package com.virnect.license.api.license;
+package com.virnect.license.api;
 
 import com.virnect.license.application.LicenseService;
 import com.virnect.license.dto.request.CouponActiveRequest;
@@ -40,16 +40,16 @@ import javax.validation.constraints.NotBlank;
 @RequestMapping("/licenses")
 public class LicenseController {
     private final LicenseService licenseService;
-    private static String PARAMETER_LOG_MESSAGE = "[PARAMETER ERROR]:: {}";
+    private static String PARAMETER_LOG_MESSAGE = "[LICENSE_CONTROLLER][PARAMETER ERROR]:: {}";
 
     @ApiOperation(value = "이벤트 쿠폰 발급 요청")
     @PostMapping("/event/coupon")
     public ResponseEntity<ApiResponse<EventCouponResponse>> requestEventCouponRequestHandler(@RequestBody @Valid EventCouponRequest eventCouponRequest, BindingResult result) {
         if (result.hasErrors()) {
-            result.getAllErrors().forEach(System.out::println);
+            result.getAllErrors().forEach(message -> log.error(PARAMETER_LOG_MESSAGE, message));
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        ApiResponse<EventCouponResponse> responseMessage = this.licenseService.generateEventCoupon(eventCouponRequest);
+        ApiResponse<EventCouponResponse> responseMessage = licenseService.generateEventCoupon(eventCouponRequest);
         return ResponseEntity.ok(responseMessage);
     }
 
@@ -57,10 +57,10 @@ public class LicenseController {
     @PostMapping("/coupon/register")
     public ResponseEntity<ApiResponse<MyCouponInfoResponse>> couponRegisterRequestHandler(@RequestBody @Valid CouponRegisterRequest couponRegisterRequest, BindingResult result) {
         if (result.hasErrors()) {
-            result.getAllErrors().forEach(System.out::println);
+            result.getAllErrors().forEach(message -> log.error(PARAMETER_LOG_MESSAGE, message));
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        ApiResponse<MyCouponInfoResponse> responseMessage = this.licenseService.couponRegister(couponRegisterRequest);
+        ApiResponse<MyCouponInfoResponse> responseMessage = licenseService.couponRegister(couponRegisterRequest);
         return ResponseEntity.ok(responseMessage);
     }
 
@@ -74,10 +74,10 @@ public class LicenseController {
     @GetMapping("/coupon/{userId}")
     public ResponseEntity<ApiResponse<MyCouponInfoListResponse>> getMyCouponInfoListRequestHandler(@PathVariable("userId") String userId, @ApiIgnore PageRequest pageable) {
         if (StringUtils.isEmpty(userId)) {
-            log.info("[userId] is invalid");
+            log.error("[userId] is invalid");
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        ApiResponse<MyCouponInfoListResponse> responseMessage = this.licenseService.getMyCouponInfoList(userId, pageable.of());
+        ApiResponse<MyCouponInfoListResponse> responseMessage = licenseService.getMyCouponInfoList(userId, pageable.of());
         return ResponseEntity.ok(responseMessage);
     }
 
@@ -85,10 +85,10 @@ public class LicenseController {
     @PutMapping("/coupon/active")
     public ResponseEntity<ApiResponse<MyCouponInfoResponse>> couponActiveRequestHandler(@RequestBody @Valid CouponActiveRequest couponActiveRequest, BindingResult result) {
         if (result.hasErrors()) {
-            result.getAllErrors().forEach(System.out::println);
+            result.getAllErrors().forEach(message -> log.error(PARAMETER_LOG_MESSAGE, message));
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        ApiResponse<MyCouponInfoResponse> responseMessage = this.licenseService.couponActiveHandler(couponActiveRequest);
+        ApiResponse<MyCouponInfoResponse> responseMessage = licenseService.couponActiveHandler(couponActiveRequest);
         return ResponseEntity.ok(responseMessage);
     }
 
@@ -100,7 +100,7 @@ public class LicenseController {
     })
     @GetMapping("/coupons")
     public ResponseEntity<ApiResponse<AdminCouponInfoListResponse>> getAllCouponInfoRequestHandler(@ApiIgnore PageRequest pageRequest) {
-        ApiResponse<AdminCouponInfoListResponse> responseMessage = this.licenseService.getAllCouponInfo(pageRequest.of());
+        ApiResponse<AdminCouponInfoListResponse> responseMessage = licenseService.getAllCouponInfo(pageRequest.of());
         return ResponseEntity.ok(responseMessage);
     }
 
@@ -114,7 +114,7 @@ public class LicenseController {
         if (!StringUtils.hasText(workspaceId)) {
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        ApiResponse<WorkspaceLicensePlanInfoResponse> responseMessage = this.licenseService.getWorkspaceLicensePlanInfo(workspaceId);
+        ApiResponse<WorkspaceLicensePlanInfoResponse> responseMessage = licenseService.getWorkspaceLicensePlanInfo(workspaceId);
         return ResponseEntity.ok(responseMessage);
     }
 
@@ -125,7 +125,7 @@ public class LicenseController {
         if (!StringUtils.hasText(userId)) {
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        ApiResponse<MyLicenseInfoListResponse> responseMessage = this.licenseService.getMyLicenseInfoList(userId, workspaceId);
+        ApiResponse<MyLicenseInfoListResponse> responseMessage = licenseService.getMyLicenseInfoList(userId, workspaceId);
         return ResponseEntity.ok(responseMessage);
     }
 
@@ -141,7 +141,7 @@ public class LicenseController {
         if (!StringUtils.hasText(workspaceId) || !StringUtils.hasText(userId) || !StringUtils.hasText(productName)) {
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        ApiResponse<MyLicenseInfoResponse> responseMessage = this.licenseService.grantWorkspaceLicenseToUser(workspaceId, userId, productName, true);
+        ApiResponse<MyLicenseInfoResponse> responseMessage = licenseService.grantWorkspaceLicenseToUser(workspaceId, userId, productName, true);
         return ResponseEntity.ok(responseMessage);
     }
 
@@ -157,7 +157,7 @@ public class LicenseController {
         if (!StringUtils.hasText(workspaceId) || !StringUtils.hasText(userId) || !StringUtils.hasText(productName)) {
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        ApiResponse<Boolean> responseMessage = this.licenseService.grantWorkspaceLicenseToUser(workspaceId, userId, productName, false);
+        ApiResponse<Boolean> responseMessage = licenseService.grantWorkspaceLicenseToUser(workspaceId, userId, productName, false);
         return ResponseEntity.ok(responseMessage);
     }
 
@@ -174,7 +174,7 @@ public class LicenseController {
         if (StringUtils.isEmpty(userId)) {
             throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        ApiResponse<MyLicensePlanInfoListResponse> responseMessage = licenseService.getMyLicensePlanInfoList(userId, pageRequest.of());
+        ApiResponse<MyLicensePlanInfoListResponse> responseMessage = licenseService.getMyLicensePlanInfoList(userId, pageRequest);
         return ResponseEntity.ok(responseMessage);
     }
 }

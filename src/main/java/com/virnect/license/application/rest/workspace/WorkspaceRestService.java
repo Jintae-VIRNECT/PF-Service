@@ -1,4 +1,4 @@
-package com.virnect.license.application.rest;
+package com.virnect.license.application.rest.workspace;
 
 import com.virnect.license.dto.rest.WorkspaceInfoListResponse;
 import com.virnect.license.dto.rest.WorkspaceInfoResponse;

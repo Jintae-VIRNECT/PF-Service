@@ -22,6 +22,7 @@ public class LicenseAssignAuthInfo {
     private Long totalProductCallTime;
     private Long totalProductHit;
     private Long totalProductStorage;
+    private boolean regularRequest;
     @TimeToLive
     private Long expiredDate;
 
@@ -37,6 +38,7 @@ public class LicenseAssignAuthInfo {
                 ", totalProductCallTime=" + totalProductCallTime +
                 ", totalProductHit=" + totalProductHit +
                 ", totalProductStorage=" + totalProductStorage +
+                ", regularRequest=" + regularRequest +
                 ", expiredDate=" + expiredDate +
                 '}';
     }

@@ -1,4 +1,4 @@
-package com.virnect.license.application.rest;
+package com.virnect.license.application.rest.workspace;
 
 import com.virnect.license.dto.rest.WorkspaceInfoListResponse;
 import com.virnect.license.dto.rest.WorkspaceInfoResponse;
@@ -24,7 +24,8 @@ public class WorkspaceRestFallbackFactory implements FallbackFactory<WorkspaceRe
         return new WorkspaceRestService() {
             @Override
             public ApiResponse<WorkspaceInfoListResponse> getMyWorkspaceInfoList(String userId, int size) {
-                log.info("[USER WORKSPACE LIST API FALLBACK] => USER_ID: {}", userId);
+                log.error("[USER WORKSPACE LIST API FALLBACK] => USER_ID: {}", userId);
+                log.error(cause.getMessage(), cause);
                 WorkspaceInfoListResponse empty = new WorkspaceInfoListResponse();
                 empty.setWorkspaceList(new ArrayList<>());
                 return new ApiResponse<>(empty);
@@ -32,6 +33,8 @@ public class WorkspaceRestFallbackFactory implements FallbackFactory<WorkspaceRe
 
             @Override
             public ApiResponse<WorkspaceInfoResponse> getWorkspaceInfo(String workspaceId) {
+                log.error("[USER WORKSPACE LIST API FALLBACK] => WORKSPACE_ID: {}", workspaceId);
+                log.error(cause.getMessage(), cause);
                 return new ApiResponse<>(new WorkspaceInfoResponse());
             }
         };

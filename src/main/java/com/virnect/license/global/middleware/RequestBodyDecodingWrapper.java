@@ -46,7 +46,7 @@ public class RequestBodyDecodingWrapper extends HttpServletRequestWrapper {
             this.decodingBody = decode;
         } catch (Exception e) {
             log.error("[BILLING] - REQUEST CONVERT OBJECT FAIL.");
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
             throw new BillingServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
     }
