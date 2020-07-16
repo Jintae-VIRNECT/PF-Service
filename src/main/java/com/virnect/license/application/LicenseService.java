@@ -368,6 +368,7 @@ public class LicenseService {
                 licenseProductInfo.setUseLicenseAmount(licenseProductInfo.getUseLicenseAmount() + usedLicenseAmount.get());
                 licenseProductInfo.setUnUseLicenseAmount(licenseProductInfo.getUnUseLicenseAmount() + unUsedLicenseAmount.get());
                 licenseProductInfo.getLicenseInfoList().addAll(licenseInfoList);
+                licenseProductInfo.setQuantity(licenseProductInfo.getLicenseInfoList().size());
             } else {
                 LicenseProductInfoResponse licenseProductInfo = new LicenseProductInfoResponse();
                 AtomicInteger unUsedLicenseAmount = new AtomicInteger();
