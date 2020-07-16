@@ -356,36 +356,43 @@ public class LicenseService {
 
         LicensePlan licensePlanInfo = licensePlan.get();
         Set<LicenseProduct> licenseProductList = licensePlanInfo.getLicenseProductList();
-        List<LicenseProductInfoResponse> licenseProductInfoResponses = new ArrayList<>();
-
+        Map<Long, LicenseProductInfoResponse> licenseProductInfoMap = new HashMap<>();
 
         licenseProductList.forEach(licenseProduct -> {
-            LicenseProductInfoResponse licenseProductInfo = new LicenseProductInfoResponse();
             Product product = licenseProduct.getProduct();
-            AtomicInteger unUsedLicenseAmount = new AtomicInteger();
-            AtomicInteger usedLicenseAmount = new AtomicInteger();
+            if (licenseProductInfoMap.containsKey(product.getId())) {
+                LicenseProductInfoResponse licenseProductInfo = licenseProductInfoMap.get(product.getId());
+                AtomicInteger unUsedLicenseAmount = new AtomicInteger();
+                AtomicInteger usedLicenseAmount = new AtomicInteger();
+                List<LicenseInfoResponse> licenseInfoList = getLicenseInfoResponses(licenseProduct, unUsedLicenseAmount, usedLicenseAmount);
+                licenseProductInfo.setUseLicenseAmount(licenseProductInfo.getUseLicenseAmount() + usedLicenseAmount.get());
+                licenseProductInfo.setUnUseLicenseAmount(licenseProductInfo.getUnUseLicenseAmount() + unUsedLicenseAmount.get());
+                licenseProductInfo.getLicenseInfoList().addAll(licenseInfoList);
+            } else {
+                LicenseProductInfoResponse licenseProductInfo = new LicenseProductInfoResponse();
+                AtomicInteger unUsedLicenseAmount = new AtomicInteger();
+                AtomicInteger usedLicenseAmount = new AtomicInteger();
+                // Product Info
+                licenseProductInfo.setProductId(product.getId());
+                licenseProductInfo.setProductName(product.getName());
+                licenseProductInfo.setLicenseType(product.getProductType().getName());
 
-            // Product Info
-            licenseProductInfo.setProductId(product.getId());
-            licenseProductInfo.setProductName(product.getName());
-            licenseProductInfo.setLicenseType(product.getProductType().getName());
+                // Get License Information from license product
+                List<LicenseInfoResponse> licenseInfoList = getLicenseInfoResponses(licenseProduct, unUsedLicenseAmount, usedLicenseAmount);
 
-            // Get License Information from license product
-            List<LicenseInfoResponse> licenseInfoList = getLicenseInfoResponses(licenseProduct, unUsedLicenseAmount, usedLicenseAmount);
-
-            licenseProductInfo.setLicenseInfoList(licenseInfoList);
-            licenseProductInfo.setQuantity(licenseInfoList.size());
-            licenseProductInfo.setUnUseLicenseAmount(unUsedLicenseAmount.get());
-            licenseProductInfo.setUseLicenseAmount(usedLicenseAmount.get());
-
-            licenseProductInfoResponses.add(licenseProductInfo);
+                licenseProductInfo.setLicenseInfoList(licenseInfoList);
+                licenseProductInfo.setQuantity(licenseInfoList.size());
+                licenseProductInfo.setUnUseLicenseAmount(unUsedLicenseAmount.get());
+                licenseProductInfo.setUseLicenseAmount(usedLicenseAmount.get());
+                licenseProductInfoMap.put(product.getId(), licenseProductInfo);
+            }
         });
 
         ContentResourceUsageInfoResponse workspaceCurrentResourceUsageInfo = getContentResourceUsageInfoFromContentService(workspaceId);
         log.info("[WORKSPACE_USAGE_RESOURCE_REPORT] -> {}", workspaceCurrentResourceUsageInfo.toString());
         WorkspaceLicensePlanInfoResponse workspaceLicensePlanInfoResponse = modelMapper.map(licensePlan.get(), WorkspaceLicensePlanInfoResponse.class);
         workspaceLicensePlanInfoResponse.setMasterUserUUID(licensePlan.get().getUserId());
-        workspaceLicensePlanInfoResponse.setLicenseProductInfoList(licenseProductInfoResponses);
+        workspaceLicensePlanInfoResponse.setLicenseProductInfoList(new ArrayList<LicenseProductInfoResponse>(licenseProductInfoMap.values()));
         workspaceLicensePlanInfoResponse.setCurrentUsageDownloadHit(workspaceCurrentResourceUsageInfo.getTotalHit());
         workspaceLicensePlanInfoResponse.setCurrentUsageStorage(workspaceCurrentResourceUsageInfo.getStorageUsage());
         return new ApiResponse<>(workspaceLicensePlanInfoResponse);

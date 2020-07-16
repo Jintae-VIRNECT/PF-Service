@@ -12,6 +12,7 @@ Bug Fixes
 - Paging 요청 max size 계산 로직 수정 ( size > maxSize ? defaultSize : size => size > maxSize ? maxSize : size)
 - 라이선스, 상품, 빌링 시스템 서비스 분리 및 리팩토링 진행
 - 로그 레벨 정리 (info, error)
+- 워크스페이스 라이선스 플랜 정보 조회 시, 라이선스 정보 미 합계 이슈 수정
 
 Limitation
 - 없음
