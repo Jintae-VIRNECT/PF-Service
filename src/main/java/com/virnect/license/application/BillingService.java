@@ -56,7 +56,11 @@ public class BillingService {
     private static long MAX_CALL_TIME = 270; // 270 시간
     private static long MAX_STORAGE_AMOUNT = 90000; // 90 기가
     private static long MAX_DOWNLOAD_HITS = 1000000; // 10만 회
-    private static long LICENSE_ASSIGN_AUTH_CODE_TTL_MINUTE = 30;
+    private static int LICENSE_EXPIRED_HOUR = 23; // 오후 11시
+    private static int LICENSE_EXPIRED_MINUTE = 59; // 59분
+    private static int LICENSE_EXPIRED_SECONDS = 59; // 59초
+
+    private static long LICENSE_ASSIGN_AUTH_CODE_TTL_MINUTE = 30; // 30분간 지급 인증 코드 유효
 
     /**
      * 상품 지급 여부 검사
@@ -196,16 +200,28 @@ public class BillingService {
                 licensePlan.setMaxCallTime(licensePlan.getMaxCallTime() + calculateMaxCallTime);
                 licensePlan.setMaxDownloadHit(licensePlan.getMaxDownloadHit() + calculateMaxHit);
                 licensePlan.setMaxStorageSize(licensePlan.getMaxStorageSize() + calculateMaxStorage);
-                // 라이선스 만료 직전 추가 구매 시, N-1 days 23:59:59 일자에 만료
-                licensePlan.setEndDate(licensePlanExpireDate.minusDays(1).atTime(23, 59, 59));
+
+                // 라이선스 만료 전에 추가 구매 시, 추가 구매 일자 - 1일 기준으로 라이선스 만료 일자 변경
+                // 기존 만료일이 A월 B일 일때, C일에 구매한 경우 A+1월 C-1일에 만료, (C > B)
+                LocalDateTime additionalProductPurchaseDate = LocalDate.now()
+                        .plusMonths(1)
+                        .minusDays(1)
+                        .atTime(LICENSE_EXPIRED_HOUR, LICENSE_EXPIRED_MINUTE, LICENSE_EXPIRED_SECONDS);
+
+                licensePlan.setEndDate(additionalProductPurchaseDate);
                 licensePlan.setPaymentId(licenseAllocateRequest.getPaymentId());
                 licensePlan.setCountryCode(licenseAllocateRequest.getUserCountryCode());
                 licensePlanRepository.save(licensePlan);
             } else { // 정기 결제인 경우,
                 licensePlan.setPaymentId(licenseAllocateRequest.getPaymentId());
                 licensePlan.setCountryCode(licenseAllocateRequest.getUserCountryCode());
-                // N + 30일 23:59:59 일자에 만료
-                licensePlan.setEndDate(licensePlanExpireDate.plusDays(30).atTime(23, 59, 59));
+
+                // 다음달 결제일 자정에 만료
+                LocalDateTime nextLicenseExpiredDate = licensePlanExpireDate
+                        .plusMonths(1)
+                        .atTime(LICENSE_EXPIRED_HOUR, LICENSE_EXPIRED_MINUTE, LICENSE_EXPIRED_SECONDS);
+
+                licensePlan.setEndDate(nextLicenseExpiredDate);
                 licensePlanRepository.save(licensePlan);
             }
 
