@@ -29,7 +29,7 @@ eureka:
     prefer-ip-address: true
   client:
     service-url:
-      defaultZone: http://stgeureka.virnect.com/eureka
+      defaultZone: http://eureka.virnect.com/eureka
 
 server:
   port: 8632
