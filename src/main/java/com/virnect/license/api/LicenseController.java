@@ -92,7 +92,7 @@ public class LicenseController {
         return ResponseEntity.ok(responseMessage);
     }
 
-    @ApiOperation(value = "전체 쿠폰 정보 조회", tags = "ADMIN")
+    @ApiOperation(value = "전체 쿠폰 정보 조회", tags = "admin server only")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "size", value = "페이징 사이즈", dataType = "number", paramType = "query", defaultValue = "2"),
             @ApiImplicitParam(name = "page", value = "size 대로 나눠진 페이지를 조회할 번호(0부터 시작)", paramType = "query", defaultValue = "0"),

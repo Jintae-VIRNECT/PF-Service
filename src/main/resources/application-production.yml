@@ -22,6 +22,7 @@ spring:
         enabled: false
   zipkin:
     base-url: http://zipkin.virnect.com
+    discovery-client-enabled: false
 
 eureka:
   instance:
