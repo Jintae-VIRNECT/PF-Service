@@ -18,6 +18,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class ErrorResponseMessage {
     private int code;
+    private String service;
     private String message;
     private Map<String, Object> data;
 
@@ -25,5 +26,6 @@ public class ErrorResponseMessage {
         this.code = error.getCode();
         this.message = error.getMessage();
         data = new HashMap<>();
+        this.service = "license";
     }
 }

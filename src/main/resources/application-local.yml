@@ -2,17 +2,51 @@ spring:
   application:
     name: license-server
   datasource:
-    url: jdbc:mysql://localhost:3306/licenses?serverTimezone=UTC
-    username: root
-    password: 1234
+    url: jdbc:mysql://192.168.6.3:4336/licenses?serverTimezone=UTC
+    username: virnect-license
+    password: virnect1234
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 1000
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
-
+    open-in-view: false
+  redis:
+    host: 192.168.13.14
+  mail:
+    host: email-smtp.us-west-2.amazonaws.com
+    port: 587
+    username: AKIARQGLJD3UHE5MGO5U
+    password: BDPEKBJR3TV38/5vwlb8ndX2jcNgj5QQLN+JdgR1JmVa
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: false
 eureka:
   instance:
     prefer-ip-address: true
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://192.168.13.14:8761/eureka
+
+server:
+  port: 8332
+
+
+# User Server Configuration
+user:
+  serverUrl: "http://localhost:8081/users"
+
+logging:
+  level:
+    org.hibernate.type.descriptor.sql: trace
+
+
+# feign configuration
+feign:
+  hystrix:
+    enabled: true

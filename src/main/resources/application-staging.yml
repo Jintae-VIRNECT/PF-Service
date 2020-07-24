@@ -2,17 +2,44 @@ spring:
   application:
     name: license-server
   datasource:
-    url: jdbc:mysql://192.168.6.3:4336/smic?serverTimezone=UTC
-    username: virnect-smic
-    password: virnect1234!
+    url: jdbc:mysql://platform-qa-db.cxb5wiohfeko.ap-northeast-2.rds.amazonaws.com:8204/licenses
+    username: virnect-license
+    password: virnect1234
+    hikari:
+      minimum-idle: 2
+      max-lifetime: 30000
+      maximum-pool-size: 5
   jpa:
     hibernate:
       ddl-auto: validate
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    show-sql: true
+  redis:
+    host: virnect-qa-redis.b84gc2.0001.apn2.cache.amazonaws.com
+  mail:
+    host: email-smtp.us-west-2.amazonaws.com
+    port: 587
+    username: AKIARQGLJD3UHE5MGO5U
+    password: BDPEKBJR3TV38/5vwlb8ndX2jcNgj5QQLN+JdgR1JmVa
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: false
+  zipkin:
+    base-url: http://stgzipkin.virnect.com
+    discovery-client-enabled: false
 
 eureka:
   instance:
     prefer-ip-address: true
   client:
     service-url:
-      defaultZone: http://192.168.6.3:8761/eureka
+      defaultZone: http://stgeureka.virnect.com/eureka
+
+server:
+  port: 8632
+
+# feign configuration
+feign:
+  hystrix:
+    enabled: true

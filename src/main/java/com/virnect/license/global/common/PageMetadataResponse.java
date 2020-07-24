@@ -1,5 +1,6 @@
 package com.virnect.license.global.common;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Getter;
@@ -7,6 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@ApiModel
 public class PageMetadataResponse {
     @ApiModelProperty(value = "현재 조회한 페이지 번호", notes = "현재 페이지 번호", example = "1")
     private final int currentPage;
