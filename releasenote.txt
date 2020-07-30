@@ -15,6 +15,7 @@ Bug Fixes
 - 워크스페이스 라이선스 플랜 정보 조회 시, 라이선스 정보 미 합계 이슈 수정
 - 라이선스 만료일 계산 변경 (윤년, 말일 계산, 추가 구매시 만료 일자 계산 등)
 - 지프킨 service discovery client mode inactive, 지프킨 서비스명 제거
+- 워크스페이스 첫 생성 뷰 조회수 5000회 추가
 
 Limitation
 - 없음
