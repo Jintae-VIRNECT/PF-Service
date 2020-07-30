@@ -61,6 +61,8 @@ public class BillingService {
     private static int LICENSE_EXPIRED_SECONDS = 59; // 59초
 
     private static long LICENSE_ASSIGN_AUTH_CODE_TTL_MINUTE = 30; // 30분간 지급 인증 코드 유효
+    
+    private static long FIRST_WORKSPACE_DOWNLOAD_HITS = 5000;
 
     /**
      * 상품 지급 여부 검사
@@ -250,7 +252,7 @@ public class BillingService {
                 .endDate(LocalDateTime.now().plusDays(30))
                 .planStatus(PlanStatus.ACTIVE)
                 .maxCallTime(calculateMaxCallTime)
-                .maxDownloadHit(calculateMaxHit)
+                .maxDownloadHit(FIRST_WORKSPACE_DOWNLOAD_HITS)
                 .maxStorageSize(calculateMaxStorage)
                 .maxUserAmount(MAX_USER_AMOUNT)
                 .paymentId(licenseAllocateRequest.getPaymentId())
