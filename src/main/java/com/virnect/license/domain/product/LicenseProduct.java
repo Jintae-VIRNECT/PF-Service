@@ -4,7 +4,6 @@ import com.virnect.license.domain.BaseTimeEntity;
 import com.virnect.license.domain.license.License;
 import com.virnect.license.domain.licenseplan.LicensePlan;
 import com.virnect.license.domain.license.LicenseType;
-import com.virnect.license.domain.coupon.Coupon;
 import lombok.*;
 import org.hibernate.envers.Audited;
 
@@ -34,10 +33,6 @@ public class LicenseProduct extends BaseTimeEntity {
     private Integer quantity;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coupon_id")
-    private Coupon coupon;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "license_plan_id")
     private LicensePlan licensePlan;
 
@@ -53,11 +48,10 @@ public class LicenseProduct extends BaseTimeEntity {
     private Set<License> licenseList;
 
     @Builder
-    public LicenseProduct(Integer quantity, LicensePlan licensePlan, Product product, LicenseType licenseType, Coupon coupon) {
+    public LicenseProduct(Integer quantity, LicensePlan licensePlan, Product product, LicenseType licenseType) {
         this.quantity = quantity;
         this.licensePlan = licensePlan;
         this.product = product;
-        this.coupon = coupon;
         this.licenseType = licenseType;
     }
 }

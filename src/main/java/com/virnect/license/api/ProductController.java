@@ -27,7 +27,7 @@ import javax.validation.Valid;
 @RequestMapping("/licenses")
 public class ProductController {
     private final ProductService productService;
-    private static String PARAMETER_LOG_MESSAGE = "[PRODUCT_CONTROLLER][PARAMETER ERROR]:: {}";
+    private static final String PARAMETER_LOG_MESSAGE = "[PRODUCT_CONTROLLER][PARAMETER ERROR]:: {}";
 
     @ApiOperation(value = "신규 상품 등록")
     @PostMapping("/products")

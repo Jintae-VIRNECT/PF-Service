@@ -30,7 +30,7 @@ import javax.validation.Valid;
 @RequestMapping("/licenses")
 public class BillingController {
     private final BillingService billingService;
-    private static String PARAMETER_LOG_MESSAGE = "[BILLING_CONTROLLER][PARAMETER ERROR]:: {}";
+    private static final String PARAMETER_LOG_MESSAGE = "[BILLING_CONTROLLER][PARAMETER ERROR]:: {}";
 
 
     @ApiOperation(value = "상품 지급")

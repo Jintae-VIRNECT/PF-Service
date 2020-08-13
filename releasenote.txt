@@ -2,20 +2,10 @@
 RELEASE
 
 New Features
-- 상품 지급, 상품 지급 여부 조회, 상품 지급 취소 API 송 수신 데이터 암호화 기능 추가
-- 사용중인 플랜 목록 조회 API 추가 (https://virtualconnection.atlassian.net/browse/VECHOSYS-595)
-- 현재 사용량 체크 기능 - 사용중인 스토리지 용량 체크 기능 추가 (https://virtualconnection.atlassian.net/browse/VECHOSYS-754)
-- 현재 사용량 체크 기능 - 사용중인 조회수 체크 기능 추가 (https://virtualconnection.atlassian.net/browse/VECHOSYS-755)
-- 지프킨 연동 기능 추가
+- 없음
 
 Bug Fixes
-- Paging 요청 max size 계산 로직 수정 ( size > maxSize ? defaultSize : size => size > maxSize ? maxSize : size)
-- 라이선스, 상품, 빌링 시스템 서비스 분리 및 리팩토링 진행
-- 로그 레벨 정리 (info, error)
-- 워크스페이스 라이선스 플랜 정보 조회 시, 라이선스 정보 미 합계 이슈 수정
-- 라이선스 만료일 계산 변경 (윤년, 말일 계산, 추가 구매시 만료 일자 계산 등)
-- 지프킨 service discovery client mode inactive, 지프킨 서비스명 제거
-- 워크스페이스 첫 생성 뷰 조회수 5000회 추가
+- 상품 사용량 계산 로직 수정
 
 Limitation
 - 없음
