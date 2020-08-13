@@ -1,7 +1,6 @@
 package com.virnect.license.domain.licenseplan;
 
 import com.virnect.license.domain.BaseTimeEntity;
-import com.virnect.license.domain.coupon.Coupon;
 import com.virnect.license.domain.product.LicenseProduct;
 import lombok.*;
 import org.hibernate.envers.Audited;
@@ -71,21 +70,16 @@ public class LicensePlan extends BaseTimeEntity {
     @Column(name = "payment_id")
     private String paymentId;
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "licensePlan")
-    @JoinColumn(name = "coupon_id")
-    private Coupon coupon;
-
     @OneToMany(mappedBy = "licensePlan", fetch = FetchType.LAZY)
     private Set<LicenseProduct> licenseProductList;
 
     @Builder
-    public LicensePlan(String userId, String workspaceId, LocalDateTime startDate, LocalDateTime endDate, PlanStatus planStatus, Coupon coupon, Long maxDownloadHit, Long maxStorageSize, Long maxCallTime, String paymentId, Long maxUserAmount, String countryCode) {
+    public LicensePlan(String userId, String workspaceId, LocalDateTime startDate, LocalDateTime endDate, PlanStatus planStatus, Long maxDownloadHit, Long maxStorageSize, Long maxCallTime, String paymentId, Long maxUserAmount, String countryCode) {
         this.userId = userId;
         this.workspaceId = workspaceId;
         this.startDate = startDate;
         this.endDate = endDate;
         this.planStatus = planStatus;
-        this.coupon = coupon;
         this.maxDownloadHit = maxDownloadHit;
         this.maxCallTime = maxCallTime;
         this.maxStorageSize = maxStorageSize;

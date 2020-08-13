@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
  * EMAIL: practice1356@gmail.com
  * DESCRIPTION:
  */
+
 @FeignClient(name = "user-server")
 public interface UserRestService {
     /**
