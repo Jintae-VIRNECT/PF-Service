@@ -16,8 +16,8 @@ public class ContentRestFallbackFactory implements FallbackFactory<ContentRestSe
     public ContentRestService create(Throwable cause) {
         log.error("[CONTENT_REST_SERVICE][FALL_BACK_FACTORY][ACTIVE]");
         log.error(cause.getMessage(), cause);
-        return workspaceId -> {
-            log.error("[CONTENT SERVER REST SERVICE FALLBACK ERROR][WORKSPACE_ID] -> [{}]", workspaceId);
+        return (workspaceId, startDate, endDate) -> {
+            log.error("[CONTENT SERVER REST SERVICE FALLBACK ERROR][WORKSPACE_ID] -> [workspaceId: {}, startDate: {}, endDate: {}]", workspaceId, startDate, endDate);
             return new ApiResponse<>(new ContentResourceUsageInfoResponse(workspaceId, 0, 0, LocalDateTime.now()));
         };
     }

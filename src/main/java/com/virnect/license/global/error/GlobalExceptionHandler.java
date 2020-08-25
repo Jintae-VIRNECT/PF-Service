@@ -58,12 +58,13 @@ public class GlobalExceptionHandler {
         ErrorResponseMessage errorResponseMessage = new ErrorResponseMessage(e.getError());
         errorResponseMessage.getData().put("userId", e.getUserId());
         errorResponseMessage.getData().put("isAssignable", e.isAssignable());
+        errorResponseMessage.getData().put("rejectInfo", e.getDetails());
         return ResponseEntity.ok(errorResponseMessage);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseMessage> generalExceptionHandler(Exception e) {
-        log.error(e.getMessage(),e);
+        log.error(e.getMessage(), e);
         return ResponseEntity.ok(new ErrorResponseMessage(ErrorCode.ERR_UNEXPECTED_SERVER_ERROR));
     }
 }

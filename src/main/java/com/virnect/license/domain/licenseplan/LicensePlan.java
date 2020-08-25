@@ -2,6 +2,7 @@ package com.virnect.license.domain.licenseplan;
 
 import com.virnect.license.domain.BaseTimeEntity;
 import com.virnect.license.domain.product.LicenseProduct;
+import com.virnect.license.domain.product.ServiceProduct;
 import lombok.*;
 import org.hibernate.envers.Audited;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -72,6 +73,9 @@ public class LicensePlan extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "licensePlan", fetch = FetchType.LAZY)
     private Set<LicenseProduct> licenseProductList;
+
+    @OneToMany(mappedBy = "licensePlan", fetch = FetchType.LAZY)
+    private Set<ServiceProduct> serviceProductList;
 
     @Builder
     public LicensePlan(String userId, String workspaceId, LocalDateTime startDate, LocalDateTime endDate, PlanStatus planStatus, Long maxDownloadHit, Long maxStorageSize, Long maxCallTime, String paymentId, Long maxUserAmount, String countryCode) {

@@ -6,11 +6,13 @@ import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
 import java.util.List;
 
+@Profile({"staging","production"})
 @Configuration
 public class WebMvcConfiguration implements WebMvcConfigurer, WebMvcRegistrations {
     private static final List<String> BILLING_API_URLS = Arrays.asList("/licenses/allocate/check", "/licenses/allocate", "/licenses/deallocate");

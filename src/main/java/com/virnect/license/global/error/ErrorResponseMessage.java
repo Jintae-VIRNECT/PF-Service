@@ -28,4 +28,8 @@ public class ErrorResponseMessage {
         data = new HashMap<>();
         this.service = "license";
     }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }

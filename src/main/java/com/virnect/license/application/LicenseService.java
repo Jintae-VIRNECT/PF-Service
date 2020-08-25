@@ -11,6 +11,8 @@ import com.virnect.license.domain.licenseplan.PlanStatus;
 import com.virnect.license.domain.product.LicenseProduct;
 import com.virnect.license.domain.product.Product;
 import com.virnect.license.domain.product.ProductType;
+import com.virnect.license.domain.product.ServiceProduct;
+import com.virnect.license.dto.ResourceCalculate;
 import com.virnect.license.dto.UserLicenseDetailsInfo;
 import com.virnect.license.dto.response.*;
 import com.virnect.license.dto.rest.ContentResourceUsageInfoResponse;
@@ -28,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -67,6 +70,7 @@ public class LicenseService {
 
         LicensePlan licensePlanInfo = licensePlan.get();
         Set<LicenseProduct> licenseProductList = licensePlanInfo.getLicenseProductList();
+        Set<ServiceProduct> serviceProductList = licensePlanInfo.getServiceProductList();
         Map<Long, LicenseProductInfoResponse> licenseProductInfoMap = new HashMap<>();
 
         licenseProductList.forEach(licenseProduct -> {
@@ -100,22 +104,52 @@ public class LicenseService {
             }
         });
 
-        ContentResourceUsageInfoResponse workspaceCurrentResourceUsageInfo = getContentResourceUsageInfoFromContentService(workspaceId);
+
+        ResourceCalculate serviceProductResource = serviceProductResourceCalculate(serviceProductList);
+
+        ContentResourceUsageInfoResponse workspaceCurrentResourceUsageInfo = getContentResourceUsageInfoFromContentService(workspaceId, licensePlanInfo.getStartDate(), licensePlanInfo.getEndDate());
         log.info("[WORKSPACE_USAGE_RESOURCE_REPORT] -> {}", workspaceCurrentResourceUsageInfo.toString());
         WorkspaceLicensePlanInfoResponse workspaceLicensePlanInfoResponse = modelMapper.map(licensePlan.get(), WorkspaceLicensePlanInfoResponse.class);
         workspaceLicensePlanInfoResponse.setMasterUserUUID(licensePlan.get().getUserId());
         workspaceLicensePlanInfoResponse.setLicenseProductInfoList(new ArrayList<>(licenseProductInfoMap.values()));
+        // current used resource
         workspaceLicensePlanInfoResponse.setCurrentUsageDownloadHit(workspaceCurrentResourceUsageInfo.getTotalHit());
         workspaceLicensePlanInfoResponse.setCurrentUsageStorage(workspaceCurrentResourceUsageInfo.getStorageUsage());
+        // add service product resource
+        workspaceLicensePlanInfoResponse.setAddCallTime(serviceProductResource.getTotalCallTime());
+        workspaceLicensePlanInfoResponse.setAddStorageSize(serviceProductResource.getTotalStorageSize());
+        workspaceLicensePlanInfoResponse.setAddDownloadHit(serviceProductResource.getTotalDownloadHit());
+        // default resource amount (maxResource - addResource)
+        workspaceLicensePlanInfoResponse.setDefaultCallTime(licensePlanInfo.getMaxCallTime() - serviceProductResource.getTotalCallTime());
+        workspaceLicensePlanInfoResponse.setDefaultStorageSize(licensePlanInfo.getMaxStorageSize() - serviceProductResource.getTotalStorageSize());
+        workspaceLicensePlanInfoResponse.setDefaultDownloadHit(licensePlanInfo.getMaxDownloadHit() - serviceProductResource.getTotalDownloadHit());
+
         return new ApiResponse<>(workspaceLicensePlanInfoResponse);
+    }
+
+    /**
+     * 추가 서비스 상품, 서비스 이용 정보 총 사용량 계산
+     * @param serviceProductList - 추가 서비스 상품 서비스 이용량 정보
+     * @return - 추가 서비스 상품, 서비스 이용 정보 총 사용량 정보
+     */
+    private ResourceCalculate serviceProductResourceCalculate(Set<ServiceProduct> serviceProductList) {
+        long addCallTime = 0;
+        long addStorage = 0;
+        long addDownloadHit = 0;
+        for (ServiceProduct serviceProduct : serviceProductList) {
+            addCallTime += serviceProduct.getTotalCallTime();
+            addStorage += serviceProduct.getTotalStorageSize();
+            addDownloadHit += serviceProduct.getTotalDownloadHit();
+        }
+        return new ResourceCalculate(addCallTime, addStorage, addDownloadHit);
     }
 
     /**
      * 제품 라이선스 정보 조회
      *
-     * @param licenseProduct - 제품 라이선스 정보
+     * @param licenseProduct      - 제품 라이선스 정보
      * @param unUsedLicenseAmount - 미사용 라이선스 수
-     * @param usedLicenseAmount - 사용 라이선스 수
+     * @param usedLicenseAmount   - 사용 라이선스 수
      * @return - 라이선스 정보 목록
      */
     private List<LicenseInfoResponse> getLicenseInfoResponses(LicenseProduct licenseProduct, AtomicInteger unUsedLicenseAmount, AtomicInteger usedLicenseAmount) {
@@ -143,8 +177,8 @@ public class LicenseService {
      * @param workspaceId - 워크스페이스 식별자 정보
      * @return - 워크스페이스 서비스 사용량 정보
      */
-    private ContentResourceUsageInfoResponse getContentResourceUsageInfoFromContentService(final String workspaceId) {
-        ApiResponse<ContentResourceUsageInfoResponse> workspaceResourceUsageApiResponse = contentRestService.getContentResourceUsageInfoRequest(workspaceId);
+    private ContentResourceUsageInfoResponse getContentResourceUsageInfoFromContentService(final String workspaceId, final LocalDateTime startDate, final LocalDateTime endDate) {
+        ApiResponse<ContentResourceUsageInfoResponse> workspaceResourceUsageApiResponse = contentRestService.getContentResourceUsageInfoRequest(workspaceId, startDate, endDate);
         return workspaceResourceUsageApiResponse.getData();
     }
 
@@ -239,8 +273,8 @@ public class LicenseService {
 
     /**
      * 사용중인 라이선스 플랜 목록 정보 조회
-     * 
-     * @param userId - 사용자 식별자
+     *
+     * @param userId      - 사용자 식별자
      * @param pageRequest - 페이징 요청 정보
      * @return - 사용중인 라이선스 플랜 정보 목록
      */

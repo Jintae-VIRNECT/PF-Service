@@ -30,12 +30,12 @@ public enum ErrorCode {
     // 상품 라이선스 등록 관련
     ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT(4000, "Product license assignment failed."),
     ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_AUTHENTICATION_CODE(4001, "Product license assignment authentication code invalid."),
-    ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_ROLLBACK_FROM_PAYMENT(4100, "Product license deallocation failed."),
-    ERR_BILLING_LICENSE_DEALLOCATE_USER_NOT_FOUND(4200, "license deallocate fail cause by user info not found."),
+    ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_ROLLBACK_FROM_PAYMENT(4100, "Product license deallocate failed."),
+//    ERR_BILLING_LICENSE_DEALLOCATE_USER_NOT_FOUND(4200, "license deallocate fail cause by user info not found."),
     ERR_BILLING_LICENSE_DEALLOCATE_PLAN_NOT_FOUND(4201, "license deallocate fail cause by user license plan info not found. please check user and payment information."),
 
     // 상품 지급 여부 검사
-    ERR_BILLING_PRODUCT_ALLOCATE_DENIED(4200, "License allocation imposible"),
+    ERR_BILLING_PRODUCT_ALLOCATE_DENIED(4200, "License allocation impossible."),
 
     // 상품 관련
     ERR_BILLING_PRODUCT_NOT_FOUND(4300, "Product Not found."),
