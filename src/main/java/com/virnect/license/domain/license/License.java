@@ -1,11 +1,25 @@
 package com.virnect.license.domain.license;
 
-import com.virnect.license.domain.BaseTimeEntity;
-import com.virnect.license.domain.product.LicenseProduct;
-import lombok.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.hibernate.envers.Audited;
 
-import javax.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import com.virnect.license.domain.BaseTimeEntity;
+import com.virnect.license.domain.product.LicenseProduct;
 
 /**
  * @author jeonghyeon.chang (johnmark)
@@ -21,28 +35,28 @@ import javax.persistence.*;
 @Table(name = "license")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class License extends BaseTimeEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "license_id")
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "license_id")
+	private Long id;
 
-    @Column(name = "serial_key")
-    private String serialKey;
+	@Column(name = "serial_key")
+	private String serialKey;
 
-    @Column(name = "user_id")
-    private String userId;
+	@Column(name = "user_id")
+	private String userId;
 
-    @Column(name = "license_status")
-    private LicenseStatus status = LicenseStatus.UNUSE;
+	@Column(name = "license_status")
+	private LicenseStatus status = LicenseStatus.UNUSE;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "license_product_id")
-    private LicenseProduct licenseProduct;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "license_product_id")
+	private LicenseProduct licenseProduct;
 
-    @Builder
-    public License(String serialKey, LicenseStatus status, LicenseProduct licenseProduct) {
-        this.serialKey = serialKey;
-        this.status = status;
-        this.licenseProduct = licenseProduct;
-    }
+	@Builder
+	public License(String serialKey, LicenseStatus status, LicenseProduct licenseProduct) {
+		this.serialKey = serialKey;
+		this.status = status;
+		this.licenseProduct = licenseProduct;
+	}
 }

@@ -1,9 +1,9 @@
 package com.virnect.license.dao.licenseplan;
 
-import com.virnect.license.domain.licenseplan.LicensePlan;
-
 import java.util.List;
 
+import com.virnect.license.domain.licenseplan.LicensePlan;
+
 public interface CustomLicensePlanRepository {
-    List<LicensePlan> getMyLicenseInfoInWorkspaceLicensePlan(String workspaceId, String userId);
+	List<LicensePlan> getMyLicenseInfoInWorkspaceLicensePlan(String workspaceId, String userId);
 }

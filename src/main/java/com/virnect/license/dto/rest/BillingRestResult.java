@@ -6,16 +6,16 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BillingRestResult {
-    private int code;
-    private String message;
-    private String detail;
+	private int code;
+	private String message;
+	private String detail;
 
-    @Override
-    public String toString() {
-        return "BillingRestResult{" +
-                "code=" + code +
-                ", message='" + message + '\'' +
-                ", detail='" + detail + '\'' +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "BillingRestResult{" +
+			"code=" + code +
+			", message='" + message + '\'' +
+			", detail='" + detail + '\'' +
+			'}';
+	}
 }

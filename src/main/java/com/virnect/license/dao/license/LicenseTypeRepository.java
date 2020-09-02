@@ -1,9 +1,10 @@
 package com.virnect.license.dao.license;
 
-import com.virnect.license.domain.license.LicenseType;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import com.virnect.license.domain.license.LicenseType;
 
 /**
  * @author jeonghyeon.chang (johnmark)
@@ -13,5 +14,5 @@ import java.util.Optional;
  * @since 2020.04.13
  */
 public interface LicenseTypeRepository extends JpaRepository<LicenseType, Long> {
-    Optional<LicenseType> findByName(String licenseTypeName);
+	Optional<LicenseType> findByName(String licenseTypeName);
 }

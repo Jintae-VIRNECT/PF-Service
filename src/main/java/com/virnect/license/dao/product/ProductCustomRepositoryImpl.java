@@ -1,18 +1,21 @@
 package com.virnect.license.dao.product;
 
+import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
+
 import com.virnect.license.domain.product.Product;
 import com.virnect.license.domain.product.ProductDisplayStatus;
 import com.virnect.license.domain.product.QProduct;
-import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
 public class ProductCustomRepositoryImpl extends QuerydslRepositorySupport implements ProductCustomRepository {
-    public ProductCustomRepositoryImpl() {
-        super(Product.class);
-    }
+	public ProductCustomRepositoryImpl() {
+		super(Product.class);
+	}
 
-    @Override
-    public long updateProductDisplayStatusToHide(long productId) {
-        QProduct qProduct = QProduct.product;
-        return update(qProduct).set(qProduct.displayStatus, ProductDisplayStatus.HIDE).where(qProduct.id.eq(productId)).execute();
-    }
+	@Override
+	public long updateProductDisplayStatusToHide(long productId) {
+		QProduct qProduct = QProduct.product;
+		return update(qProduct).set(qProduct.displayStatus, ProductDisplayStatus.HIDE)
+			.where(qProduct.id.eq(productId))
+			.execute();
+	}
 }

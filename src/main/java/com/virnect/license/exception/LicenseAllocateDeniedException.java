@@ -1,11 +1,9 @@
 package com.virnect.license.exception;
 
-
-import com.virnect.license.global.error.ErrorCode;
-
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import com.virnect.license.global.error.ErrorCode;
 
 /**
  * @author jeonghyeon.chang (johnmark)
@@ -16,32 +14,32 @@ import java.util.Map;
  */
 
 public class LicenseAllocateDeniedException extends RuntimeException {
-    private final ErrorCode error;
-    private final long userId;
-    private final boolean isAssignable;
-    private final List<HashMap<String, Object>> details;
+	private final ErrorCode error;
+	private final long userId;
+	private final boolean isAssignable;
+	private final List<HashMap<String, Object>> details;
 
-    public LicenseAllocateDeniedException(ErrorCode error, long userId, List<HashMap<String, Object>> details) {
-        super(error.getMessage());
-        this.error = error;
-        this.userId = userId;
-        this.details = details;
-        this.isAssignable = false;
-    }
+	public LicenseAllocateDeniedException(ErrorCode error, long userId, List<HashMap<String, Object>> details) {
+		super(error.getMessage());
+		this.error = error;
+		this.userId = userId;
+		this.details = details;
+		this.isAssignable = false;
+	}
 
-    public ErrorCode getError() {
-        return error;
-    }
+	public ErrorCode getError() {
+		return error;
+	}
 
-    public long getUserId() {
-        return userId;
-    }
+	public long getUserId() {
+		return userId;
+	}
 
-    public boolean isAssignable() {
-        return isAssignable;
-    }
+	public boolean isAssignable() {
+		return isAssignable;
+	}
 
-    public List<HashMap<String, Object>> getDetails() {
-        return details;
-    }
+	public List<HashMap<String, Object>> getDetails() {
+		return details;
+	}
 }

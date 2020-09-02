@@ -8,7 +8,6 @@ package com.virnect.license.domain.licenseplan;
  * @since 2020.04.09
  */
 public enum PlanStatus {
-    ACTIVE,
-    INACTIVE,
-    PAUSE,
+	ACTIVE, // 활성화
+	INACTIVE, // 비활성화
 }

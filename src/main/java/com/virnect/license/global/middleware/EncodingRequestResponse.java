@@ -9,13 +9,13 @@ import lombok.Setter;
 @Setter
 @ApiModel
 public class EncodingRequestResponse {
-    @ApiModelProperty(value = "암호화된 메시지 전문")
-    private String data;
+	@ApiModelProperty(value = "암호화된 메시지 전문")
+	private String data;
 
-    @Override
-    public String toString() {
-        return "EncodingRequest{" +
-                "data='" + data + '\'' +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "EncodingRequest{" +
+			"data='" + data + '\'' +
+			'}';
+	}
 }

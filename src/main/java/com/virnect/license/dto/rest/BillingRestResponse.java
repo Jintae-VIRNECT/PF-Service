@@ -8,14 +8,14 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class BillingRestResponse<T> {
-    private T data;
-    private BillingRestResult result;
+	private T data;
+	private BillingRestResult result;
 
-    @Override
-    public String toString() {
-        return "BillingRestResponse{" +
-                "data=" + data +
-                ", result=" + result +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "BillingRestResponse{" +
+			"data=" + data +
+			", result=" + result +
+			'}';
+	}
 }

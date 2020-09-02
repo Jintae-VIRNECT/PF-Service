@@ -1,5 +1,15 @@
 package com.virnect.license.application;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import com.virnect.license.dao.product.ProductRepository;
 import com.virnect.license.dao.product.ProductTypeRepository;
 import com.virnect.license.domain.product.Product;
@@ -16,164 +26,162 @@ import com.virnect.license.dto.response.biling.ProductTypeInfoResponse;
 import com.virnect.license.exception.BillingServiceException;
 import com.virnect.license.global.common.ApiResponse;
 import com.virnect.license.global.error.ErrorCode;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductService {
-    private final ProductRepository productRepository;
-    private final ProductTypeRepository productTypeRepository;
-    private final ModelMapper modelMapper;
+	private final ProductRepository productRepository;
+	private final ProductTypeRepository productTypeRepository;
+	private final ModelMapper modelMapper;
 
-    /**
-     * 상품 생성
-     *
-     * @param createNewProductRequest
-     * @return
-     */
-    @Transactional
-    public ApiResponse<ProductInfoListResponse> createNewProductHandler(CreateNewProductRequest createNewProductRequest) {
-        ProductType productType = this.productTypeRepository.findById(createNewProductRequest.getProductTypeId())
-                .orElseThrow(() -> new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_CREATE));
-        Product newProduct = Product.builder()
-                .name(createNewProductRequest.getProductName())
-                .maxStorageSize(createNewProductRequest.getMaxStorageSize())
-                .maxDownloadHit(createNewProductRequest.getMaxDownloadHit())
-                .maxCallTime(createNewProductRequest.getMaxCallTime())
-                .productType(productType)
-                .build();
-        productRepository.save(newProduct);
+	/**
+	 * 상품 생성
+	 *
+	 * @param createNewProductRequest
+	 * @return
+	 */
+	@Transactional
+	public ApiResponse<ProductInfoListResponse> createNewProductHandler(
+		CreateNewProductRequest createNewProductRequest
+	) {
+		ProductType productType = this.productTypeRepository.findById(createNewProductRequest.getProductTypeId())
+			.orElseThrow(() -> new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_CREATE));
+		Product newProduct = Product.builder()
+			.name(createNewProductRequest.getProductName())
+			.maxStorageSize(createNewProductRequest.getMaxStorageSize())
+			.maxDownloadHit(createNewProductRequest.getMaxDownloadHit())
+			.maxCallTime(createNewProductRequest.getMaxCallTime())
+			.productType(productType)
+			.build();
+		productRepository.save(newProduct);
 
-        return getAllProductInfo();
-    }
+		return getAllProductInfo();
+	}
 
+	/**
+	 * 상품 삭제
+	 *
+	 * @param productId
+	 * @return
+	 */
+	@Transactional
+	public ApiResponse<ProductInfoListResponse> deleteProduct(long productId) {
+		long result = productRepository.updateProductDisplayStatusToHide(productId);
+		if (result <= 0) {
+			throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_DISABLE);
+		}
+		return getAllProductInfo();
+	}
 
-    /**
-     * 상품 삭제
-     *
-     * @param productId
-     * @return
-     */
-    @Transactional
-    public ApiResponse<ProductInfoListResponse> deleteProduct(long productId) {
-        long result = productRepository.updateProductDisplayStatusToHide(productId);
-        if (result <= 0) {
-            throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_DISABLE);
-        }
-        return getAllProductInfo();
-    }
+	/**
+	 * 상품 타입정보 수정
+	 *
+	 * @param productTypeUpdateRequest
+	 * @return
+	 */
+	@Transactional
+	public ApiResponse<ProductTypeInfoListResponse> updateProductTypeInfo(
+		ProductTypeUpdateRequest productTypeUpdateRequest
+	) {
+		ProductType productType = productTypeRepository.findById(productTypeUpdateRequest.getProductTypeId())
+			.orElseThrow(() -> new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_TYPE_INFO_UPDATE));
+		productType.setName(productTypeUpdateRequest.getProductTypeName());
+		productTypeRepository.save(productType);
 
-    /**
-     * 상품 타입정보 수정
-     *
-     * @param productTypeUpdateRequest
-     * @return
-     */
-    @Transactional
-    public ApiResponse<ProductTypeInfoListResponse> updateProductTypeInfo(ProductTypeUpdateRequest productTypeUpdateRequest) {
-        ProductType productType = productTypeRepository.findById(productTypeUpdateRequest.getProductTypeId())
-                .orElseThrow(() -> new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_TYPE_INFO_UPDATE));
-        productType.setName(productTypeUpdateRequest.getProductTypeName());
-        productTypeRepository.save(productType);
+		return getAllProductTypeInfo();
+	}
 
-        return getAllProductTypeInfo();
-    }
+	/**
+	 * 상품 타입 생성
+	 *
+	 * @param createNewProductTypeRequest
+	 * @return
+	 */
+	@Transactional
+	public ApiResponse<ProductTypeInfoListResponse> createNewProductTypeHandler(
+		CreateNewProductTypeRequest createNewProductTypeRequest
+	) {
+		ProductType productType = new ProductType(createNewProductTypeRequest.getProductTypeName());
+		productTypeRepository.save(productType);
+		return getAllProductTypeInfo();
+	}
 
+	/**
+	 * 전체 상품 정보 조회
+	 *
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	public ApiResponse<ProductInfoListResponse> getAllProductInfo() {
+		List<Product> productList = productRepository.findAllByDisplayStatus(ProductDisplayStatus.DISPLAY);
+		List<ProductInfoResponse> productInfoList = new ArrayList<>();
+		productList.forEach(product -> {
+			ProductInfoResponse productInfo = modelMapper.map(product, ProductInfoResponse.class);
+			productInfo.setProductId(product.getId());
+			productInfoList.add(productInfo);
+		});
+		return new ApiResponse<>(new ProductInfoListResponse(productInfoList));
+	}
 
-    /**
-     * 상품 타입 생성
-     *
-     * @param createNewProductTypeRequest
-     * @return
-     */
-    @Transactional
-    public ApiResponse<ProductTypeInfoListResponse> createNewProductTypeHandler(CreateNewProductTypeRequest createNewProductTypeRequest) {
-        ProductType productType = new ProductType(createNewProductTypeRequest.getProductTypeName());
-        productTypeRepository.save(productType);
-        return getAllProductTypeInfo();
-    }
+	/**
+	 * 전체 상품 타입 정보 조회
+	 *
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	public ApiResponse<ProductTypeInfoListResponse> getAllProductTypeInfo() {
+		List<ProductType> productTypeList = productTypeRepository.findAll();
+		List<ProductTypeInfoResponse> productTypeInfoList = new ArrayList<>();
+		productTypeList.forEach(productType -> {
+			ProductTypeInfoResponse productTypeInfoResponse = modelMapper.map(
+				productType,
+				ProductTypeInfoResponse.class
+			);
+			productTypeInfoList.add(productTypeInfoResponse);
+		});
+		return new ApiResponse<>(new ProductTypeInfoListResponse(productTypeInfoList));
+	}
 
+	/**
+	 * 상품 정보 수정
+	 *
+	 * @param updateRequest
+	 * @return
+	 */
+	@Transactional
+	public ApiResponse<ProductInfoResponse> updateProductInfo(ProductInfoUpdateRequest updateRequest) {
+		Product product = productRepository.findById(updateRequest.getProductId())
+			.orElseThrow(() -> new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_NOT_FOUND));
 
-    /**
-     * 전체 상품 정보 조회
-     *
-     * @return
-     */
-    @Transactional(readOnly = true)
-    public ApiResponse<ProductInfoListResponse> getAllProductInfo() {
-        List<Product> productList = productRepository.findAllByDisplayStatus(ProductDisplayStatus.DISPLAY);
-        List<ProductInfoResponse> productInfoList = new ArrayList<>();
-        productList.forEach(product -> {
-            ProductInfoResponse productInfo = modelMapper.map(product, ProductInfoResponse.class);
-            productInfo.setProductId(product.getId());
-            productInfoList.add(productInfo);
-        });
-        return new ApiResponse<>(new ProductInfoListResponse(productInfoList));
-    }
+		// max call time update
+		if (updateRequest.getProductMaxCallTime() > 0) {
+			product.setMaxCallTime(updateRequest.getProductMaxCallTime());
+		}
+		// max download hits update
+		if (updateRequest.getProductMaxDownloadHit() > 0) {
+			product.setMaxDownloadHit(updateRequest.getProductMaxDownloadHit());
+		}
+		// max storage update
+		if (updateRequest.getProductMaxStorageSize() > 0) {
+			product.setMaxStorageSize(updateRequest.getProductMaxStorageSize());
+		}
+		// productType update
+		if (updateRequest.getProductTypeId() > 0) {
+			ProductType productType = productTypeRepository.findById(updateRequest.getProductTypeId())
+				.orElseThrow(() -> new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_INFO_UPDATE));
+			product.setProductType(productType);
+		}
 
-    /**
-     * 전체 상품 타입 정보 조회
-     *
-     * @return
-     */
-    @Transactional(readOnly = true)
-    public ApiResponse<ProductTypeInfoListResponse> getAllProductTypeInfo() {
-        List<ProductType> productTypeList = productTypeRepository.findAll();
-        List<ProductTypeInfoResponse> productTypeInfoList = new ArrayList<>();
-        productTypeList.forEach(productType -> {
-            ProductTypeInfoResponse productTypeInfoResponse = modelMapper.map(productType, ProductTypeInfoResponse.class);
-            productTypeInfoList.add(productTypeInfoResponse);
-        });
-        return new ApiResponse<>(new ProductTypeInfoListResponse(productTypeInfoList));
-    }
+		// product display option update
+		if (updateRequest.getProductDisplayStatus() != null) {
+			product.setDisplayStatus(ProductDisplayStatus.valueOf(updateRequest.getProductDisplayStatus()));
+		}
 
-    /**
-     * 상품 정보 수정
-     *
-     * @param updateRequest
-     * @return
-     */
-    @Transactional
-    public ApiResponse<ProductInfoResponse> updateProductInfo(ProductInfoUpdateRequest updateRequest) {
-        Product product = productRepository.findById(updateRequest.getProductId())
-                .orElseThrow(() -> new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_NOT_FOUND));
+		productRepository.save(product);
 
-        // max call time update
-        if (updateRequest.getProductMaxCallTime() > 0) {
-            product.setMaxCallTime(updateRequest.getProductMaxCallTime());
-        }
-        // max download hits update
-        if (updateRequest.getProductMaxDownloadHit() > 0) {
-            product.setMaxDownloadHit(updateRequest.getProductMaxDownloadHit());
-        }
-        // max storage update
-        if (updateRequest.getProductMaxStorageSize() > 0) {
-            product.setMaxStorageSize(updateRequest.getProductMaxStorageSize());
-        }
-        // productType update
-        if (updateRequest.getProductTypeId() > 0) {
-            ProductType productType = productTypeRepository.findById(updateRequest.getProductTypeId())
-                    .orElseThrow(() -> new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_INFO_UPDATE));
-            product.setProductType(productType);
-        }
-
-        // product display option update
-        if (updateRequest.getProductDisplayStatus() != null) {
-            product.setDisplayStatus(ProductDisplayStatus.valueOf(updateRequest.getProductDisplayStatus()));
-        }
-
-        productRepository.save(product);
-
-        ProductInfoResponse productInfoResponse = modelMapper.map(product, ProductInfoResponse.class);
-        productInfoResponse.setProductId(product.getId());
-        return new ApiResponse<>(productInfoResponse);
-    }
+		ProductInfoResponse productInfoResponse = modelMapper.map(product, ProductInfoResponse.class);
+		productInfoResponse.setProductId(product.getId());
+		return new ApiResponse<>(productInfoResponse);
+	}
 }

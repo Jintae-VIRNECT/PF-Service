@@ -8,5 +8,5 @@ import lombok.Setter;
 @Setter
 @ApiModel
 public class CreateNewProductTypeRequest {
-    private String productTypeName;
+	private String productTypeName;
 }

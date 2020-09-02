@@ -5,7 +5,7 @@ New Features
 - 없음
 
 Bug Fixes
-- 상품 사용량 계산 로직 수정
+- https://virtualconnection.atlassian.net/browse/DPLA-828 버그 수정
 
 Limitation
 - 없음

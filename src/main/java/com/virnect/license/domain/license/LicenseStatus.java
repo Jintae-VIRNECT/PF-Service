@@ -8,6 +8,6 @@ package com.virnect.license.domain.license;
  * @since 2020.04.09
  */
 public enum LicenseStatus {
-    USE,
-    UNUSE,
+	USE,
+	UNUSE,
 }

@@ -2,9 +2,9 @@ spring:
   application:
     name: license-server
   datasource:
-    url: jdbc:mysql://192.168.6.3:4336/licenses?serverTimezone=UTC
-    username: virnect-license
-    password: virnect1234
+    url: jdbc:mysql://localhost:3306/licenses?serverTimezone=UTC
+    username: root
+    password: 1234
   jpa:
     hibernate:
       ddl-auto: validate
@@ -34,7 +34,7 @@ eureka:
       defaultZone: http://192.168.13.14:8761/eureka
 
 server:
-  port: 8332
+  port: 8632
 
 
 # User Server Configuration
@@ -50,3 +50,13 @@ logging:
 feign:
   hystrix:
     enabled: true
+
+# monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}

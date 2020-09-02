@@ -8,16 +8,16 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class ResourceCalculate {
-    private long totalCallTime;
-    private long totalStorageSize;
-    private long totalDownloadHit;
+	private long totalCallTime;
+	private long totalStorageSize;
+	private long totalDownloadHit;
 
-    @Override
-    public String toString() {
-        return "ResourceCalculate{" +
-                "totalCallTime=" + totalCallTime +
-                ", totalStorageSize=" + totalStorageSize +
-                ", totalDownloadHit=" + totalDownloadHit +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "ResourceCalculate{" +
+			"totalCallTime=" + totalCallTime +
+			", totalStorageSize=" + totalStorageSize +
+			", totalDownloadHit=" + totalDownloadHit +
+			'}';
+	}
 }

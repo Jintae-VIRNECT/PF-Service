@@ -1,10 +1,26 @@
 package com.virnect.license.domain.product;
 
-import com.virnect.license.domain.BaseTimeEntity;
-import lombok.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.hibernate.envers.Audited;
 
-import javax.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import com.virnect.license.domain.BaseTimeEntity;
 
 /**
  * @author jeonghyeon.chang (johnmark)
@@ -20,43 +36,45 @@ import javax.persistence.*;
 @Table(name = "product")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseTimeEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "porduct_id")
-    Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "porduct_id")
+	Long id;
 
-    @Column(name = "name")
-    private String name;
+	@Column(name = "name")
+	private String name;
 
-    @Column(name = "max_storage_size", nullable = false)
-    private Long maxStorageSize;
+	@Column(name = "max_storage_size", nullable = false)
+	private Long maxStorageSize;
 
-    @Column(name = "max_download_hit", nullable = false)
-    private Long maxDownloadHit;
+	@Column(name = "max_download_hit", nullable = false)
+	private Long maxDownloadHit;
 
-    @Column(name = "max_call_time", nullable = false)
-    private Long maxCallTime;
+	@Column(name = "max_call_time", nullable = false)
+	private Long maxCallTime;
 
-    @Column(name = "product_category")
-    private String category;
+	@Column(name = "product_category")
+	private String category;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "product_type_id")
+	private ProductType productType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_type_id")
-    private ProductType productType;
+	@Column(name = "display", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private ProductDisplayStatus displayStatus;
 
-    @Column(name = "display", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private ProductDisplayStatus displayStatus;
-
-    @Builder
-    public Product(String name, Long maxStorageSize, Long maxDownloadHit, Long maxCallTime, ProductType productType, String category) {
-        this.name = name;
-        this.maxStorageSize = maxStorageSize;
-        this.maxDownloadHit = maxDownloadHit;
-        this.maxCallTime = maxCallTime;
-        this.productType = productType;
-        this.displayStatus = ProductDisplayStatus.DISPLAY; // new product info is will not displayed by default
-        this.category = category;
-    }
+	@Builder
+	public Product(
+		String name, Long maxStorageSize, Long maxDownloadHit, Long maxCallTime, ProductType productType,
+		String category
+	) {
+		this.name = name;
+		this.maxStorageSize = maxStorageSize;
+		this.maxDownloadHit = maxDownloadHit;
+		this.maxCallTime = maxCallTime;
+		this.productType = productType;
+		this.displayStatus = ProductDisplayStatus.DISPLAY; // new product info is will not displayed by default
+		this.category = category;
+	}
 }

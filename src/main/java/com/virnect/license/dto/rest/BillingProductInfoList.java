@@ -1,19 +1,19 @@
 package com.virnect.license.dto.rest;
 
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Getter
 @Setter
 public class BillingProductInfoList {
-    private List<BillingProductInfo> products;
+	private List<BillingProductInfo> products;
 
-    @Override
-    public String toString() {
-        return "BillingProductInfoList{" +
-                "products=" + products +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "BillingProductInfoList{" +
+			"products=" + products +
+			'}';
+	}
 }
