@@ -55,7 +55,7 @@ import com.virnect.license.global.error.ErrorCode;
 public class BillingService {
 	private static final long MAX_USER_AMOUNT = 9; // 9 명
 	private static final long MAX_CALL_TIME = 270; // 270 시간
-	private static final long MAX_STORAGE_AMOUNT = 90000; // 90 기가
+	private static final long MAX_STORAGE_AMOUNT = 180000; // 180 기가
 	private static final long MAX_DOWNLOAD_HITS = 1000000; // 10만 회
 	private static final int LICENSE_EXPIRED_HOUR = 23; // 오후 11시
 	private static final int LICENSE_EXPIRED_MINUTE = 59; // 59분

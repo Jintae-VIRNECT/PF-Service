@@ -6,6 +6,7 @@ New Features
 
 Bug Fixes
 - https://virtualconnection.atlassian.net/browse/DPLA-828 버그 수정
+- MAX_STORAGE_SIZE 90G -> 180G 로 변경
 
 Limitation
 - 없음
