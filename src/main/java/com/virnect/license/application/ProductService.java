@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.virnect.license.dao.product.ProductRepository;
 import com.virnect.license.dao.product.ProductTypeRepository;
 import com.virnect.license.domain.product.Product;
-import com.virnect.license.domain.product.ProductDisplayStatus;
+import com.virnect.license.domain.product.ProductStatus;
 import com.virnect.license.domain.product.ProductType;
 import com.virnect.license.dto.request.CreateNewProductRequest;
 import com.virnect.license.dto.request.CreateNewProductTypeRequest;
@@ -42,21 +42,23 @@ public class ProductService {
 	 * @return
 	 */
 	@Transactional
-	public ApiResponse<ProductInfoListResponse> createNewProductHandler(
+	public ApiResponse<ProductInfoResponse> createNewProductHandler(
 		CreateNewProductRequest createNewProductRequest
 	) {
-		ProductType productType = this.productTypeRepository.findById(createNewProductRequest.getProductTypeId())
+		ProductType productType = productTypeRepository.findById(createNewProductRequest.getProductTypeId())
 			.orElseThrow(() -> new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_CREATE));
 		Product newProduct = Product.builder()
 			.name(createNewProductRequest.getProductName())
 			.maxStorageSize(createNewProductRequest.getMaxStorageSize())
 			.maxDownloadHit(createNewProductRequest.getMaxDownloadHit())
 			.maxCallTime(createNewProductRequest.getMaxCallTime())
+			.billProductId(createNewProductRequest.getBillingProductId())
 			.productType(productType)
 			.build();
 		productRepository.save(newProduct);
 
-		return getAllProductInfo();
+		ProductInfoResponse productInfoResponse = modelMapper.map(newProduct, ProductInfoResponse.class);
+		return new ApiResponse<>(productInfoResponse);
 	}
 
 	/**
@@ -67,7 +69,7 @@ public class ProductService {
 	 */
 	@Transactional
 	public ApiResponse<ProductInfoListResponse> deleteProduct(long productId) {
-		long result = productRepository.updateProductDisplayStatusToHide(productId);
+		long result = productRepository.updateProductDisplayStatusToInactive(productId);
 		if (result <= 0) {
 			throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_DISABLE);
 		}
@@ -81,15 +83,15 @@ public class ProductService {
 	 * @return
 	 */
 	@Transactional
-	public ApiResponse<ProductTypeInfoListResponse> updateProductTypeInfo(
+	public ApiResponse<ProductTypeInfoResponse> updateProductTypeInfo(
 		ProductTypeUpdateRequest productTypeUpdateRequest
 	) {
 		ProductType productType = productTypeRepository.findById(productTypeUpdateRequest.getProductTypeId())
 			.orElseThrow(() -> new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_TYPE_INFO_UPDATE));
 		productType.setName(productTypeUpdateRequest.getProductTypeName());
 		productTypeRepository.save(productType);
-
-		return getAllProductTypeInfo();
+		ProductTypeInfoResponse productTypeInfoResponse = modelMapper.map(productType, ProductTypeInfoResponse.class);
+		return new ApiResponse<>(productTypeInfoResponse);
 	}
 
 	/**
@@ -99,12 +101,16 @@ public class ProductService {
 	 * @return
 	 */
 	@Transactional
-	public ApiResponse<ProductTypeInfoListResponse> createNewProductTypeHandler(
+	public ApiResponse<ProductTypeInfoResponse> createNewProductTypeHandler(
 		CreateNewProductTypeRequest createNewProductTypeRequest
 	) {
 		ProductType productType = new ProductType(createNewProductTypeRequest.getProductTypeName());
 		productTypeRepository.save(productType);
-		return getAllProductTypeInfo();
+		ProductTypeInfoResponse productTypeInfoResponse = modelMapper.map(
+			productType,
+			ProductTypeInfoResponse.class
+		);
+		return new ApiResponse<>(productTypeInfoResponse);
 	}
 
 	/**
@@ -114,11 +120,10 @@ public class ProductService {
 	 */
 	@Transactional(readOnly = true)
 	public ApiResponse<ProductInfoListResponse> getAllProductInfo() {
-		List<Product> productList = productRepository.findAllByDisplayStatus(ProductDisplayStatus.DISPLAY);
+		List<Product> productList = productRepository.findAllByDisplayStatus(ProductStatus.ACTIVE);
 		List<ProductInfoResponse> productInfoList = new ArrayList<>();
 		productList.forEach(product -> {
 			ProductInfoResponse productInfo = modelMapper.map(product, ProductInfoResponse.class);
-			productInfo.setProductId(product.getId());
 			productInfoList.add(productInfo);
 		});
 		return new ApiResponse<>(new ProductInfoListResponse(productInfoList));
@@ -175,13 +180,12 @@ public class ProductService {
 
 		// product display option update
 		if (updateRequest.getProductDisplayStatus() != null) {
-			product.setDisplayStatus(ProductDisplayStatus.valueOf(updateRequest.getProductDisplayStatus()));
+			product.setDisplayStatus(ProductStatus.valueOf(updateRequest.getProductDisplayStatus()));
 		}
 
 		productRepository.save(product);
 
 		ProductInfoResponse productInfoResponse = modelMapper.map(product, ProductInfoResponse.class);
-		productInfoResponse.setProductId(product.getId());
 		return new ApiResponse<>(productInfoResponse);
 	}
 }

@@ -1,8 +1,5 @@
 package com.virnect.license.global.error;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
 /**
  * Project: base
  * DATE: 2020-01-07
@@ -10,7 +7,6 @@ import io.swagger.annotations.ApiModelProperty;
  * EMAIL: practice1356@gmail.com
  * DESCRIPTION:
  */
-@ApiModel
 public enum ErrorCode {
 	// 쿠폰 생성
 	ERR_CREATE_COUPON(1000, "Coupon Generate fail."),
@@ -32,7 +28,10 @@ public enum ErrorCode {
 		4001,
 		"Product license assignment authentication code invalid."
 	),
-	ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_ROLLBACK_FROM_PAYMENT(4100, "Product license deallocate failed."),
+	ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_ROLLBACK_FROM_PAYMENT(
+		4100,
+		"Product license deallocate failed."
+	),
 	//    ERR_BILLING_LICENSE_DEALLOCATE_USER_NOT_FOUND(4200, "license deallocate fail cause by user info not found."),
 	ERR_BILLING_LICENSE_DEALLOCATE_PLAN_NOT_FOUND(
 		4201,
@@ -55,6 +54,10 @@ public enum ErrorCode {
 	ERR_LICENSE_ALREADY_GRANTED(5000, "License is already granted"),
 	ERR_USEFUL_LICENSE_NOT_FOUND(5001, "Useful License not found"),
 
+	// 탈퇴 관련 에러
+	ERR_BILLING_MONTHLY_BILLING_INFO(6000, "Monthly Billing Info retrieve fail."),
+	ERR_BILLING_MONTHLY_BILLING_CANCEL(6001, "Monthly Billing cancel fail."),
+
 	// 페이레터
 	ERR_BILLING_LICENSE_SERVER_ERROR(7777, "License Server error rollback process begin."),
 
@@ -67,10 +70,8 @@ public enum ErrorCode {
 
 	ERR_UNEXPECTED_SERVER_ERROR(9999, "Unexpected Server Error, Please contact Administrator");
 
-	@ApiModelProperty(name = "code")
-	private int code;
-	@ApiModelProperty(name = "message")
-	private String message;
+	private final int code;
+	private final String message;
 
 	ErrorCode(final int code, final String message) {
 		this.code = code;

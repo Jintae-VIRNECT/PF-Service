@@ -4,6 +4,8 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -23,7 +25,6 @@ import lombok.Setter;
 
 import com.virnect.license.domain.BaseTimeEntity;
 import com.virnect.license.domain.license.License;
-import com.virnect.license.domain.license.LicenseType;
 import com.virnect.license.domain.licenseplan.LicensePlan;
 
 /**
@@ -48,6 +49,19 @@ public class LicenseProduct extends BaseTimeEntity {
 	@Column(name = "quantity")
 	private Integer quantity;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status")
+	private LicenseProductStatus status;
+
+	@Column(name = "call_time")
+	private Long callTime;
+
+	@Column(name = "storage_size")
+	private Long storageSize;
+
+	@Column(name = "download_hit")
+	private Long downloadHit;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "license_plan_id")
 	private LicensePlan licensePlan;
@@ -56,18 +70,30 @@ public class LicenseProduct extends BaseTimeEntity {
 	@JoinColumn(name = "product_id")
 	private Product product;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "license_type_id")
-	private LicenseType licenseType;
-
 	@OneToMany(mappedBy = "licenseProduct", fetch = FetchType.LAZY)
 	private Set<License> licenseList;
 
 	@Builder
-	public LicenseProduct(Integer quantity, LicensePlan licensePlan, Product product, LicenseType licenseType) {
+	public LicenseProduct(
+		Integer quantity, LicensePlan licensePlan, Product product, long callTime, long storageSize, long downloadHit
+	) {
 		this.quantity = quantity;
 		this.licensePlan = licensePlan;
 		this.product = product;
-		this.licenseType = licenseType;
+		this.callTime = callTime;
+		this.storageSize = storageSize;
+		this.downloadHit = downloadHit;
+		this.status = LicenseProductStatus.ACTIVE;
+	}
+
+	@Override
+	public String toString() {
+		return "LicenseProduct{" +
+			"id=" + id +
+			", quantity=" + quantity +
+			", callTime=" + callTime +
+			", storageSize=" + storageSize +
+			", downloadHit=" + downloadHit +
+			'}';
 	}
 }

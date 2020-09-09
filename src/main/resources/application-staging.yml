@@ -13,7 +13,7 @@ spring:
     hibernate:
       ddl-auto: validate
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
-    show-sql: true
+  #    show-sql: true
   redis:
     host: virnect-qa-redis.b84gc2.0001.apn2.cache.amazonaws.com
   mail:
@@ -53,3 +53,11 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+
+infra:
+  billing:
+    api: "https://devpayapi.virnect.com"
+
+logging:
+  level:
+    com.virnect.license.application.rest.BillingRestService: trace

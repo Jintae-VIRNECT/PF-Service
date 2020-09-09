@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import feign.hystrix.FallbackFactory;
 import lombok.extern.slf4j.Slf4j;
 
-import com.virnect.license.dto.rest.ContentResourceUsageInfoResponse;
+import com.virnect.license.dto.rest.content.ContentResourceUsageInfoResponse;
 import com.virnect.license.global.common.ApiResponse;
 
 @Slf4j
@@ -23,6 +23,7 @@ public class ContentRestFallbackFactory implements FallbackFactory<ContentRestSe
 				"[CONTENT SERVER REST SERVICE FALLBACK ERROR][WORKSPACE_ID] -> [workspaceId: {}, startDate: {}, endDate: {}]",
 				workspaceId, startDate, endDate
 			);
+			log.error(cause.getMessage(), cause);
 			return new ApiResponse<>(new ContentResourceUsageInfoResponse(workspaceId, 0, 0, LocalDateTime.now()));
 		};
 	}

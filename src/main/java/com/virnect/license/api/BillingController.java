@@ -42,7 +42,7 @@ public class BillingController {
 			result.getAllErrors().forEach(message -> log.error(PARAMETER_LOG_MESSAGE, message));
 			throw new BillingServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
 		}
-		return this.billingService.licenseAllocateRequest(licensePRoductAllocateRequest);
+		return billingService.licenseAllocateRequest(licensePRoductAllocateRequest);
 	}
 
 	@ApiOperation(value = "상품 지급 취소")
@@ -54,7 +54,7 @@ public class BillingController {
 			result.getAllErrors().forEach(message -> log.error(PARAMETER_LOG_MESSAGE, message));
 			throw new BillingServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
 		}
-		return this.billingService.licenseDeallocateRequest(licenseDeallocateRequest);
+		return billingService.licenseDeallocateRequest(licenseDeallocateRequest);
 	}
 
 	@ApiOperation(value = "상품 지급 가능 여부 조회")
@@ -66,6 +66,6 @@ public class BillingController {
 			result.getAllErrors().forEach(message -> log.error(PARAMETER_LOG_MESSAGE, message));
 			throw new BillingServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
 		}
-		return this.billingService.licenseAllocateCheckRequest(allocateCheckRequest);
+		return billingService.licenseAllocateCheckRequest(allocateCheckRequest);
 	}
 }

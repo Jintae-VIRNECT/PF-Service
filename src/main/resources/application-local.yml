@@ -26,6 +26,8 @@ spring:
     loadbalancer:
       ribbon:
         enabled: false
+  zipkin:
+    enabled: false
 eureka:
   instance:
     prefer-ip-address: true
@@ -34,7 +36,7 @@ eureka:
       defaultZone: http://192.168.13.14:8761/eureka
 
 server:
-  port: 8632
+  port: 8332
 
 
 # User Server Configuration
@@ -43,7 +45,8 @@ user:
 
 logging:
   level:
-    org.hibernate.type.descriptor.sql: trace
+    com.virnect.license.application.rest.BillingRestService: trace
+#    org.hibernate.type.descriptor.sql: trace
 
 
 # feign configuration
@@ -60,3 +63,7 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+
+infra:
+  billing:
+    api: "https://devpayapi.virnect.com"

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.virnect.license.domain.license.License;
 import com.virnect.license.domain.license.LicenseStatus;
 import com.virnect.license.domain.licenseplan.PlanStatus;
+import com.virnect.license.domain.product.LicenseProduct;
 import com.virnect.license.domain.product.Product;
 
 /**
@@ -24,4 +25,6 @@ public interface LicenseRepository extends JpaRepository<License, Long>, CustomL
 	License findByUserIdAndLicenseProduct_LicensePlan_WorkspaceIdAndLicenseProduct_ProductAndStatus(
 		String userId, String workspaceId, Product product, LicenseStatus status
 	);
+
+	long countByLicenseProductAndStatus(LicenseProduct licenseProduct, LicenseStatus status);
 }

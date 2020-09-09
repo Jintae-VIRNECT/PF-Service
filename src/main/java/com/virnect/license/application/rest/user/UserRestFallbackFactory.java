@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import feign.hystrix.FallbackFactory;
 import lombok.extern.slf4j.Slf4j;
 
-import com.virnect.license.dto.rest.UserInfoRestResponse;
+import com.virnect.license.dto.rest.user.UserInfoRestResponse;
 import com.virnect.license.global.common.ApiResponse;
 
 @Slf4j

@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @ApiModel
-public class LicenseAllocateCouponInfoResponse {
+public class AllocateCouponInfoResponse {
 	@ApiModelProperty(value = "쿠폰 식별자(시리얼 코드)", example = "AXD5-RFDS-ASDC-AAAS")
 	private String couponId;
 	@ApiModelProperty(value = "쿠폰 명", position = 1, example = "20% 할인 쿠폰")

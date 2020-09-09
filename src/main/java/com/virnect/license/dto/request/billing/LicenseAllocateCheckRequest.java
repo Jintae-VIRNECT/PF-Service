@@ -25,9 +25,9 @@ public class LicenseAllocateCheckRequest {
 	@ApiModelProperty(value = "상품 정보 리스트", position = 2)
 	@NotNull(message = "상품 정보는 반드시 있어야 합니다.")
 	@Size(min = 1, message = "상품 정보는 반드시 하나 이상 존재 해야 합니다.")
-	private List<LicenseAllocateProductInfoResponse> productList;
+	private List<AllocateProductInfoResponse> productList;
 	@ApiModelProperty(value = "쿠폰 정보 리스트", position = 3)
-	private List<LicenseAllocateCouponInfoResponse> couponList;
+	private List<AllocateCouponInfoResponse> couponList;
 
 	@Override
 	public String toString() {

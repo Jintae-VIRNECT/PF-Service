@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @ApiModel
 public class ProductTypeRequest {
-	@ApiModelProperty(value = "상품 타입 식별자", example = "BASIC PLAN")
+	@ApiModelProperty(value = "상품 타입 식별자", example = "product")
 	private String id;
 	@ApiModelProperty(value = "상품명", position = 1, example = "Remote")
 	private String name;

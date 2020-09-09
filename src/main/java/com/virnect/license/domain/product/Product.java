@@ -39,7 +39,10 @@ public class Product extends BaseTimeEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "porduct_id")
-	Long id;
+	private Long id;
+
+	@Column(name = "billing_product_id")
+	private Long billProductId;
 
 	@Column(name = "name")
 	private String name;
@@ -53,28 +56,25 @@ public class Product extends BaseTimeEntity {
 	@Column(name = "max_call_time", nullable = false)
 	private Long maxCallTime;
 
-	@Column(name = "product_category")
-	private String category;
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_type_id")
 	private ProductType productType;
 
-	@Column(name = "display", nullable = false)
+	@Column(name = "status", nullable = false)
 	@Enumerated(EnumType.STRING)
-	private ProductDisplayStatus displayStatus;
+	private ProductStatus displayStatus;
 
 	@Builder
 	public Product(
-		String name, Long maxStorageSize, Long maxDownloadHit, Long maxCallTime, ProductType productType,
-		String category
+		String name, Long maxStorageSize, Long maxDownloadHit, Long maxCallTime,
+		ProductType productType, Long billProductId
 	) {
 		this.name = name;
 		this.maxStorageSize = maxStorageSize;
 		this.maxDownloadHit = maxDownloadHit;
 		this.maxCallTime = maxCallTime;
 		this.productType = productType;
-		this.displayStatus = ProductDisplayStatus.DISPLAY; // new product info is will not displayed by default
-		this.category = category;
+		this.displayStatus = ProductStatus.ACTIVE; // new product info is will not displayed by default
+		this.billProductId = billProductId;
 	}
 }

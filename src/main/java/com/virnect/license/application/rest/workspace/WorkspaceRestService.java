@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.virnect.license.dto.rest.WorkspaceInfoListResponse;
-import com.virnect.license.dto.rest.WorkspaceInfoResponse;
+import com.virnect.license.dto.rest.user.WorkspaceInfoListResponse;
+import com.virnect.license.dto.rest.user.WorkspaceInfoResponse;
 import com.virnect.license.global.common.ApiResponse;
 
 /**

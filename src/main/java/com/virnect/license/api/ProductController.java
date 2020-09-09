@@ -25,6 +25,7 @@ import com.virnect.license.dto.request.billing.ProductTypeUpdateRequest;
 import com.virnect.license.dto.response.biling.ProductInfoListResponse;
 import com.virnect.license.dto.response.biling.ProductInfoResponse;
 import com.virnect.license.dto.response.biling.ProductTypeInfoListResponse;
+import com.virnect.license.dto.response.biling.ProductTypeInfoResponse;
 import com.virnect.license.exception.BillingServiceException;
 import com.virnect.license.global.common.ApiResponse;
 import com.virnect.license.global.error.ErrorCode;
@@ -40,7 +41,7 @@ public class ProductController {
 
 	@ApiOperation(value = "신규 상품 등록")
 	@PostMapping("/products")
-	public ApiResponse<ProductInfoListResponse> createNewProductRequest(
+	public ApiResponse<ProductInfoResponse> createNewProductRequest(
 		@RequestBody CreateNewProductRequest createNewProductRequest, BindingResult result
 	) {
 		if (result.hasErrors()) {
@@ -79,7 +80,7 @@ public class ProductController {
 
 	@ApiOperation(value = "상품 타입 등록")
 	@PostMapping("/products/types")
-	public ApiResponse<ProductTypeInfoListResponse> createNewProductTypeInfo(
+	public ApiResponse<ProductTypeInfoResponse> createNewProductTypeInfo(
 		@RequestBody @Valid CreateNewProductTypeRequest createNewProductTypeRequest, BindingResult result
 	) {
 		if (result.hasErrors()) {
@@ -97,7 +98,7 @@ public class ProductController {
 
 	@ApiOperation(value = "상품 타입 정보 수정")
 	@PutMapping("/products/types")
-	public ApiResponse<ProductTypeInfoListResponse> updateProductTypeInfoRequest(
+	public ApiResponse<ProductTypeInfoResponse> updateProductTypeInfoRequest(
 		@RequestBody @Valid ProductTypeUpdateRequest productTypeUpdateRequest, BindingResult result
 	) {
 		if (result.hasErrors()) {

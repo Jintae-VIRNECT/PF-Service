@@ -7,7 +7,7 @@ import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.virnect.license.domain.product.Product;
-import com.virnect.license.domain.product.ProductDisplayStatus;
+import com.virnect.license.domain.product.ProductStatus;
 
 /**
  * @author jeonghyeon.chang (johnmark)
@@ -19,5 +19,7 @@ import com.virnect.license.domain.product.ProductDisplayStatus;
 public interface ProductRepository extends JpaRepository<Product, Long>, ProductCustomRepository {
 	Optional<Set<Product>> findByProductType_NameAndNameIsIn(String productType, List<String> productNameList);
 
-	List<Product> findAllByDisplayStatus(ProductDisplayStatus status);
+	Optional<Product> findByBillProductId(long billProductId);
+
+	List<Product> findAllByDisplayStatus(ProductStatus status);
 }

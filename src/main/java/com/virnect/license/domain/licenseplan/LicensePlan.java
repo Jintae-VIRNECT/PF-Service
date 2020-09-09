@@ -26,7 +26,6 @@ import lombok.Setter;
 
 import com.virnect.license.domain.BaseTimeEntity;
 import com.virnect.license.domain.product.LicenseProduct;
-import com.virnect.license.domain.product.ServiceProduct;
 
 /**
  * @author jeonghyeon.chang (johnmark)
@@ -70,8 +69,7 @@ public class LicensePlan extends BaseTimeEntity {
 	@Column(name = "max_call_time", nullable = false)
 	private Long maxCallTime;
 
-	// nullable false 로 나중에 바꾸기
-	@Column(name = "workspace_id")
+	@Column(name = "workspace_id", nullable = false)
 	private String workspaceId;
 
 	@Column(name = "modified_user", nullable = false)
@@ -80,7 +78,7 @@ public class LicensePlan extends BaseTimeEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status")
-	private PlanStatus planStatus = PlanStatus.INACTIVE;
+	private PlanStatus planStatus = PlanStatus.ACTIVE;
 
 	@Column(name = "country_code")
 	private String countryCode;
@@ -88,17 +86,17 @@ public class LicensePlan extends BaseTimeEntity {
 	@Column(name = "payment_id")
 	private String paymentId;
 
-	@OneToMany(mappedBy = "licensePlan", fetch = FetchType.LAZY)
-	private Set<LicenseProduct> licenseProductList;
+	@Column(name = "is_event_plan")
+	private boolean isEventPlan;
 
 	@OneToMany(mappedBy = "licensePlan", fetch = FetchType.LAZY)
-	private Set<ServiceProduct> serviceProductList;
+	private Set<LicenseProduct> licenseProductList;
 
 	@Builder
 	public LicensePlan(
 		String userId, String workspaceId, LocalDateTime startDate, LocalDateTime endDate, PlanStatus planStatus,
 		Long maxDownloadHit, Long maxStorageSize, Long maxCallTime, String paymentId, Long maxUserAmount,
-		String countryCode
+		String countryCode, boolean isEventPlan
 	) {
 		this.userId = userId;
 		this.workspaceId = workspaceId;
@@ -112,5 +110,26 @@ public class LicensePlan extends BaseTimeEntity {
 		this.paymentId = paymentId;
 		this.maxUserAmount = maxUserAmount;
 		this.countryCode = countryCode;
+		this.isEventPlan = isEventPlan;
+	}
+
+	@Override
+	public String toString() {
+		return "LicensePlan{" +
+			"id=" + id +
+			", startDate=" + startDate +
+			", expiredDate=" + endDate +
+			", userId='" + userId + '\'' +
+			", maxUserAmount=" + maxUserAmount +
+			", maxStorageSize=" + maxStorageSize +
+			", maxDownloadHit=" + maxDownloadHit +
+			", maxCallTime=" + maxCallTime +
+			", workspaceId='" + workspaceId + '\'' +
+			", modifiedUser='" + modifiedUser + '\'' +
+			", planStatus=" + planStatus +
+			", countryCode='" + countryCode + '\'' +
+			", paymentId='" + paymentId + '\'' +
+			", isEventPlan=" + isEventPlan +
+			'}';
 	}
 }

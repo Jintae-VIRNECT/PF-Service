@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import com.virnect.license.domain.product.ProductDisplayStatus;
+import com.virnect.license.domain.product.ProductStatus;
 import com.virnect.license.validator.ValueOfEnum;
 
 @Getter
@@ -28,6 +28,6 @@ public class ProductInfoUpdateRequest {
 	@ApiModelProperty(value = "상품 타입 고유 식별자")
 	private long productTypeId;
 	@ApiModelProperty(value = "상품 표시 여부")
-	@ValueOfEnum(enumClass = ProductDisplayStatus.class)
+	@ValueOfEnum(enumClass = ProductStatus.class)
 	private String productDisplayStatus;
 }

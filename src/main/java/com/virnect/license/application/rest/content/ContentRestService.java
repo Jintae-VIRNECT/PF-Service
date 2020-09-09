@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.virnect.license.dto.rest.ContentResourceUsageInfoResponse;
+import com.virnect.license.dto.rest.content.ContentResourceUsageInfoResponse;
 import com.virnect.license.global.common.ApiResponse;
 
 @FeignClient(name = "content-server", fallbackFactory = ContentRestFallbackFactory.class)

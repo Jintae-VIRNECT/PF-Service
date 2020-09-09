@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
 import com.virnect.license.domain.license.QLicense;
-import com.virnect.license.domain.license.QLicenseType;
 import com.virnect.license.domain.licenseplan.LicensePlan;
 import com.virnect.license.domain.licenseplan.PlanStatus;
 import com.virnect.license.domain.licenseplan.QLicensePlan;
@@ -22,18 +21,13 @@ public class CustomLicensePlanRepositoryImpl extends QuerydslRepositorySupport i
 		QLicensePlan qLicensePlan = QLicensePlan.licensePlan;
 		QLicenseProduct qLicenseProduct = QLicenseProduct.licenseProduct;
 		QLicense qLicense = QLicense.license;
-		QLicenseType qLicenseType = QLicenseType.licenseType;
 		QProduct qProduct = QProduct.product;
 
 		return from(qLicensePlan)
 			.join(qLicensePlan.licenseProductList, qLicenseProduct)
 			.fetchJoin()
-			.join(qLicenseProduct.product, qProduct)
-			.fetchJoin()
-			.join(qLicenseProduct.licenseType, qLicenseType)
-			.fetchJoin()
-			.join(qLicenseProduct.licenseList, qLicense)
-			.fetchJoin()
+			.join(qLicenseProduct.product, qProduct).fetchJoin()
+			.join(qLicenseProduct.licenseList, qLicense).fetchJoin()
 			.where(qLicensePlan.workspaceId.eq(workspaceId)
 				.and(qLicensePlan.planStatus.eq(PlanStatus.ACTIVE))
 				.and(qLicense.userId.eq(userId)))

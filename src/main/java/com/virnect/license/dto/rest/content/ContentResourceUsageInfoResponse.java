@@ -1,4 +1,4 @@
-package com.virnect.license.dto.rest;
+package com.virnect.license.dto.rest.content;
 
 import java.time.LocalDateTime;
 

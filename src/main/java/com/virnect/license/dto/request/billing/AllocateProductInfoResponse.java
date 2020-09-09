@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @ApiModel
-public class LicenseAllocateProductInfoResponse {
+public class AllocateProductInfoResponse {
 	@ApiModelProperty(value = "상품 대표 식별자", example = "1001")
 	private long productId;
 	@ApiModelProperty(value = "상품명", position = 1, example = "VIRNECT Remote Basic Plan 1인 사용권")

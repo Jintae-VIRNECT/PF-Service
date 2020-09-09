@@ -1,5 +1,6 @@
 package com.virnect.license.dao.licenseplan;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,7 +18,7 @@ import com.virnect.license.domain.licenseplan.PlanStatus;
  */
 public interface LicensePlanRepository extends JpaRepository<LicensePlan, Long>, CustomLicensePlanRepository {
 	@Transactional(readOnly = true)
-	Optional<LicensePlan> findByUserIdAndWorkspaceIdAndPlanStatus(String userId, String workspaceId, PlanStatus status);
+	LicensePlan findByUserIdAndWorkspaceIdAndPlanStatus(String userId, String workspaceId, PlanStatus status);
 
 	@Transactional(readOnly = true)
 	Optional<LicensePlan> findByUserIdAndWorkspaceId(String userId, String workspaceId);
@@ -27,4 +28,8 @@ public interface LicensePlanRepository extends JpaRepository<LicensePlan, Long>,
 	Optional<LicensePlan> findByUserIdAndPaymentId(String userId, String paymentId);
 
 	Optional<LicensePlan> findByUserIdAndPlanStatus(String userUUID, PlanStatus status);
+
+	boolean existsByUserId(String userUUID);
+
+	List<LicensePlan> findAllByPlanStatus(PlanStatus planStatus);
 }

@@ -31,7 +31,7 @@ public class LicenseProductAllocateRequest {
 	@ApiModelProperty(value = "결제 일자", position = 3, example = "2020-06-03T18:00:11")
 	private LocalDateTime paymentDate;
 	@NotBlank(message = "결제 국가 코드 정보는 반드시 값이 있어야 합니다.")
-	@ApiModelProperty(value = "결제 국가 코드", position = 4, example = "KO")
+	@ApiModelProperty(value = "결제 국가 코드", position = 4, example = "KR")
 	private String userCountryCode;
 	@NotBlank(message = "라이선스 지급 인증 코드 정보는 반드시 값이 있어야 합니다.")
 	@ApiModelProperty(value = "지급 인증 코드", position = 5, example = "48254844-235e-4421-b713-4ea682994a98")
@@ -39,9 +39,9 @@ public class LicenseProductAllocateRequest {
 	@ApiModelProperty(value = "결제 상품 정보", position = 6)
 	@NotNull(message = "상품 정보는 반드시 값이 있어야 합니다.")
 	@Size(min = 1, message = "상품 정보는 반드시 하나 이상 있어야 합니다.")
-	private List<LicenseAllocateProductInfoResponse> productList;
+	private List<AllocateProductInfoResponse> productList;
 	@ApiModelProperty(value = "결제에 사용된 쿠폰 정보", position = 7)
-	private List<LicenseAllocateCouponInfoResponse> couponList;
+	private List<AllocateCouponInfoResponse> couponList;
 
 	@Override
 	public String toString() {

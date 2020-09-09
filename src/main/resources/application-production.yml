@@ -48,3 +48,11 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+
+infra:
+  billing:
+    api: "https://payapi.virnect.com"
+
+logging:
+  level:
+    com.virnect.license.application.rest.BillingRestService: trace

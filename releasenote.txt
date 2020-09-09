@@ -2,11 +2,11 @@
 RELEASE
 
 New Features
-- 없음
+- 라이선스 플랜 축소 추가 대응
+- 회원 탈퇴 API 추가
 
 Bug Fixes
-- https://virtualconnection.atlassian.net/browse/DPLA-828 버그 수정
-- MAX_STORAGE_SIZE 90G -> 180G 로 변경
+- 없음
 
 Limitation
 - 없음

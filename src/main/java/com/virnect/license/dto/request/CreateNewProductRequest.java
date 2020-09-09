@@ -17,7 +17,8 @@ public class CreateNewProductRequest {
 	private String productName;
 	@NotNull
 	@Positive
-	private long price;
+	private long billingProductId;
+	private long price = 0;
 	@NotNull
 	@PositiveOrZero
 	private long maxStorageSize;

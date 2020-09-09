@@ -2,6 +2,8 @@ package com.virnect.license.domain.license;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -46,6 +48,7 @@ public class License extends BaseTimeEntity {
 	@Column(name = "user_id")
 	private String userId;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "license_status")
 	private LicenseStatus status = LicenseStatus.UNUSE;
 
@@ -58,5 +61,15 @@ public class License extends BaseTimeEntity {
 		this.serialKey = serialKey;
 		this.status = status;
 		this.licenseProduct = licenseProduct;
+	}
+
+	@Override
+	public String toString() {
+		return "License{" +
+			"id=" + id +
+			", serialKey='" + serialKey + '\'' +
+			", userId='" + userId + '\'' +
+			", status=" + status +
+			'}';
 	}
 }
