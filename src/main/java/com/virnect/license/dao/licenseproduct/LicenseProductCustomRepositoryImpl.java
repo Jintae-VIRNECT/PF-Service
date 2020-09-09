@@ -29,7 +29,7 @@ public class LicenseProductCustomRepositoryImpl extends QuerydslRepositorySuppor
 			.innerJoin(qLicenseProduct.product, qProduct).fetchJoin()
 			.innerJoin(qProduct.productType, qProductType).fetchJoin()
 			.where(qLicenseProduct.licensePlan.eq(licensePlan)
-				.and(qProductType.name.eq(ProductTypeId.PRODUCT.getValue())))
+				.and(qProductType.name.eq(ProductTypeId.PRODUCT.getPlan())))
 			.fetch();
 	}
 
@@ -44,7 +44,7 @@ public class LicenseProductCustomRepositoryImpl extends QuerydslRepositorySuppor
 			.innerJoin(qLicenseProduct.product, qProduct).fetchJoin()
 			.innerJoin(qProduct.productType, qProductType).fetchJoin()
 			.where(qLicenseProduct.licensePlan.eq(licensePlan)
-				.and(qProductType.name.eq(ProductTypeId.SERVICE.getValue())))
+				.and(qProductType.name.eq(ProductTypeId.SERVICE.getPlan())))
 			.fetch();
 	}
 }
