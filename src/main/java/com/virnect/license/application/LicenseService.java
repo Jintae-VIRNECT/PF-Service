@@ -18,16 +18,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -83,7 +78,6 @@ public class LicenseService {
 	private final LicenseProductRepository licenseProductRepository;
 	private final ModelMapper modelMapper;
 	private final RestTemplate restTemplate;
-	private final ObjectMapper objectMapper;
 
 	@Value("${infra.billing.api}")
 	private String billingApi;
@@ -552,26 +546,21 @@ public class LicenseService {
 			cancelRequest.setUserNumber(userNumber);
 			try {
 				// 정기 결제 취소
-				String cancelRequestJson = objectMapper.writeValueAsString(cancelRequest);
-				HttpHeaders headers = new HttpHeaders();
-				headers.setContentType(MediaType.APPLICATION_JSON);
-				HttpEntity<String> entity = new HttpEntity<>(cancelRequestJson, headers);
-
-				BillingRestResponse<HashMap<String, Object>> billingCancelResult = restTemplate.exchange(
-					billingApi + "/billing/user/monthpaycnl", HttpMethod.POST, entity,
-					new ParameterizedTypeReference<BillingRestResponse<HashMap<String, Object>>>() {
-					}
-				).getBody();
+				BillingRestResponse<Map<String, Object>> billingCancelResult = restTemplate.postForObject(
+					billingApi + "/billing/user/monthpaycnl", cancelRequest, BillingRestResponse.class
+				);
 
 				// 정기 결제 취소 시, 페이레터 서버 에러인 경우
 				if (billingCancelResult == null || billingCancelResult.getResult().getCode() != 0) {
 					log.error("[BILLING_PAYLETTER] => Paylleter Server Error!");
-					log.error("[BILLLING_MONTHLY_BILLING_CANCEL] -> [{}]", cancelRequest.toString());
+					log.error("[BILLING_MONTHLY_BILLING_CANCEL] -> [{}]", cancelRequest.toString());
 					throw new LicenseServiceException(ErrorCode.ERR_BILLING_MONTHLY_BILLING_CANCEL);
 				}
+
+				log.info(billingCancelResult.toString());
 			} catch (Exception e) {
-				log.error("[BILLLING_MONTHLY_BILLING_CANCEL]", e);
-				log.error("[BILLLING_MONTHLY_BILLING_CANCEL] -> [{}]", cancelRequest.toString());
+				log.error("[BILLING_MONTHLY_BILLING_CANCEL]", e);
+				log.error("[BILLING_MONTHLY_BILLING_CANCEL] -> [{}]", cancelRequest.toString());
 			}
 		}
 	}
