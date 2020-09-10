@@ -1,5 +1,6 @@
 package com.virnect.license.application;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -13,15 +14,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import com.virnect.license.application.rest.billing.BillingRestService;
 import com.virnect.license.application.rest.content.ContentRestService;
 import com.virnect.license.application.rest.workspace.WorkspaceRestService;
 import com.virnect.license.dao.license.LicenseRepository;
@@ -71,8 +76,11 @@ public class LicenseService {
 	private final ContentRestService contentRestService;
 	private final WorkspaceRestService workspaceRestService;
 	private final LicenseProductRepository licenseProductRepository;
-	private final BillingRestService billingRestService;
 	private final ModelMapper modelMapper;
+	private final RestTemplate restTemplate;
+
+	@Value("${infra.billing.api}")
+	private String billingApi;
 
 	/**
 	 * 워크스페이스 라이선스 플랜 정보 조회
@@ -390,6 +398,9 @@ public class LicenseService {
 			ApiResponse<WorkspaceInfoResponse> workspaceInfoResponseMessage = workspaceRestService.getWorkspaceInfo(
 				detailsInfo.getWorkspaceId());
 			WorkspaceInfoResponse workspaceInfoResponse = workspaceInfoResponseMessage.getData();
+			if (workspaceInfoResponse.getUuid() == null || workspaceInfoResponse.getUuid().isEmpty()) {
+				continue;
+			}
 			MyLicensePlanInfoResponse licensePlanInfoResponse = new MyLicensePlanInfoResponse();
 			licensePlanInfoResponse.setWorkspaceId(workspaceInfoResponse.getUuid());
 			licensePlanInfoResponse.setWorkspaceName(workspaceInfoResponse.getName());
@@ -502,10 +513,17 @@ public class LicenseService {
 	 */
 	private void billingCancelProcess(long userNumber) {
 		// 사용자의 정기 결제 내역 정보 조회
-		BillingRestResponse<MonthlyBillingInfo> userMonthlyBillingInfo = billingRestService.getMonthlyBillingInfo(
-			1,
-			userNumber
-		);
+		URI uri = UriComponentsBuilder
+			.fromUriString(billingApi)
+			.path("/billing/user/monthbillinfo")
+			.queryParam("sitecode", 1)
+			.queryParam("userno", 62)
+			.build()
+			.toUri();
+
+		BillingRestResponse<MonthlyBillingInfo> userMonthlyBillingInfo = restTemplate.exchange(
+			uri, HttpMethod.GET, null, new ParameterizedTypeReference<BillingRestResponse<MonthlyBillingInfo>>() {
+			}).getBody();
 
 		// 정기 결제 내역 조회 시, 페이레터 서버 에러인 경우
 		if (userMonthlyBillingInfo == null || userMonthlyBillingInfo.getData() == null
@@ -522,21 +540,27 @@ public class LicenseService {
 
 		// payment flag Y= 정기결제 이용중, N: 해지 상태, D: 등록된 정기 결제 내용 없음
 		if (monthlyBillingInfo.getPaymentFlag().equals("Y")) {
-			// 정기 결제 취소
 			MonthlyBillingCancelRequest cancelRequest = new MonthlyBillingCancelRequest();
 			cancelRequest.setSiteCode(1);
 			cancelRequest.setUserMonthlyBillingNumber(monthlyBillingInfo.getMonthlyBillingNumber());
 			cancelRequest.setUserNumber(userNumber);
+			try {
+				// 정기 결제 취소
+				BillingRestResponse<Map<String, Object>> billingCancelResult = restTemplate.postForObject(
+					billingApi + "/billing/user/monthpaycnl", cancelRequest, BillingRestResponse.class
+				);
 
-			BillingRestResponse<Map<String, Object>> billingCancelResult = billingRestService.monthlyBillingCancel(
-				cancelRequest
-			);
+				// 정기 결제 취소 시, 페이레터 서버 에러인 경우
+				if (billingCancelResult == null || billingCancelResult.getResult().getCode() != 0) {
+					log.error("[BILLING_PAYLETTER] => Paylleter Server Error!");
+					log.error("[BILLING_MONTHLY_BILLING_CANCEL] -> [{}]", cancelRequest.toString());
+					throw new LicenseServiceException(ErrorCode.ERR_BILLING_MONTHLY_BILLING_CANCEL);
+				}
 
-			// 정기 결제 취소 시, 페이레터 서버 에러인 경우
-			if (billingCancelResult == null || billingCancelResult.getResult().getCode() != 0) {
-				log.error("[BILLING_PAYLETTER] => Paylleter Server Error!");
-				log.error("[BILLLING_MONTHLY_BILLING_CANCEL] -> [{}]", cancelRequest.toString());
-				throw new LicenseServiceException(ErrorCode.ERR_BILLING_MONTHLY_BILLING_CANCEL);
+				log.info(billingCancelResult.toString());
+			} catch (Exception e) {
+				log.error("[BILLING_MONTHLY_BILLING_CANCEL]", e);
+				log.error("[BILLING_MONTHLY_BILLING_CANCEL] -> [{}]", cancelRequest.toString());
 			}
 		}
 	}
