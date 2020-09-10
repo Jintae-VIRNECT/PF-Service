@@ -286,16 +286,22 @@ public class LicenseService {
 			.orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_LICENSE_PLAN_NOT_FOUND));
 		Set<LicenseProduct> licenseProductSet = licensePlan.getLicenseProductList();
 
-		Product product = null;
-		for (LicenseProduct licenseProduct : licenseProductSet) {
-			if (licenseProduct.getProduct().getName().equalsIgnoreCase(productName)) {
-				product = licenseProduct.getProduct();
-			}
-		}
-		//워크스페이스가 가진 라이선스 중에 사용자가 요청한 제품 라이선스가 없는경우.
-		if (product == null) {
-			throw new LicenseServiceException(ErrorCode.ERR_LICENSE_PRODUCT_NOT_FOUND);
-		}
+		LicenseProduct licenseProduct = licenseProductRepository.findByLicensePlanAndProduct_Name(
+			licensePlan, productName
+		).orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_LICENSE_PRODUCT_NOT_FOUND));
+
+		// Product product = null;
+		// for (LicenseProduct licenseProduct : licenseProductSet) {
+		// 	if (licenseProduct.getProduct().getName().equalsIgnoreCase(productName)) {
+		// 		product = licenseProduct.getProduct();
+		// 	}
+		// }
+		// //워크스페이스가 가진 라이선스 중에 사용자가 요청한 제품 라이선스가 없는경우.
+		// if (product == null) {
+		// 	throw new LicenseServiceException(ErrorCode.ERR_LICENSE_PRODUCT_NOT_FOUND);
+		// }
+
+		Product product = licenseProduct.getProduct();
 
 		//라이선스 부여/해제
 		License oldLicense = this.licenseRepository.findByUserIdAndLicenseProduct_LicensePlan_WorkspaceIdAndLicenseProduct_ProductAndStatus(
@@ -304,6 +310,25 @@ public class LicenseService {
 			if (oldLicense != null) {
 				throw new LicenseServiceException(ErrorCode.ERR_LICENSE_ALREADY_GRANTED);
 			}
+
+			long usedLicenseAmount = licenseProduct.getLicenseList()
+				.stream()
+				.filter(l -> l.getStatus().equals(LicenseStatus.USE))
+				.count();
+
+			log.info(
+				"[LICENSE_STATUS] - LICENSE_PRODUCT_AMOUNT: {} , USED_LICENSE_AMOUNT: {} , RESULT: {}",
+				licenseProduct.getQuantity(), usedLicenseAmount, licenseProduct.getQuantity() >= usedLicenseAmount
+			);
+
+			// 현재 할당된 라이선스 수가 부여된 라이선스 갯수 보다 크거나(축소된 경우) 같은 경우
+			if (licenseProduct.getQuantity() <= usedLicenseAmount) {
+				log.error("[LICENSE_ALLOCATE_FAIL] - LICENSE_PRODUCT_AMOUNT: {} , USED_LICENSE_AMOUNT: {} , RESULT: {}",
+					licenseProduct.getQuantity(), usedLicenseAmount, licenseProduct.getQuantity() >= usedLicenseAmount
+				);
+				throw new LicenseServiceException(ErrorCode.ERR_USEFUL_LICENSE_NOT_FOUND);
+			}
+
 			//부여 가능한 라이선스 찾기
 			List<License> licenseList = this.licenseRepository.findAllByLicenseProduct_LicensePlan_WorkspaceIdAndLicenseProduct_LicensePlan_PlanStatusAndLicenseProduct_ProductAndStatus(
 				workspaceId, PlanStatus.ACTIVE, product, LicenseStatus.UNUSE);
@@ -322,9 +347,25 @@ public class LicenseService {
 			);
 			return new ApiResponse<>(myLicenseInfoResponse);
 		} else {
+			// 라이선스 축소
 			oldLicense.setUserId(null);
 			oldLicense.setStatus(LicenseStatus.UNUSE);
 			this.licenseRepository.save(oldLicense);
+
+			// 해당 제품 라이선스 초과 상태 체크
+			if (licenseProduct.getStatus().equals(LicenseProductStatus.EXCEEDED)) {
+				// 현재 사용중인 라이선스 갯수 계산
+				long usedLicenseAmount = licenseProduct.getLicenseList()
+					.stream()
+					.filter(l -> l.getStatus().equals(LicenseStatus.USE))
+					.count();
+				// 제품 라이선스 갯수 범위 내에 들어온 경우 
+				if (usedLicenseAmount <= licenseProduct.getQuantity()) {
+					// 제품 라이선스 초과 상태에서 정상 상태로 변경
+					licenseProduct.setStatus(LicenseProductStatus.ACTIVE);
+					licenseProductRepository.save(licenseProduct);
+				}
+			}
 
 			return new ApiResponse<>(true);
 		}
@@ -416,8 +457,13 @@ public class LicenseService {
 
 		// 라이선스 플랜 정보가 없는 경우
 		if (licensePlan == null) {
+			log.info("workspaceUUID: {} , userUUID: {} ,  userNumber: {} ", workspaceUUID, userUUID, userNumber);
+			log.info("[LICENSE_PLAN_SECESSION] - License plan not found.");
 			return new LicenseSecessionResponse(workspaceUUID, true, LocalDateTime.now());
 		}
+
+		log.info("USER: {} , WORKSPACE: {}, LICENSE_PLAN_ID: {}", userUUID, workspaceUUID, licensePlan.getId());
+		log.info("[LICENSE_PLAN_SECESSION] - {}", licensePlan.toString());
 
 		// 정기 결제 내역 조회 및 취소
 		billingCancelProcess(userNumber);
@@ -426,11 +472,15 @@ public class LicenseService {
 		Set<LicenseProduct> licenseProductSet = licensePlan.getLicenseProductList();
 
 		if (!licenseProductSet.isEmpty()) {
-			// // license product 상태 inactive 로 변경
+			log.info("[LICENSE_PLAN_SECESSION] - LICENSE_PRODUCT_INACTIVE BEGIN.");
+			// license product 상태 inactive 로 변경
 			licenseProductSet.forEach(lp -> lp.setStatus(LicenseProductStatus.INACTIVE));
 			licenseProductRepository.saveAll(licenseProductSet);
-			// // license 할당 해제
-			// 	licenseRepository.updateAllLicenseInfoInactiveByLicenseProduct(licenseProductSet);
+			// license 할당 해제
+			log.info(
+				"[LICENSE_PLAN_SECESSION] - All license status changed to UNUSED and  delete user assigning information.");
+			licenseRepository.updateAllLicenseInfoInactiveByLicenseProduct(licenseProductSet);
+			log.info("[LICENSE_PLAN_SECESSION] - LICENSE_PRODUCT_INACTIVE END.");
 		}
 
 		// license plan 상태 비활성화 및 탈퇴 데이터 표시
