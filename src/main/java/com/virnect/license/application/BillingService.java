@@ -61,7 +61,7 @@ public class BillingService {
 	private static final int LICENSE_EXPIRED_MINUTE = 59; // 59분
 	private static final int LICENSE_EXPIRED_SECONDS = 59; // 59초
 	private static final long LICENSE_ASSIGN_AUTH_CODE_TTL_MINUTE = 30; // 30분간 지급 인증 코드 유효
-	private static final long FIRST_WORKSPACE_DOWNLOAD_HITS = 5000; // 최초 워크스페이스 생성 시 다운로드  5000회 추가
+	private static final long FIRST_WORKSPACE_DOWNLOAD_HITS = 100000; // 최초 워크스페이스 생성 시 다운로드  100000회 추가
 	private static final String USER_REST_SERVICE_ERROR_LOG_FORMAT = "User service error response: [{}]";
 	private final ProductRepository productRepository;
 	private final UserRestService userRestService;
