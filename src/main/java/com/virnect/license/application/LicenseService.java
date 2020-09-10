@@ -27,10 +27,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import com.virnect.license.application.rest.billing.BillingRestService;
 import com.virnect.license.application.rest.content.ContentRestService;
 import com.virnect.license.application.rest.workspace.WorkspaceRestService;
 import com.virnect.license.dao.license.LicenseRepository;
@@ -80,9 +81,9 @@ public class LicenseService {
 	private final ContentRestService contentRestService;
 	private final WorkspaceRestService workspaceRestService;
 	private final LicenseProductRepository licenseProductRepository;
-	private final BillingRestService billingRestService;
 	private final ModelMapper modelMapper;
 	private final RestTemplate restTemplate;
+	private final ObjectMapper objectMapper;
 
 	@Value("${infra.billing.api}")
 	private String billingApi;
@@ -545,32 +546,32 @@ public class LicenseService {
 
 		// payment flag Y= 정기결제 이용중, N: 해지 상태, D: 등록된 정기 결제 내용 없음
 		if (monthlyBillingInfo.getPaymentFlag().equals("Y")) {
-			// 정기 결제 취소
 			MonthlyBillingCancelRequest cancelRequest = new MonthlyBillingCancelRequest();
 			cancelRequest.setSiteCode(1);
 			cancelRequest.setUserMonthlyBillingNumber(monthlyBillingInfo.getMonthlyBillingNumber());
 			cancelRequest.setUserNumber(userNumber);
+			try {
+				// 정기 결제 취소
+				String cancelRequestJson = objectMapper.writeValueAsString(cancelRequest);
+				HttpHeaders headers = new HttpHeaders();
+				headers.setContentType(MediaType.APPLICATION_JSON);
+				HttpEntity<String> entity = new HttpEntity<>(cancelRequestJson, headers);
 
-			HashMap<String, Object> billingCancelBody = new HashMap<>();
-			billingCancelBody.put("sitecode", 1);
-			billingCancelBody.put("mseqno", monthlyBillingInfo.getMonthlyBillingNumber());
-			billingCancelBody.put("userno", userNumber);
+				BillingRestResponse<HashMap<String, Object>> billingCancelResult = restTemplate.exchange(
+					billingApi + "/billing/user/monthpaycnl", HttpMethod.POST, entity,
+					new ParameterizedTypeReference<BillingRestResponse<HashMap<String, Object>>>() {
+					}
+				).getBody();
 
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			HttpEntity<HashMap<String, Object>> entity = new HttpEntity<>(billingCancelBody, headers);
-
-			BillingRestResponse<HashMap<String, Object>> billingCancelResult = restTemplate.exchange(
-				billingApi + "/billing/user/monthpaycnl", HttpMethod.POST, entity,
-				new ParameterizedTypeReference<BillingRestResponse<HashMap<String, Object>>>() {
+				// 정기 결제 취소 시, 페이레터 서버 에러인 경우
+				if (billingCancelResult == null || billingCancelResult.getResult().getCode() != 0) {
+					log.error("[BILLING_PAYLETTER] => Paylleter Server Error!");
+					log.error("[BILLLING_MONTHLY_BILLING_CANCEL] -> [{}]", cancelRequest.toString());
+					throw new LicenseServiceException(ErrorCode.ERR_BILLING_MONTHLY_BILLING_CANCEL);
 				}
-			).getBody();
-
-			// 정기 결제 취소 시, 페이레터 서버 에러인 경우
-			if (billingCancelResult == null || billingCancelResult.getResult().getCode() != 0) {
-				log.error("[BILLING_PAYLETTER] => Paylleter Server Error!");
+			} catch (Exception e) {
+				log.error("[BILLLING_MONTHLY_BILLING_CANCEL]", e);
 				log.error("[BILLLING_MONTHLY_BILLING_CANCEL] -> [{}]", cancelRequest.toString());
-				throw new LicenseServiceException(ErrorCode.ERR_BILLING_MONTHLY_BILLING_CANCEL);
 			}
 		}
 	}
