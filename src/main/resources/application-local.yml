@@ -45,7 +45,7 @@ user:
 
 logging:
   level:
-    com.virnect.license.application.rest.BillingRestService: trace
+    com.virnect.license.application.rest.*: trace
 #    org.hibernate.type.descriptor.sql: trace
 
 
