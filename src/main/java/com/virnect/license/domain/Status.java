@@ -8,6 +8,6 @@ package com.virnect.license.domain;
  * @since 2020.04.09
  */
 public enum Status {
-    ACCEPT,
-    REJECT
+	ACCEPT,
+	REJECT
 }

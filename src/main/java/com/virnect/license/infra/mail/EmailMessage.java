@@ -16,7 +16,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class EmailMessage {
-    private String to;
-    private String subject;
-    private String message;
+	private String to;
+	private String subject;
+	private String message;
 }

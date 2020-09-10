@@ -1,14 +1,31 @@
 package com.virnect.license.domain.licenseplan;
 
-import com.virnect.license.domain.BaseTimeEntity;
-import com.virnect.license.domain.product.LicenseProduct;
-import lombok.*;
+import java.time.LocalDateTime;
+import java.util.Set;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+
 import org.hibernate.envers.Audited;
 import org.springframework.data.annotation.LastModifiedBy;
 
-import javax.persistence.*;
-import java.time.LocalDateTime;
-import java.util.Set;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import com.virnect.license.domain.BaseTimeEntity;
+import com.virnect.license.domain.product.LicenseProduct;
 
 /**
  * @author jeonghyeon.chang (johnmark)
@@ -22,70 +39,97 @@ import java.util.Set;
 @Setter
 @Audited
 @Table(name = "license_plan", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"workspace_id", "status", "created_at"}),
+	@UniqueConstraint(columnNames = {"workspace_id", "status", "created_at"}),
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LicensePlan extends BaseTimeEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "license_plan_id")
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "license_plan_id")
+	private Long id;
 
-    @Column(name = "start_at")
-    private LocalDateTime startDate;
+	@Column(name = "start_at")
+	private LocalDateTime startDate;
 
-    @Column(name = "expired_at")
-    private LocalDateTime endDate;
+	@Column(name = "expired_at")
+	private LocalDateTime endDate;
 
-    @Column(name = "user_id", nullable = false)
-    private String userId;
+	@Column(name = "user_id", nullable = false)
+	private String userId;
 
-    @Column(name = "max_user_amount")
-    private Long maxUserAmount;
+	@Column(name = "max_user_amount")
+	private Long maxUserAmount;
 
-    @Column(name = "max_storage_size", nullable = false)
-    private Long maxStorageSize;
+	@Column(name = "max_storage_size", nullable = false)
+	private Long maxStorageSize;
 
-    @Column(name = "max_download_hit", nullable = false)
-    private Long maxDownloadHit;
+	@Column(name = "max_download_hit", nullable = false)
+	private Long maxDownloadHit;
 
-    @Column(name = "max_call_time", nullable = false)
-    private Long maxCallTime;
+	@Column(name = "max_call_time", nullable = false)
+	private Long maxCallTime;
 
-    // nullable false 로 나중에 바꾸기
-    @Column(name = "workspace_id")
-    private String workspaceId;
+	@Column(name = "workspace_id", nullable = false)
+	private String workspaceId;
 
-    @Column(name = "modified_user", nullable = false)
-    @LastModifiedBy
-    private String modifiedUser;
+	@Column(name = "modified_user", nullable = false)
+	@LastModifiedBy
+	private String modifiedUser;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private PlanStatus planStatus = PlanStatus.INACTIVE;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status")
+	private PlanStatus planStatus = PlanStatus.ACTIVE;
 
-    @Column(name = "country_code")
-    private String countryCode;
+	@Column(name = "country_code")
+	private String countryCode;
 
-    @Column(name = "payment_id")
-    private String paymentId;
+	@Column(name = "payment_id")
+	private String paymentId;
 
-    @OneToMany(mappedBy = "licensePlan", fetch = FetchType.LAZY)
-    private Set<LicenseProduct> licenseProductList;
+	@Column(name = "is_event_plan")
+	private boolean isEventPlan;
 
-    @Builder
-    public LicensePlan(String userId, String workspaceId, LocalDateTime startDate, LocalDateTime endDate, PlanStatus planStatus, Long maxDownloadHit, Long maxStorageSize, Long maxCallTime, String paymentId, Long maxUserAmount, String countryCode) {
-        this.userId = userId;
-        this.workspaceId = workspaceId;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.planStatus = planStatus;
-        this.maxDownloadHit = maxDownloadHit;
-        this.maxCallTime = maxCallTime;
-        this.maxStorageSize = maxStorageSize;
-        this.modifiedUser = userId;
-        this.paymentId = paymentId;
-        this.maxUserAmount = maxUserAmount;
-        this.countryCode = countryCode;
-    }
+	@OneToMany(mappedBy = "licensePlan", fetch = FetchType.LAZY)
+	private Set<LicenseProduct> licenseProductList;
+
+	@Builder
+	public LicensePlan(
+		String userId, String workspaceId, LocalDateTime startDate, LocalDateTime endDate, PlanStatus planStatus,
+		Long maxDownloadHit, Long maxStorageSize, Long maxCallTime, String paymentId, Long maxUserAmount,
+		String countryCode, boolean isEventPlan
+	) {
+		this.userId = userId;
+		this.workspaceId = workspaceId;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.planStatus = planStatus;
+		this.maxDownloadHit = maxDownloadHit;
+		this.maxCallTime = maxCallTime;
+		this.maxStorageSize = maxStorageSize;
+		this.modifiedUser = userId;
+		this.paymentId = paymentId;
+		this.maxUserAmount = maxUserAmount;
+		this.countryCode = countryCode;
+		this.isEventPlan = isEventPlan;
+	}
+
+	@Override
+	public String toString() {
+		return "LicensePlan{" +
+			"id=" + id +
+			", startDate=" + startDate +
+			", expiredDate=" + endDate +
+			", userId='" + userId + '\'' +
+			", maxUserAmount=" + maxUserAmount +
+			", maxStorageSize=" + maxStorageSize +
+			", maxDownloadHit=" + maxDownloadHit +
+			", maxCallTime=" + maxCallTime +
+			", workspaceId='" + workspaceId + '\'' +
+			", modifiedUser='" + modifiedUser + '\'' +
+			", planStatus=" + planStatus +
+			", countryCode='" + countryCode + '\'' +
+			", paymentId='" + paymentId + '\'' +
+			", isEventPlan=" + isEventPlan +
+			'}';
+	}
 }

@@ -1,10 +1,10 @@
-package com.virnect.license.dto.rest;
+package com.virnect.license.dto.rest.user;
+
+import java.util.List;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 /**
  * Project: PF-User
@@ -17,5 +17,5 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class WorkspaceInfoListResponse {
-    private List<WorkspaceInfoResponse> workspaceList;
+	private List<WorkspaceInfoResponse> workspaceList;
 }

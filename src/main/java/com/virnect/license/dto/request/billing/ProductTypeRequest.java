@@ -9,16 +9,16 @@ import lombok.Setter;
 @Setter
 @ApiModel
 public class ProductTypeRequest {
-    @ApiModelProperty(value = "상품 타입 식별자", example = "BASIC PLAN")
-    private String id;
-    @ApiModelProperty(value = "상품명", position = 1, example = "Remote")
-    private String name;
+	@ApiModelProperty(value = "상품 타입 식별자", example = "product")
+	private String id;
+	@ApiModelProperty(value = "상품명", position = 1, example = "Remote")
+	private String name;
 
-    @Override
-    public String toString() {
-        return "ProductTypeRequest{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "ProductTypeRequest{" +
+			"id='" + id + '\'' +
+			", name='" + name + '\'' +
+			'}';
+	}
 }

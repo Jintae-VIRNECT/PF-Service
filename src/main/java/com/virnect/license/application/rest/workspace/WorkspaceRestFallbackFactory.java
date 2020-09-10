@@ -1,13 +1,15 @@
 package com.virnect.license.application.rest.workspace;
 
-import com.virnect.license.dto.rest.WorkspaceInfoListResponse;
-import com.virnect.license.dto.rest.WorkspaceInfoResponse;
-import com.virnect.license.global.common.ApiResponse;
-import feign.hystrix.FallbackFactory;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
+import feign.hystrix.FallbackFactory;
+import lombok.extern.slf4j.Slf4j;
+
+import com.virnect.license.dto.rest.user.WorkspaceInfoListResponse;
+import com.virnect.license.dto.rest.user.WorkspaceInfoResponse;
+import com.virnect.license.global.common.ApiResponse;
 
 /**
  * @author jeonghyeon.chang (johnmark)
@@ -19,24 +21,24 @@ import java.util.ArrayList;
 @Slf4j
 @Component
 public class WorkspaceRestFallbackFactory implements FallbackFactory<WorkspaceRestService> {
-    @Override
-    public WorkspaceRestService create(Throwable cause) {
-        return new WorkspaceRestService() {
-            @Override
-            public ApiResponse<WorkspaceInfoListResponse> getMyWorkspaceInfoList(String userId, int size) {
-                log.error("[USER WORKSPACE LIST API FALLBACK] => USER_ID: {}", userId);
-                log.error(cause.getMessage(), cause);
-                WorkspaceInfoListResponse empty = new WorkspaceInfoListResponse();
-                empty.setWorkspaceList(new ArrayList<>());
-                return new ApiResponse<>(empty);
-            }
+	@Override
+	public WorkspaceRestService create(Throwable cause) {
+		return new WorkspaceRestService() {
+			@Override
+			public ApiResponse<WorkspaceInfoListResponse> getMyWorkspaceInfoList(String userId, int size) {
+				log.error("[USER WORKSPACE LIST API FALLBACK] => USER_ID: {}", userId);
+				log.error(cause.getMessage(), cause);
+				WorkspaceInfoListResponse empty = new WorkspaceInfoListResponse();
+				empty.setWorkspaceList(new ArrayList<>());
+				return new ApiResponse<>(empty);
+			}
 
-            @Override
-            public ApiResponse<WorkspaceInfoResponse> getWorkspaceInfo(String workspaceId) {
-                log.error("[USER WORKSPACE LIST API FALLBACK] => WORKSPACE_ID: {}", workspaceId);
-                log.error(cause.getMessage(), cause);
-                return new ApiResponse<>(new WorkspaceInfoResponse());
-            }
-        };
-    }
+			@Override
+			public ApiResponse<WorkspaceInfoResponse> getWorkspaceInfo(String workspaceId) {
+				log.error("[USER WORKSPACE LIST API FALLBACK] => WORKSPACE_ID: {}", workspaceId);
+				log.error(cause.getMessage(), cause);
+				return new ApiResponse<>(new WorkspaceInfoResponse());
+			}
+		};
+	}
 }

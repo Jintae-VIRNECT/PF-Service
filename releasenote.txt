@@ -2,10 +2,12 @@
 RELEASE
 
 New Features
-- 없음
+- 라이선스 플랜 축소 추가 대응
+- 회원 탈퇴 API 추가
+- 라이선스 할당 해제 시, 라이선스 축소 상태 확인 및 변경 로직 추가
 
 Bug Fixes
-- 상품 사용량 계산 로직 수정
+- 없음
 
 Limitation
 - 없음

@@ -8,5 +8,5 @@ package com.virnect.license.infra.mail;
  * @since 2020.03.25
  */
 public interface EmailService {
-    void sendEmail(EmailMessage emailMessage);
+	void sendEmail(EmailMessage emailMessage);
 }

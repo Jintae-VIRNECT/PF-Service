@@ -49,3 +49,21 @@ user:
 feign:
   hystrix:
     enabled: true
+
+# monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+infra:
+  billing:
+    api: "https://stgapi.virnect.com" # disable on develop env
+
+logging:
+  level:
+    com.virnect.license.application.rest.*: trace

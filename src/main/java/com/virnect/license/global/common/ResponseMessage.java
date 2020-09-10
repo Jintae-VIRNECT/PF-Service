@@ -1,11 +1,11 @@
 package com.virnect.license.global.common;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Project: ServiceServer
@@ -19,16 +19,16 @@ import java.util.concurrent.ConcurrentHashMap;
 @Setter
 @NoArgsConstructor
 public class ResponseMessage {
-    Map<String, Object> data = new ConcurrentHashMap<>();
-    int code = 200;
-    String message = "complete";
+	Map<String, Object> data = new ConcurrentHashMap<>();
+	int code = 200;
+	String message = "complete";
 
-    public ResponseMessage(Map<String, Object> data) {
-        this.data = data;
-    }
+	public ResponseMessage(Map<String, Object> data) {
+		this.data = data;
+	}
 
-    public ResponseMessage addParam(String key, Object object) {
-        this.data.put(key, object);
-        return this;
-    }
+	public ResponseMessage addParam(String key, Object object) {
+		this.data.put(key, object);
+		return this;
+	}
 }

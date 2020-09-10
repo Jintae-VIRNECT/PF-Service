@@ -1,13 +1,14 @@
 package com.virnect.license.validator;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
+import static java.lang.annotation.ElementType.*;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import static java.lang.annotation.ElementType.*;
+import javax.validation.Constraint;
+import javax.validation.Payload;
 
 /**
  * @author jeonghyeon.chang (johnmark)
@@ -21,11 +22,11 @@ import static java.lang.annotation.ElementType.*;
 @Documented
 @Constraint(validatedBy = ValueOfEnumValidator.class)
 public @interface ValueOfEnum {
-    Class<? extends Enum<?>> enumClass();
+	Class<? extends Enum<?>> enumClass();
 
-    String message() default "must be any enum {enumClass}";
+	String message() default "must be any enum {enumClass}";
 
-    Class<?>[] groups() default {};
+	Class<?>[] groups() default {};
 
-    Class<? extends Payload>[] payload() default {};
+	Class<? extends Payload>[] payload() default {};
 }
