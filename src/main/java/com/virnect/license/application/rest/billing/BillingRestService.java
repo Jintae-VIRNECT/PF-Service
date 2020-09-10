@@ -12,7 +12,7 @@ import com.virnect.license.dto.rest.billing.BillingRestResponse;
 import com.virnect.license.dto.rest.billing.MonthlyBillingCancelRequest;
 import com.virnect.license.dto.rest.billing.MonthlyBillingInfo;
 
-@FeignClient(value = "${infra.billing.api}")
+@FeignClient(name = "example", url = "${infra.billing.api}", fallbackFactory = BillingRestFallbackFactory.class)
 public interface BillingRestService {
 	@GetMapping("/billing/user/monthbillinfo")
 	BillingRestResponse<MonthlyBillingInfo> getMonthlyBillingInfo(
