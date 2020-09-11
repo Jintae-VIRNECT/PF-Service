@@ -517,13 +517,13 @@ public class LicenseService {
 	 * 정기 결제 취소 처리
 	 * @param userNumber - 정기 결제 진행중인 사용자 식별자
 	 */
-	private void billingCancelProcess(long userNumber) {
+	public void billingCancelProcess(long userNumber) {
 		// 사용자의 정기 결제 내역 정보 조회
 		URI uri = UriComponentsBuilder
 			.fromUriString(billingApi)
 			.path("/billing/user/monthbillinfo")
 			.queryParam("sitecode", 1)
-			.queryParam("userno", 62)
+			.queryParam("userno", userNumber)
 			.build()
 			.toUri();
 
