@@ -18,11 +18,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,6 +81,7 @@ public class LicenseService {
 	private final ContentRestService contentRestService;
 	private final WorkspaceRestService workspaceRestService;
 	private final LicenseProductRepository licenseProductRepository;
+	private final ObjectMapper objectMapper;
 	private final ModelMapper modelMapper;
 	private final RestTemplate restTemplate;
 
@@ -511,13 +517,13 @@ public class LicenseService {
 	 * 정기 결제 취소 처리
 	 * @param userNumber - 정기 결제 진행중인 사용자 식별자
 	 */
-	private void billingCancelProcess(long userNumber) {
+	public void billingCancelProcess(long userNumber) {
 		// 사용자의 정기 결제 내역 정보 조회
 		URI uri = UriComponentsBuilder
 			.fromUriString(billingApi)
 			.path("/billing/user/monthbillinfo")
 			.queryParam("sitecode", 1)
-			.queryParam("userno", 62)
+			.queryParam("userno", userNumber)
 			.build()
 			.toUri();
 
@@ -545,10 +551,13 @@ public class LicenseService {
 			cancelRequest.setUserMonthlyBillingNumber(monthlyBillingInfo.getMonthlyBillingNumber());
 			cancelRequest.setUserNumber(userNumber);
 			try {
+				HttpHeaders httpHeaders = new HttpHeaders();
+				httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+				HttpEntity<String> entity = new HttpEntity<>(objectMapper.writeValueAsString(cancelRequest), httpHeaders);
+
 				// 정기 결제 취소
-				BillingRestResponse<Map<String, Object>> billingCancelResult = restTemplate.postForObject(
-					billingApi + "/billing/user/monthpaycnl", cancelRequest, BillingRestResponse.class
-				);
+				BillingRestResponse<Map<String, Object>> billingCancelResult = restTemplate.exchange(
+					billingApi + "/billing/user/monthpaycnl", HttpMethod.POST, entity, BillingRestResponse.class).getBody();
 
 				// 정기 결제 취소 시, 페이레터 서버 에러인 경우
 				if (billingCancelResult == null || billingCancelResult.getResult().getCode() != 0) {
