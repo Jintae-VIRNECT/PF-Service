@@ -12,7 +12,7 @@ public class MonthlyBillingCancelRequest {
 	private int siteCode;
 	@JsonProperty(value = "userno")
 	private long userNumber;
-	@JsonProperty(value = "mseqno")
+	@JsonProperty(value = "MSeqNo")
 	private int userMonthlyBillingNumber;
 
 	@Override
