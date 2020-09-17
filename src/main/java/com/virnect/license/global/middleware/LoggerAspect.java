@@ -52,11 +52,11 @@ public class LoggerAspect {
 		String methodName = joinPoint.getSignature().getName();
 		Map<String, Object> params = new HashMap<>();
 		try {
-			String userName = Optional.ofNullable(request.getHeader("x-jwt-name")).orElse("dW5rb3du");
+			String userName = Optional.ofNullable(request.getHeader("X-jwt-name")).orElse("dW5rb3du");
 			String authorization = String.format(
 				"{UserName: [%s], UserEmail: [%s] UUID: [%s]}", new String(
 					Base64.getDecoder().decode(userName.getBytes()), StandardCharsets.UTF_8),
-				request.getHeader("x-jwt-email"), request.getHeader("x-jwt-uuid")
+				request.getHeader("X-jwt-email"), request.getHeader("X-jwt-uuid")
 			);
 			params.put("Authorization", authorization);
 			params.put("Content-Type", request.getHeader("Content-Type"));
