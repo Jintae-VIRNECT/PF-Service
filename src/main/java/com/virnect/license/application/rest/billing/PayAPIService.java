@@ -88,7 +88,7 @@ public class PayAPIService {
 					throw new LicenseServiceException(ErrorCode.ERR_BILLING_MONTHLY_BILLING_CANCEL);
 				}
 
-				log.info(billingCancelResult.toString());
+				log.info("[BILLING_MONTHLY_BILLING_CANCEL_RESULT] -> [{}]", billingCancelResult.toString());
 			} catch (Exception e) {
 				log.error("[BILLING_MONTHLY_BILLING_CANCEL]", e);
 				log.error("[BILLING_MONTHLY_BILLING_CANCEL] -> [{}]", cancelRequest.toString());
