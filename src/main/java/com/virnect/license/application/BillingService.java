@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import com.virnect.license.application.rest.billing.PayAPIService;
 import com.virnect.license.application.rest.user.UserRestService;
 import com.virnect.license.application.rest.workspace.WorkspaceRestService;
 import com.virnect.license.dao.billing.LicenseAssignAuthInfoRepository;
@@ -70,6 +72,7 @@ public class BillingService {
 	private final LicenseProductRepository licenseProductRepository;
 	private final LicenseRepository licenseRepository;
 	private final LicenseAssignAuthInfoRepository licenseAssignAuthInfoRepository;
+	private final PayAPIService payAPIService;
 
 	/**
 	 * 상품 지급 여부 검사
@@ -473,28 +476,46 @@ public class BillingService {
 	public ApiResponse<LicenseProductDeallocateResponse> licenseDeallocateRequest(
 		LicenseProductDeallocateRequest licenseDeallocateRequest
 	) {
+		log.info("[LICENSE_DEALLOCATE_REQUEST] - {}", licenseDeallocateRequest.toString());
+
 		// 1. 계정 정보 조회
 		UserInfoRestResponse requestUserInfo = getUserInfoRestResponseByUserId(
 			licenseDeallocateRequest.getUserId(), ErrorCode.ERR_BILLING_LICENSE_DEALLOCATE_PLAN_NOT_FOUND
 		);
 
-		log.info("[LICENSE_DEALLOCATE_REQUEST] - {}", licenseDeallocateRequest.toString());
+		// 2. 마스터 워크스페이스 정보 조회
+		WorkspaceInfoResponse requestUserMasterWorkspaceInfo = getWorkspaceInfoResponseByUserId(
+			requestUserInfo.getUuid());
 
-		// 2. 라이선스 플랜 정보 조회
-		// LicensePlan licensePlan = licensePlanRepository.findByUserIdAndPaymentId(
-		// 	requestUserInfo.getUuid(),
-		// 	licenseDeallocateRequest.getPaymentId()
-		// ).orElseThrow(() -> {
-		// 	log.error("[LICENSE_PLAN_NOT_FOUND][USER] - {}", requestUserInfo.toString());
-		// 	log.error("[LICENSE_PLAN_NOT_FOUND] - {}", licenseDeallocateRequest.toString());
-		// 	return new BillingServiceException(ErrorCode.ERR_BILLING_LICENSE_DEALLOCATE_PLAN_NOT_FOUND);
-		// });
-		//
-		// // 3. 라이선스 플랜 정보 수정 기록 및 비활성화
-		// licensePlan.setModifiedUser(licenseDeallocateRequest.getOperatedBy());
-		// licensePlan.setPlanStatus(PlanStatus.INACTIVE);
-		// licensePlanRepository.save(licensePlan);
+		// 3. 라이선스 플랜 정보 조회
+		LicensePlan licensePlan = licensePlanRepository.findByUserIdAndWorkspaceId(
+			requestUserInfo.getUuid(), requestUserMasterWorkspaceInfo.getUuid()
+		).orElseThrow(()-> new BillingServiceException(ErrorCode.ERR_BILLING_LICENSE_DEALLOCATE_PLAN_NOT_FOUND));
 
+		// 4. license product 정보 조회
+		Set<LicenseProduct> licenseProductSet = licensePlan.getLicenseProductList();
+
+		if (!licenseProductSet.isEmpty()) {
+			log.info("[LICENSE_PLAN_REFUND] - LICENSE_PRODUCT_INACTIVE BEGIN.");
+			// license product 상태 inactive 로 변경
+			licenseProductSet.forEach(lp -> lp.setStatus(LicenseProductStatus.INACTIVE));
+			licenseProductRepository.saveAll(licenseProductSet);
+			// license 할당 해제
+			log.info(
+				"[LICENSE_PLAN_REFUND] - All license status changed to UNUSED and  delete user assigning information.");
+			licenseRepository.updateAllLicenseInfoInactiveByLicenseProduct(licenseProductSet);
+			log.info("[LICENSE_PLAN_REFUND] - LICENSE_PRODUCT_INACTIVE END.");
+		}
+
+		// 5. license plan 상태 비활성화 및 환불 데이터 표시
+		licensePlan.setPlanStatus(PlanStatus.TERMINATE);
+		licensePlan.setModifiedUser(requestUserInfo.getUuid() + "-" + "refund");
+		licensePlanRepository.save(licensePlan);
+
+		// 6. 정기 결제 내역 조회 및 정기 결제 취소 처리
+		payAPIService.billingCancelProcess(licenseDeallocateRequest.getUserId());
+
+		// 7. 라이선스 할당 해제 응답 데이터 생성
 		LicenseProductDeallocateResponse deallocateResponse = new LicenseProductDeallocateResponse();
 		deallocateResponse.setPaymentId(licenseDeallocateRequest.getPaymentId());
 		deallocateResponse.setUserId(licenseDeallocateRequest.getUserId());
