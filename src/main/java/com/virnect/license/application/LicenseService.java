@@ -409,6 +409,7 @@ public class LicenseService {
 			licensePlanInfoResponse.setPlanProduct(detailsInfo.getProductName());
 			licensePlanInfoResponse.setRenewalDate(detailsInfo.getEndDate());
 			licensePlanInfoResponse.setWorkspaceProfile(workspaceInfoResponse.getProfile());
+			licensePlanInfoResponse.setProductPlanStatus(detailsInfo.getProductPlanStatus());
 			myLicensePlanInfoResponseSet.add(licensePlanInfoResponse);
 		}
 
