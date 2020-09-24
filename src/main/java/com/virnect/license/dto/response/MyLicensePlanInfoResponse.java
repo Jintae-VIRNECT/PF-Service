@@ -7,6 +7,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.virnect.license.domain.product.LicenseProductStatus;
+
 @Getter
 @Setter
 @ApiModel
@@ -21,6 +23,8 @@ public class MyLicensePlanInfoResponse {
 	private String workspaceProfile;
 	@ApiModelProperty(value = "플랜 갱신 일자", position = 4, example = "2020-03-31T09:21:35")
 	private LocalDateTime renewalDate;
+	@ApiModelProperty(value = "플랜 상태 정보(ACTIVE or EXCEEDED)", position = 5, example = "ACTIVE")
+	private LicenseProductStatus productPlanStatus;
 
 	@Override
 	public String toString() {
@@ -30,6 +34,7 @@ public class MyLicensePlanInfoResponse {
 			", workspaceName='" + workspaceName + '\'' +
 			", workspaceProfile='" + workspaceProfile + '\'' +
 			", renewalDate=" + renewalDate +
+			", productPlanStatus=" + productPlanStatus +
 			'}';
 	}
 }

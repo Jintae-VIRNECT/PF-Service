@@ -17,8 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 import com.virnect.license.domain.license.License;
 import com.virnect.license.domain.license.LicenseStatus;
 import com.virnect.license.domain.license.QLicense;
+import com.virnect.license.domain.licenseplan.PlanStatus;
 import com.virnect.license.domain.licenseplan.QLicensePlan;
 import com.virnect.license.domain.product.LicenseProduct;
+import com.virnect.license.domain.product.LicenseProductStatus;
 import com.virnect.license.domain.product.QLicenseProduct;
 import com.virnect.license.domain.product.QProduct;
 import com.virnect.license.dto.UserLicenseDetailsInfo;
@@ -41,11 +43,16 @@ public class CustomLicenseRepositoryImpl extends QuerydslRepositorySupport imple
 				UserLicenseDetailsInfo.class,
 				qLicensePlan.workspaceId,
 				qProduct.name,
-				qLicensePlan.endDate
+				qLicensePlan.endDate,
+				qLicenseProduct.status.as("productPlanStatus")
 			))
 			.join(qLicenseProduct).on(qLicense.licenseProduct.eq(qLicenseProduct)).fetchJoin()
 			.join(qProduct).on(qLicenseProduct.product.eq(qProduct)).fetchJoin()
 			.join(qLicensePlan).on(qLicenseProduct.licensePlan.eq(qLicensePlan)).fetchJoin()
+			.where(qLicensePlan.planStatus.eq(PlanStatus.ACTIVE).
+				and(qLicenseProduct.status.in(
+					Arrays.asList(LicenseProductStatus.ACTIVE, LicenseProductStatus.EXCEEDED))
+				))
 			.where(qLicense.userId.eq(userId).and(qProduct.name.in(Arrays.asList("MAKE", "VIEW", "REMOTE"))));
 
 		query.offset(pageable.getOffset());
