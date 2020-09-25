@@ -561,7 +561,7 @@ public class BillingService {
 	public ApiResponse<LicenseProductDeallocateResponse> licenseDeallocateRequest(
 		LicenseProductDeallocateRequest licenseDeallocateRequest
 	) {
-		log.info("[LICENSE_DEALLOCATE_REQUEST] - {}", licenseDeallocateRequest.toString());
+		log.info("[BILLING][LICENSE_PLAN_REFUND_REQUEST] - {}", licenseDeallocateRequest.toString());
 
 		// 1. 계정 정보 조회
 		UserInfoRestResponse requestUserInfo = getUserInfoRestResponseByUserId(
@@ -573,23 +573,29 @@ public class BillingService {
 			requestUserInfo.getUuid());
 
 		// 3. 라이선스 플랜 정보 조회
-		LicensePlan licensePlan = licensePlanRepository.findByUserIdAndWorkspaceId(
-			requestUserInfo.getUuid(), requestUserMasterWorkspaceInfo.getUuid()
-		).orElseThrow(() -> new BillingServiceException(ErrorCode.ERR_BILLING_LICENSE_DEALLOCATE_PLAN_NOT_FOUND));
+		LicensePlan licensePlan = licensePlanRepository.findByUserIdAndWorkspaceIdAndPlanStatus(
+			requestUserInfo.getUuid(), requestUserMasterWorkspaceInfo.getUuid(), PlanStatus.ACTIVE
+		);
+
+		// 3-1. 활성화된 라이선스 플랜이 없는 경우
+		if (licensePlan == null) {
+			log.error("[BILLING][LICENSE_PLAN_REFUND] - active license plan not found");
+			throw new BillingServiceException(ErrorCode.ERR_BILLING_LICENSE_DEALLOCATE_PLAN_NOT_FOUND);
+		}
 
 		// 4. license product 정보 조회
 		Set<LicenseProduct> licenseProductSet = licensePlan.getLicenseProductList();
 
 		if (!licenseProductSet.isEmpty()) {
-			log.info("[LICENSE_PLAN_REFUND] - LICENSE_PRODUCT_INACTIVE BEGIN.");
+			log.info("[BILLING][LICENSE_PLAN_REFUND] - LICENSE_PRODUCT_INACTIVE BEGIN.");
 			// license product 상태 inactive 로 변경
 			licenseProductSet.forEach(lp -> lp.setStatus(LicenseProductStatus.INACTIVE));
 			licenseProductRepository.saveAll(licenseProductSet);
 			// license 할당 해제
 			log.info(
-				"[LICENSE_PLAN_REFUND] - All license status changed to UNUSED and  delete user assigning information.");
+				"[BILLING][LICENSE_PLAN_REFUND] - All license status changed to UNUSED and  delete user assigning information.");
 			licenseRepository.updateAllLicenseInfoInactiveByLicenseProduct(licenseProductSet);
-			log.info("[LICENSE_PLAN_REFUND] - LICENSE_PRODUCT_INACTIVE END.");
+			log.info("[BILLING][LICENSE_PLAN_REFUND] - LICENSE_PRODUCT_INACTIVE END.");
 		}
 
 		// 5. license plan 상태 비활성화 및 환불 데이터 표시
