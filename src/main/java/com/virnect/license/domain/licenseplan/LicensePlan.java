@@ -89,6 +89,15 @@ public class LicensePlan extends BaseTimeEntity {
 	@Column(name = "is_event_plan")
 	private boolean isEventPlan;
 
+	@Column(name = "is_term_plan")
+	private boolean isTermPlan;
+
+	@Column(name = "inactive_date")
+	private LocalDateTime inactiveDate;
+
+	@Column(name = "terminate_date")
+	private LocalDateTime terminateDate;
+
 	@OneToMany(mappedBy = "licensePlan", fetch = FetchType.LAZY)
 	private Set<LicenseProduct> licenseProductList;
 
@@ -96,7 +105,7 @@ public class LicensePlan extends BaseTimeEntity {
 	public LicensePlan(
 		String userId, String workspaceId, LocalDateTime startDate, LocalDateTime endDate, PlanStatus planStatus,
 		Long maxDownloadHit, Long maxStorageSize, Long maxCallTime, String paymentId, Long maxUserAmount,
-		String countryCode, boolean isEventPlan
+		String countryCode, boolean isEventPlan, boolean isTermPlan
 	) {
 		this.userId = userId;
 		this.workspaceId = workspaceId;
@@ -111,6 +120,7 @@ public class LicensePlan extends BaseTimeEntity {
 		this.maxUserAmount = maxUserAmount;
 		this.countryCode = countryCode;
 		this.isEventPlan = isEventPlan;
+		this.isTermPlan = isTermPlan;
 	}
 
 	@Override
@@ -118,7 +128,7 @@ public class LicensePlan extends BaseTimeEntity {
 		return "LicensePlan{" +
 			"id=" + id +
 			", startDate=" + startDate +
-			", expiredDate=" + endDate +
+			", endDate=" + endDate +
 			", userId='" + userId + '\'' +
 			", maxUserAmount=" + maxUserAmount +
 			", maxStorageSize=" + maxStorageSize +
@@ -130,6 +140,9 @@ public class LicensePlan extends BaseTimeEntity {
 			", countryCode='" + countryCode + '\'' +
 			", paymentId='" + paymentId + '\'' +
 			", isEventPlan=" + isEventPlan +
+			", isTermPlan=" + isTermPlan +
+			", inactiveDate=" + inactiveDate +
+			", terminateDate=" + terminateDate +
 			'}';
 	}
 }
