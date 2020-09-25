@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -211,7 +212,9 @@ public class BillingService {
 		WorkspaceInfoResponse workspaceInfo = getWorkspaceInfoResponseByUserId(requestUserInfo.getUuid());
 
 		// 6. 플랜 할당 이력 존재 유무 검사
-		boolean hasAllocatedLicensePlan = licensePlanRepository.existsByUserId(requestUserInfo.getUuid());
+		boolean hasAllocatedLicensePlan = licensePlanRepository.existsByUserIdAndPlanStatusIsIn(
+			requestUserInfo.getUuid(), Arrays.asList(PlanStatus.ACTIVE, PlanStatus.INACTIVE)
+		);
 
 		// 7-1. 라이선스 할당 이력이 없는 경우 (신규 요청)
 		if (!hasAllocatedLicensePlan) {
@@ -226,11 +229,17 @@ public class BillingService {
 		LicensePlan userLicensePlan = licensePlanRepository.findByUserIdAndWorkspaceIdAndPlanStatus(
 			requestUserInfo.getUuid(), workspaceInfo.getUuid(), PlanStatus.ACTIVE);
 
+		if(userLicensePlan == null){
+			log.error("[BILLING][LICENSE_ALLOCATE] - User License Plan (status = ACTIVE) Not found.");
+			log.error("[BILLING][LICENSE_ALLOCATE] - {}", licenseAllocateRequest.toString());
+			throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+		}
+
 		// 8-1. 기존 활성화 되어있는 라이선스 플랜이 기간 결제인 경우
 		// 해당 플랜이 만료되기전까지 갱신 불가
 		if (userLicensePlan.isTermPlan()) {
-			log.error("[BILLING_LICENSE_ALLOCATE] - Previous License plan is term payment plan and activated.");
-			log.error("[BILLING_LICENSE_ALLOCATE][PLAN_INFO] - {}", userLicensePlan.toString());
+			log.error("[BILLING][LICENSE_ALLOCATE] - Previous License plan is term payment plan and activated.");
+			log.error("[BILLING][LICENSE_ALLOCATE][PLAN_INFO] - {}", userLicensePlan.toString());
 			throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
 		}
 
@@ -295,7 +304,8 @@ public class BillingService {
 			// 기간 결제 요청일 때 100% 할인 쿠폰 정보가 없는 경우 예외 발생
 			AllocateCouponInfoResponse freeCouponInfo = Optional.ofNullable(
 				licenseAllocateRequest.getCouponList().get(0)).orElseThrow(() -> {
-				log.error("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] - Term Payment request fail. Coupon Information Not Found.");
+				log.error(
+					"[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] - Term Payment request fail. Coupon Information Not Found.");
 				log.error("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] - {}", licenseAllocateRequest.toString());
 				return new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
 			});
