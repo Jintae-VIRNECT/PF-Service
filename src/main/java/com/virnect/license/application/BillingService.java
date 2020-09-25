@@ -216,6 +216,11 @@ public class BillingService {
 			requestUserInfo.getUuid(), Arrays.asList(PlanStatus.ACTIVE, PlanStatus.INACTIVE)
 		);
 
+		log.info(
+			"[BILLING][LICENSE_ALLOCATE] - User has active or inactive license plan check result: {}",
+			hasAllocatedLicensePlan
+		);
+
 		// 7-1. 라이선스 할당 이력이 없는 경우 (신규 요청)
 		if (!hasAllocatedLicensePlan) {
 			// 라이선스 플랜 신규 지급
@@ -229,7 +234,7 @@ public class BillingService {
 		LicensePlan userLicensePlan = licensePlanRepository.findByUserIdAndWorkspaceIdAndPlanStatus(
 			requestUserInfo.getUuid(), workspaceInfo.getUuid(), PlanStatus.ACTIVE);
 
-		if(userLicensePlan == null){
+		if (userLicensePlan == null) {
 			log.error("[BILLING][LICENSE_ALLOCATE] - User License Plan (status = ACTIVE) Not found.");
 			log.error("[BILLING][LICENSE_ALLOCATE] - {}", licenseAllocateRequest.toString());
 			throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
@@ -243,8 +248,17 @@ public class BillingService {
 			throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
 		}
 
+		log.info("[BILLING][name:{}, uuid: {}, email: {}] - 라이선스 플랜 갱신 작업 시작.",
+			requestUserInfo.getName(), requestUserInfo.getUuid(), requestUserInfo.getEmail()
+		);
+
 		// 9. 상품 정보 변경 유무 확인(= 정기 결제 요청 유무 확인)
 		boolean isRegularAllocateRequest = isRegularAllocateRequest(resourceCalculate, userLicensePlan);
+
+		log.info("[BILLING][name:{}, uuid: {}, email: {}] - 정기 결제 요청 유무 : {} , 리소스 동일 여부: {}",
+			requestUserInfo.getName(), requestUserInfo.getUuid(), requestUserInfo.getEmail(),
+			licenseAllocateRequest.isRegularRequest(), isRegularAllocateRequest
+		);
 
 		// 10. 라이선스 상품 정보 수정 (추가 지급 or 축소 지급)
 		if (!isRegularAllocateRequest) {
@@ -290,6 +304,10 @@ public class BillingService {
 		WorkspaceInfoResponse workspaceInfo,
 		LicenseProductAllocateRequest licenseAllocateRequest
 	) {
+		log.info("name:{}, uuid: {}, email: {}, 라이선스 플랜 신규 생성 작업 시작.",
+			requestUserInfo.getName(), requestUserInfo.getUuid(), requestUserInfo.getEmail()
+		);
+
 		// 1개월 무료 이벤트 쿠폰 사용 여부 확인,
 		boolean isEventPlan = licenseAllocateRequest.getCouponList()
 			.stream()
@@ -352,6 +370,12 @@ public class BillingService {
 
 		licenseAssignAuthInfoRepository.deleteById(licenseAllocateRequest.getAssignAuthCode());
 
+		log.info("name:{}, uuid: {}, email: {}, 라이선스 플랜 신규 생성 작업 종료.",
+			requestUserInfo.getName(), requestUserInfo.getUuid(), requestUserInfo.getEmail()
+		);
+		log.info("name:{}, uuid: {}, email: {} :: {}",
+			requestUserInfo.getName(), requestUserInfo.getUuid(), requestUserInfo.getEmail(), licensePlan.toString()
+		);
 		return allocateResponse;
 	}
 
@@ -370,7 +394,7 @@ public class BillingService {
 				.orElseThrow(
 					() -> {
 						log.error(
-							"[PRODUCT NOT FOUND] -> planId: {} allocateProductInfo: {}",
+							"[BILLING][PRODUCT_NOT_FOUND] -> planId: {} allocateProductInfo: {}",
 							licensePlan.getId(), allocateProduct.toString()
 						);
 						return new BillingServiceException(
@@ -389,7 +413,7 @@ public class BillingService {
 				// 라이선스 상품 추가 지급 요청
 				if (originLicenseProduct.getQuantity() < allocateProduct.getProductAmount()) {
 					log.info(
-						"[INCREASE PRODUCT] - [{}] is {} to {}", allocateProduct.toString(),
+						"[BILLING][INCREASE_PRODUCT] - [{}] is {} to {}", allocateProduct.toString(),
 						originLicenseProduct.getQuantity(), allocateProduct.getProductAmount()
 					);
 					originLicenseProductResourceUpdate(allocateProduct, originLicenseProduct);
@@ -401,7 +425,7 @@ public class BillingService {
 				// 라이선스 상품 축소 지급 요청 (기존 제품 라이선스 수 > 할당 요청의 제품 라이선스 수)
 				if (originLicenseProduct.getQuantity() > allocateProduct.getProductAmount()) {
 					log.info(
-						"[DECREASE PRODUCT] - [{}] is {} to {}", allocateProduct.toString(),
+						"[BILLING][DECREASE_LICENSE_PRODUCT] - [{}] is {} to {}", allocateProduct.toString(),
 						originLicenseProduct.getQuantity(), allocateProduct.getProductAmount()
 					);
 					// 기존 제품 라이선스 리소스 정보를 할당 요청의 리소스 정보로 수정
@@ -662,6 +686,7 @@ public class BillingService {
 			.quantity(productInfo.getProductAmount())
 			.build();
 		licenseProductRepository.save(licenseProduct);
+		log.info("[BILLING][NEW_LICENSE_PRODUCT_GENERATE] - {}", licenseProduct.toString());
 		// 상품일때만 라이선스 생성
 		if (productInfo.getProductType().getId().equals(ProductTypeId.PRODUCT.getValue())) {
 			licenseGenerateAndRegisterByLicenseProduct(licenseProduct, productInfo.getProductAmount());
@@ -682,6 +707,7 @@ public class BillingService {
 				.licenseProduct(licenseProduct)
 				.build();
 			licenseRepository.save(license);
+			log.info("[BILLING][NEW_PRODUCT_LICENSE_GENERATE] - {}", license.toString());
 		}
 	}
 
