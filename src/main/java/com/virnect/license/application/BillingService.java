@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,7 @@ import com.virnect.license.dao.license.LicenseRepository;
 import com.virnect.license.dao.licenseplan.LicensePlanRepository;
 import com.virnect.license.dao.licenseproduct.LicenseProductRepository;
 import com.virnect.license.dao.product.ProductRepository;
+import com.virnect.license.domain.billing.CouponPeriodType;
 import com.virnect.license.domain.billing.LicenseAssignAuthInfo;
 import com.virnect.license.domain.billing.ProductTypeId;
 import com.virnect.license.domain.billing.ProductTypeName;
@@ -35,6 +37,7 @@ import com.virnect.license.domain.product.LicenseProduct;
 import com.virnect.license.domain.product.LicenseProductStatus;
 import com.virnect.license.domain.product.Product;
 import com.virnect.license.dto.ResourceCalculate;
+import com.virnect.license.dto.request.billing.AllocateCouponInfoResponse;
 import com.virnect.license.dto.request.billing.AllocateProductInfoResponse;
 import com.virnect.license.dto.request.billing.LicenseAllocateCheckRequest;
 import com.virnect.license.dto.request.billing.LicenseProductAllocateRequest;
@@ -95,15 +98,30 @@ public class BillingService {
 			allocateCheckRequest.getProductList()
 		);
 
-		log.info("[ALLOCATE_CHECK_REQUEST] => {} , [REQUEST_TOTAL_RESOURCE] => {}",
-			allocateCheckRequest, requestTotalResource
-		);
+		log.info("[BILLING][REQUEST_TOTAL_RESOURCE] => {}", requestTotalResource.toString());
 
 		// 3. 사용자의 현재 사용중인 라이선스 플랜 조회
 		Optional<LicensePlan> licensePlan = licensePlanRepository.findByUserIdAndPlanStatus(
 			requestUserInfo.getUuid(),
 			PlanStatus.ACTIVE
 		);
+
+		// 3-1. 현재 기간 결제 라이선스 플랜이 활성화 되어있는 경우
+		if (licensePlan.isPresent() && licensePlan.get().isTermPlan()) {
+			List<HashMap<String, Object>> detailMessage = new ArrayList<>();
+			HashMap<String, Object> rejectMessage = new HashMap<>();
+			rejectMessage.put("type", "plan");
+			rejectMessage.put("requestAmount", 0);
+			rejectMessage.put("exceededAmount", 0);
+			rejectMessage.put("availableAmount", 0);
+			rejectMessage.put("message", "previous term plan is exist and activated.");
+			detailMessage.add(rejectMessage);
+			log.error("[BILLING_LICENSE_ALLOCATE_CHECK][ERROR_MESSAGE] - {}", detailMessage.toString());
+			log.error("[BILLING_LICENSE_ALLOCATE_CHECK][PREVIOUS_PLAN] - {}", licensePlan.get().toString());
+			throw new LicenseAllocateDeniedException(
+				ErrorCode.ERR_BILLING_PRODUCT_ALLOCATE_DENIED, allocateCheckRequest.getUserId(), detailMessage
+			);
+		}
 
 		// 4. 최대 통화 수 , 최대 용량, 최대 다운로드 횟수 비교
 		allocateResourceValidation(
@@ -194,7 +212,14 @@ public class BillingService {
 		WorkspaceInfoResponse workspaceInfo = getWorkspaceInfoResponseByUserId(requestUserInfo.getUuid());
 
 		// 6. 플랜 할당 이력 존재 유무 검사
-		boolean hasAllocatedLicensePlan = licensePlanRepository.existsByUserId(requestUserInfo.getUuid());
+		boolean hasAllocatedLicensePlan = licensePlanRepository.existsByUserIdAndPlanStatusIsIn(
+			requestUserInfo.getUuid(), Arrays.asList(PlanStatus.ACTIVE, PlanStatus.INACTIVE)
+		);
+
+		log.info(
+			"[BILLING][LICENSE_ALLOCATE] - User has active or inactive license plan check result: {}",
+			hasAllocatedLicensePlan
+		);
 
 		// 7-1. 라이선스 할당 이력이 없는 경우 (신규 요청)
 		if (!hasAllocatedLicensePlan) {
@@ -209,8 +234,31 @@ public class BillingService {
 		LicensePlan userLicensePlan = licensePlanRepository.findByUserIdAndWorkspaceIdAndPlanStatus(
 			requestUserInfo.getUuid(), workspaceInfo.getUuid(), PlanStatus.ACTIVE);
 
+		if (userLicensePlan == null) {
+			log.error("[BILLING][LICENSE_ALLOCATE] - User License Plan (status = ACTIVE) Not found.");
+			log.error("[BILLING][LICENSE_ALLOCATE] - {}", licenseAllocateRequest.toString());
+			throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+		}
+
+		// 8-1. 기존 활성화 되어있는 라이선스 플랜이 기간 결제인 경우
+		// 해당 플랜이 만료되기전까지 갱신 불가
+		if (userLicensePlan.isTermPlan()) {
+			log.error("[BILLING][LICENSE_ALLOCATE] - Previous License plan is term payment plan and activated.");
+			log.error("[BILLING][LICENSE_ALLOCATE][PLAN_INFO] - {}", userLicensePlan.toString());
+			throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+		}
+
+		log.info("[BILLING][name:{}, uuid: {}, email: {}] - 라이선스 플랜 갱신 작업 시작.",
+			requestUserInfo.getName(), requestUserInfo.getUuid(), requestUserInfo.getEmail()
+		);
+
 		// 9. 상품 정보 변경 유무 확인(= 정기 결제 요청 유무 확인)
 		boolean isRegularAllocateRequest = isRegularAllocateRequest(resourceCalculate, userLicensePlan);
+
+		log.info("[BILLING][name:{}, uuid: {}, email: {}] - 정기 결제 요청 유무 : {} , 리소스 동일 여부: {}",
+			requestUserInfo.getName(), requestUserInfo.getUuid(), requestUserInfo.getEmail(),
+			licenseAllocateRequest.isRegularRequest(), isRegularAllocateRequest
+		);
 
 		// 10. 라이선스 상품 정보 수정 (추가 지급 or 축소 지급)
 		if (!isRegularAllocateRequest) {
@@ -220,6 +268,7 @@ public class BillingService {
 		// 라이선스 플랜 리소스 정보 및 만료 기간 갱신 프로세스
 		userLicensePlan.setMaxCallTime(resourceCalculate.getTotalCallTime());
 		userLicensePlan.setMaxStorageSize(resourceCalculate.getTotalStorageSize());
+
 		// 다운로드 횟수는 최초 워크스페이스 생성 시 지급된 횟수보다 높은 경우에만 갱신
 		if (resourceCalculate.getTotalDownloadHit() > FIRST_WORKSPACE_DOWNLOAD_HITS) {
 			userLicensePlan.setMaxDownloadHit(resourceCalculate.getTotalDownloadHit());
@@ -255,13 +304,42 @@ public class BillingService {
 		WorkspaceInfoResponse workspaceInfo,
 		LicenseProductAllocateRequest licenseAllocateRequest
 	) {
+		log.info("name:{}, uuid: {}, email: {}, 라이선스 플랜 신규 생성 작업 시작.",
+			requestUserInfo.getName(), requestUserInfo.getUuid(), requestUserInfo.getEmail()
+		);
+
 		// 1개월 무료 이벤트 쿠폰 사용 여부 확인,
 		boolean isEventPlan = licenseAllocateRequest.getCouponList()
 			.stream()
 			.allMatch(c -> c.getCouponName().contains("1개월 무료 사용 할인 쿠폰"));
 
+		// 구독 결제 라이선스 만료 기간 설정 (결제 시점으로 부터 한달 뒤 자정)
 		LocalDateTime expiredDate = LocalDate.now().plusDays(30)
 			.atTime(LICENSE_EXPIRED_HOUR, LICENSE_EXPIRED_MINUTE, LICENSE_EXPIRED_SECONDS);
+
+		// 기간 결제 요청인 경우
+		if (licenseAllocateRequest.isTermPaymentRequest()) {
+			// 기간 결제 요청일 때 100% 할인 쿠폰 정보가 없는 경우 예외 발생
+			AllocateCouponInfoResponse freeCouponInfo = Optional.ofNullable(
+				licenseAllocateRequest.getCouponList().get(0)).orElseThrow(() -> {
+				log.error(
+					"[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] - Term Payment request fail. Coupon Information Not Found.");
+				log.error("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] - {}", licenseAllocateRequest.toString());
+				return new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+			});
+
+			// 라이선스 만료 기간 계산 및 기존 구독 결제 기반 라이선스 만료일 정보를 기간 결제 만료일로 갱신
+			if (freeCouponInfo.getPeriodType().equals(CouponPeriodType.DAY)) { // 일 할인인 경우
+				expiredDate = LocalDate.now().plusDays(freeCouponInfo.getPeriod())
+					.atTime(LICENSE_EXPIRED_HOUR, LICENSE_EXPIRED_MINUTE, LICENSE_EXPIRED_SECONDS);
+			} else if (freeCouponInfo.getPeriodType().equals(CouponPeriodType.MONTH)) { // 월 할인인 경우
+				expiredDate = LocalDate.now().plusMonths(freeCouponInfo.getPeriod())
+					.atTime(LICENSE_EXPIRED_HOUR, LICENSE_EXPIRED_MINUTE, LICENSE_EXPIRED_SECONDS);
+			} else if (freeCouponInfo.getPeriodType().equals(CouponPeriodType.YEAR)) { // 연 할인인 경우
+				expiredDate = LocalDate.now().plusYears(freeCouponInfo.getPeriod())
+					.atTime(LICENSE_EXPIRED_HOUR, LICENSE_EXPIRED_MINUTE, LICENSE_EXPIRED_SECONDS);
+			}
+		}
 
 		// 11. 최초 구매, 라이선스 플랜 생성
 		LicensePlan licensePlan = LicensePlan.builder()
@@ -277,6 +355,7 @@ public class BillingService {
 			.paymentId(licenseAllocateRequest.getPaymentId())
 			.countryCode(licenseAllocateRequest.getUserCountryCode())
 			.isEventPlan(isEventPlan)
+			.isTermPlan(licenseAllocateRequest.isTermPaymentRequest())
 			.build();
 		licensePlanRepository.save(licensePlan);
 
@@ -291,6 +370,12 @@ public class BillingService {
 
 		licenseAssignAuthInfoRepository.deleteById(licenseAllocateRequest.getAssignAuthCode());
 
+		log.info("name:{}, uuid: {}, email: {}, 라이선스 플랜 신규 생성 작업 종료.",
+			requestUserInfo.getName(), requestUserInfo.getUuid(), requestUserInfo.getEmail()
+		);
+		log.info("name:{}, uuid: {}, email: {} :: {}",
+			requestUserInfo.getName(), requestUserInfo.getUuid(), requestUserInfo.getEmail(), licensePlan.toString()
+		);
 		return allocateResponse;
 	}
 
@@ -309,7 +394,7 @@ public class BillingService {
 				.orElseThrow(
 					() -> {
 						log.error(
-							"[PRODUCT NOT FOUND] -> planId: {} allocateProductInfo: {}",
+							"[BILLING][PRODUCT_NOT_FOUND] -> planId: {} allocateProductInfo: {}",
 							licensePlan.getId(), allocateProduct.toString()
 						);
 						return new BillingServiceException(
@@ -328,7 +413,7 @@ public class BillingService {
 				// 라이선스 상품 추가 지급 요청
 				if (originLicenseProduct.getQuantity() < allocateProduct.getProductAmount()) {
 					log.info(
-						"[INCREASE PRODUCT] - [{}] is {} to {}", allocateProduct.toString(),
+						"[BILLING][INCREASE_PRODUCT] - [{}] is {} to {}", allocateProduct.toString(),
 						originLicenseProduct.getQuantity(), allocateProduct.getProductAmount()
 					);
 					originLicenseProductResourceUpdate(allocateProduct, originLicenseProduct);
@@ -340,7 +425,7 @@ public class BillingService {
 				// 라이선스 상품 축소 지급 요청 (기존 제품 라이선스 수 > 할당 요청의 제품 라이선스 수)
 				if (originLicenseProduct.getQuantity() > allocateProduct.getProductAmount()) {
 					log.info(
-						"[DECREASE PRODUCT] - [{}] is {} to {}", allocateProduct.toString(),
+						"[BILLING][DECREASE_LICENSE_PRODUCT] - [{}] is {} to {}", allocateProduct.toString(),
 						originLicenseProduct.getQuantity(), allocateProduct.getProductAmount()
 					);
 					// 기존 제품 라이선스 리소스 정보를 할당 요청의 리소스 정보로 수정
@@ -476,7 +561,7 @@ public class BillingService {
 	public ApiResponse<LicenseProductDeallocateResponse> licenseDeallocateRequest(
 		LicenseProductDeallocateRequest licenseDeallocateRequest
 	) {
-		log.info("[LICENSE_DEALLOCATE_REQUEST] - {}", licenseDeallocateRequest.toString());
+		log.info("[BILLING][LICENSE_PLAN_REFUND_REQUEST] - {}", licenseDeallocateRequest.toString());
 
 		// 1. 계정 정보 조회
 		UserInfoRestResponse requestUserInfo = getUserInfoRestResponseByUserId(
@@ -488,23 +573,29 @@ public class BillingService {
 			requestUserInfo.getUuid());
 
 		// 3. 라이선스 플랜 정보 조회
-		LicensePlan licensePlan = licensePlanRepository.findByUserIdAndWorkspaceId(
-			requestUserInfo.getUuid(), requestUserMasterWorkspaceInfo.getUuid()
-		).orElseThrow(()-> new BillingServiceException(ErrorCode.ERR_BILLING_LICENSE_DEALLOCATE_PLAN_NOT_FOUND));
+		LicensePlan licensePlan = licensePlanRepository.findByUserIdAndWorkspaceIdAndPlanStatus(
+			requestUserInfo.getUuid(), requestUserMasterWorkspaceInfo.getUuid(), PlanStatus.ACTIVE
+		);
+
+		// 3-1. 활성화된 라이선스 플랜이 없는 경우
+		if (licensePlan == null) {
+			log.error("[BILLING][LICENSE_PLAN_REFUND] - active license plan not found");
+			throw new BillingServiceException(ErrorCode.ERR_BILLING_LICENSE_DEALLOCATE_PLAN_NOT_FOUND);
+		}
 
 		// 4. license product 정보 조회
 		Set<LicenseProduct> licenseProductSet = licensePlan.getLicenseProductList();
 
 		if (!licenseProductSet.isEmpty()) {
-			log.info("[LICENSE_PLAN_REFUND] - LICENSE_PRODUCT_INACTIVE BEGIN.");
+			log.info("[BILLING][LICENSE_PLAN_REFUND] - LICENSE_PRODUCT_INACTIVE BEGIN.");
 			// license product 상태 inactive 로 변경
 			licenseProductSet.forEach(lp -> lp.setStatus(LicenseProductStatus.INACTIVE));
 			licenseProductRepository.saveAll(licenseProductSet);
 			// license 할당 해제
 			log.info(
-				"[LICENSE_PLAN_REFUND] - All license status changed to UNUSED and  delete user assigning information.");
+				"[BILLING][LICENSE_PLAN_REFUND] - All license status changed to UNUSED and  delete user assigning information.");
 			licenseRepository.updateAllLicenseInfoInactiveByLicenseProduct(licenseProductSet);
-			log.info("[LICENSE_PLAN_REFUND] - LICENSE_PRODUCT_INACTIVE END.");
+			log.info("[BILLING][LICENSE_PLAN_REFUND] - LICENSE_PRODUCT_INACTIVE END.");
 		}
 
 		// 5. license plan 상태 비활성화 및 환불 데이터 표시
@@ -601,30 +692,12 @@ public class BillingService {
 			.quantity(productInfo.getProductAmount())
 			.build();
 		licenseProductRepository.save(licenseProduct);
+		log.info("[BILLING][NEW_LICENSE_PRODUCT_GENERATE] - {}", licenseProduct.toString());
 		// 상품일때만 라이선스 생성
 		if (productInfo.getProductType().getId().equals(ProductTypeId.PRODUCT.getValue())) {
 			licenseGenerateAndRegisterByLicenseProduct(licenseProduct, productInfo.getProductAmount());
 		}
 	}
-
-	// /**
-	//  * 서비스 상품 정보 등록
-	//  *
-	//  * @param serviceProductList - 서비스 상품 정보 리스트
-	//  * @param licensePlan        - 상품 지급 대상 라이선스 플랜 정보
-	//  */
-	// private void registerServiceProduct(
-	// 	List<AllocateProductInfoResponse> serviceProductList, LicensePlan licensePlan
-	// ) {
-	// 	ResourceCalculate serviceProductResourceInfo = calculateAllocateProductResource(serviceProductList);
-	// 	ServiceProduct serviceProduct = ServiceProduct.builder()
-	// 		.totalCallTime(serviceProductResourceInfo.getTotalCallTime())
-	// 		.totalDownloadHit(serviceProductResourceInfo.getTotalDownloadHit())
-	// 		.totalStorageSize(serviceProductResourceInfo.getTotalStorageSize())
-	// 		.licensePlan(licensePlan)
-	// 		.build();
-	// 	serviceProductRepository.save(serviceProduct);
-	// }
 
 	/**
 	 * 새 라이선스 생성
@@ -640,6 +713,7 @@ public class BillingService {
 				.licenseProduct(licenseProduct)
 				.build();
 			licenseRepository.save(license);
+			log.info("[BILLING][NEW_PRODUCT_LICENSE_GENERATE] - {}", license.toString());
 		}
 	}
 
@@ -666,6 +740,7 @@ public class BillingService {
 				calculateMaxHit += product.getProductHit() * product.getProductAmount();
 			}
 		}
+		log.info("callTime: {} , storageSize: {}, Hit: {}", calculateMaxCallTime, calculateMaxStorage, calculateMaxHit);
 		return new ResourceCalculate(calculateMaxCallTime, calculateMaxStorage, calculateMaxHit);
 	}
 
@@ -744,7 +819,7 @@ public class BillingService {
 	}
 
 	/**
-	 * 정기 제품 할당 요청 여부 검사
+	 * 정기 결제 제품 할당 요청 여부 검사
 	 * @param resourceCalculate - 요청 리소스 계산 정보
 	 * @param licensePlan - 이전 라이선스 플랜 정보
 	 * @return true=정기요청, false=축소 또는 추가 요청

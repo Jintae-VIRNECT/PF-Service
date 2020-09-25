@@ -31,5 +31,7 @@ public interface LicensePlanRepository extends JpaRepository<LicensePlan, Long>,
 
 	boolean existsByUserId(String userUUID);
 
+	boolean existsByUserIdAndPlanStatusIsIn(String userId, List<PlanStatus> planStatusList);
+
 	List<LicensePlan> findAllByPlanStatus(PlanStatus planStatus);
 }
