@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +56,7 @@ import com.virnect.license.global.common.ApiResponse;
 import com.virnect.license.global.error.ErrorCode;
 
 @Slf4j
+@Profile(value = "!onpremise")
 @Service
 @RequiredArgsConstructor
 public class BillingService {
@@ -100,10 +102,10 @@ public class BillingService {
 
 		log.info("[BILLING][REQUEST_TOTAL_RESOURCE] => {}", requestTotalResource.toString());
 
-		// 3. 사용자의 현재 사용중인 라이선스 플랜 조회
-		Optional<LicensePlan> licensePlan = licensePlanRepository.findByUserIdAndPlanStatus(
+		// 3. 사용자의 현재 사용중인 라이선스 플랜 조회 (활성화 or 비활성화)
+		Optional<LicensePlan> licensePlan = licensePlanRepository.findByUserIdAndPlanStatusNot(
 			requestUserInfo.getUuid(),
-			PlanStatus.ACTIVE
+			PlanStatus.TERMINATE
 		);
 
 		// 3-1. 현재 기간 결제 라이선스 플랜이 활성화 되어있는 경우
@@ -230,9 +232,9 @@ public class BillingService {
 			return new ApiResponse<>(response);
 		}
 
-		// 8. 라이선스 플랜 정보 조회
-		LicensePlan userLicensePlan = licensePlanRepository.findByUserIdAndWorkspaceIdAndPlanStatus(
-			requestUserInfo.getUuid(), workspaceInfo.getUuid(), PlanStatus.ACTIVE);
+		// 8. 라이선스 플랜 정보 조회 (활성화 or 비활성화)
+		LicensePlan userLicensePlan = licensePlanRepository.findByUserIdAndWorkspaceIdAndPlanStatusNot(
+			requestUserInfo.getUuid(), workspaceInfo.getUuid(), PlanStatus.TERMINATE);
 
 		if (userLicensePlan == null) {
 			log.error("[BILLING][LICENSE_ALLOCATE] - User License Plan (status = ACTIVE) Not found.");
@@ -276,6 +278,7 @@ public class BillingService {
 		userLicensePlan.setPaymentId(licenseAllocateRequest.getPaymentId());
 		userLicensePlan.setCountryCode(licenseAllocateRequest.getUserCountryCode());
 		userLicensePlan.setEndDate(userLicensePlan.getEndDate().plusMonths(1));
+		userLicensePlan.setPlanStatus(PlanStatus.ACTIVE);
 		licensePlanRepository.save(userLicensePlan);
 
 		// 라이선스 지급 인증 정보 삭제

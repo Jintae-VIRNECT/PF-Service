@@ -4,18 +4,14 @@ import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
 
-import com.virnect.license.infra.billing.BillingServiceProperty;
-
 @Slf4j
 @SpringBootApplication
-@EnableConfigurationProperties({BillingServiceProperty.class})
 public class LicenseApplication {
 
 	public static void main(String[] args) {
@@ -31,7 +27,6 @@ public class LicenseApplication {
 	public RestTemplate restTemplate() {
 		return new RestTemplate();
 	}
-
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void applicationReady() {

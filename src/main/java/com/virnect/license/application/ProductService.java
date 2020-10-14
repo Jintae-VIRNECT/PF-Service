@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ import com.virnect.license.global.common.ApiResponse;
 import com.virnect.license.global.error.ErrorCode;
 
 @Slf4j
+@Profile(value = "!onpremise")
 @Service
 @RequiredArgsConstructor
 public class ProductService {

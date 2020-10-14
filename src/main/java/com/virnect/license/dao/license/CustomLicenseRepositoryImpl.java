@@ -49,10 +49,7 @@ public class CustomLicenseRepositoryImpl extends QuerydslRepositorySupport imple
 			.join(qLicenseProduct).on(qLicense.licenseProduct.eq(qLicenseProduct)).fetchJoin()
 			.join(qProduct).on(qLicenseProduct.product.eq(qProduct)).fetchJoin()
 			.join(qLicensePlan).on(qLicenseProduct.licensePlan.eq(qLicensePlan)).fetchJoin()
-			.where(qLicensePlan.planStatus.eq(PlanStatus.ACTIVE).
-				and(qLicenseProduct.status.in(
-					Arrays.asList(LicenseProductStatus.ACTIVE, LicenseProductStatus.EXCEEDED))
-				))
+			.where(qLicensePlan.planStatus.ne(PlanStatus.TERMINATE))
 			.where(qLicense.userId.eq(userId).and(qProduct.name.in(Arrays.asList("MAKE", "VIEW", "REMOTE"))));
 
 		query.offset(pageable.getOffset());
