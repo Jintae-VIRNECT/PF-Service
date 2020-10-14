@@ -33,7 +33,7 @@ import com.virnect.license.global.error.ErrorResponseMessage;
  * EMAIL: practice1356@gmail.com
  * DESCRIPTION:
  */
-@Profile({"develop", "local"})
+@Profile({"!staging", "!production"})
 @Configuration
 @EnableSwagger2
 @RequiredArgsConstructor

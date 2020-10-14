@@ -15,7 +15,7 @@ import com.virnect.license.global.common.ApiResponse;
  * DESCRIPTION:
  */
 
-@FeignClient(name = "user-server")
+@FeignClient(name = "user-server", fallbackFactory = UserRestFallbackFactory.class)
 public interface UserRestService {
 	/**
 	 * 유저 정보 조회

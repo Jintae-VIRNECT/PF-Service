@@ -1,6 +1,5 @@
 package com.virnect.license.application;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -14,20 +13,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,9 +44,6 @@ import com.virnect.license.dto.response.MyLicenseInfoResponse;
 import com.virnect.license.dto.response.MyLicensePlanInfoListResponse;
 import com.virnect.license.dto.response.MyLicensePlanInfoResponse;
 import com.virnect.license.dto.response.WorkspaceLicensePlanInfoResponse;
-import com.virnect.license.dto.rest.billing.BillingRestResponse;
-import com.virnect.license.dto.rest.billing.MonthlyBillingCancelRequest;
-import com.virnect.license.dto.rest.billing.MonthlyBillingInfo;
 import com.virnect.license.dto.rest.content.ContentResourceUsageInfoResponse;
 import com.virnect.license.dto.rest.user.WorkspaceInfoResponse;
 import com.virnect.license.exception.LicenseServiceException;
@@ -93,8 +79,8 @@ public class LicenseService {
 	 */
 	@Transactional(readOnly = true)
 	public WorkspaceLicensePlanInfoResponse getWorkspaceLicensePlanInfo(String workspaceId) {
-		Optional<LicensePlan> licensePlanInfo = licensePlanRepository.findByWorkspaceIdAndPlanStatus(
-			workspaceId, PlanStatus.ACTIVE
+		Optional<LicensePlan> licensePlanInfo = licensePlanRepository.findByWorkspaceIdAndPlanStatusNot(
+			workspaceId, PlanStatus.TERMINATE
 		);
 
 		if (!licensePlanInfo.isPresent()) {
@@ -129,7 +115,7 @@ public class LicenseService {
 					licenseProductInfo.getUnUseLicenseAmount() + unUsedLicenseAmount.get()
 				);
 				licenseProductInfo.getLicenseInfoList().addAll(licenseInfoList);
-				licenseProductInfo.setQuantity(licenseProductInfo.getLicenseInfoList().size());
+				licenseProductInfo.setQuantity(licenseProductInfo.getQuantity());
 				licenseProductInfo.setProductStatus(licenseProduct.getStatus());
 			} else {
 				LicenseProductInfoResponse licenseProductInfo = new LicenseProductInfoResponse();
@@ -146,7 +132,7 @@ public class LicenseService {
 				);
 
 				licenseProductInfo.setLicenseInfoList(licenseInfoList);
-				licenseProductInfo.setQuantity(licenseInfoList.size());
+				licenseProductInfo.setQuantity(licenseProduct.getQuantity());
 				licenseProductInfo.setUnUseLicenseAmount(unUsedLicenseAmount.get());
 				licenseProductInfo.setUseLicenseAmount(usedLicenseAmount.get());
 				licenseProductInfo.setProductStatus(licenseProduct.getStatus());
@@ -248,7 +234,8 @@ public class LicenseService {
 	 */
 	@Transactional(readOnly = true)
 	public ApiResponse<MyLicenseInfoListResponse> getMyLicenseInfoList(String userId, String workspaceId) {
-		LicensePlan licensePlan = licensePlanRepository.findByWorkspaceIdAndPlanStatus(workspaceId, PlanStatus.ACTIVE)
+		LicensePlan licensePlan = licensePlanRepository.findByWorkspaceIdAndPlanStatusNot(
+			workspaceId, PlanStatus.TERMINATE)
 			.orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_LICENSE_PLAN_NOT_FOUND));
 
 		List<MyLicenseInfoResponse> myLicenseInfoResponseList = new ArrayList<>();
@@ -266,7 +253,6 @@ public class LicenseService {
 						licenseInfo.setCreatedDate(license.getCreatedDate());
 						licenseInfo.setProductName(product.getName());
 						licenseInfo.setUpdatedDate(license.getUpdatedDate());
-						// licenseInfo.setLicenseType(productType.getName());
 						licenseInfo.setStatus(license.getStatus());
 						licenseInfo.setProductPlanStatus(licenseProduct.getStatus().toString());
 						myLicenseInfoResponseList.add(licenseInfo);
@@ -289,32 +275,19 @@ public class LicenseService {
 		String workspaceId, String userId, String productName, Boolean grant
 	) {
 		//워크스페이스 플랜찾기
-		LicensePlan licensePlan = this.licensePlanRepository.findByWorkspaceIdAndPlanStatus(
+		LicensePlan licensePlan = licensePlanRepository.findByWorkspaceIdAndPlanStatus(
 			workspaceId,
 			PlanStatus.ACTIVE
-		)
-			.orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_LICENSE_PLAN_NOT_FOUND));
-		Set<LicenseProduct> licenseProductSet = licensePlan.getLicenseProductList();
+		).orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_LICENSE_PLAN_NOT_FOUND));
 
 		LicenseProduct licenseProduct = licenseProductRepository.findByLicensePlanAndProduct_Name(
 			licensePlan, productName
 		).orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_LICENSE_PRODUCT_NOT_FOUND));
 
-		// Product product = null;
-		// for (LicenseProduct licenseProduct : licenseProductSet) {
-		// 	if (licenseProduct.getProduct().getName().equalsIgnoreCase(productName)) {
-		// 		product = licenseProduct.getProduct();
-		// 	}
-		// }
-		// //워크스페이스가 가진 라이선스 중에 사용자가 요청한 제품 라이선스가 없는경우.
-		// if (product == null) {
-		// 	throw new LicenseServiceException(ErrorCode.ERR_LICENSE_PRODUCT_NOT_FOUND);
-		// }
-
 		Product product = licenseProduct.getProduct();
 
 		//라이선스 부여/해제
-		License oldLicense = this.licenseRepository.findByUserIdAndLicenseProduct_LicensePlan_WorkspaceIdAndLicenseProduct_ProductAndStatus(
+		License oldLicense = licenseRepository.findByUserIdAndLicenseProduct_LicensePlan_WorkspaceIdAndLicenseProduct_ProductAndStatus(
 			userId, workspaceId, product, LicenseStatus.USE);
 		if (grant) {
 			if (oldLicense != null) {
@@ -340,7 +313,7 @@ public class LicenseService {
 			}
 
 			//부여 가능한 라이선스 찾기
-			List<License> licenseList = this.licenseRepository.findAllByLicenseProduct_LicensePlan_WorkspaceIdAndLicenseProduct_LicensePlan_PlanStatusAndLicenseProduct_ProductAndStatus(
+			List<License> licenseList = licenseRepository.findAllByLicenseProduct_LicensePlan_WorkspaceIdAndLicenseProduct_LicensePlan_PlanStatusAndLicenseProduct_ProductAndStatus(
 				workspaceId, PlanStatus.ACTIVE, product, LicenseStatus.UNUSE);
 			if (licenseList.isEmpty()) {
 				throw new LicenseServiceException(ErrorCode.ERR_USEFUL_LICENSE_NOT_FOUND);
@@ -349,9 +322,9 @@ public class LicenseService {
 			License updatedLicense = licenseList.get(0);
 			updatedLicense.setUserId(userId);
 			updatedLicense.setStatus(LicenseStatus.USE);
-			this.licenseRepository.save(updatedLicense);
+			licenseRepository.save(updatedLicense);
 
-			MyLicenseInfoResponse myLicenseInfoResponse = this.modelMapper.map(
+			MyLicenseInfoResponse myLicenseInfoResponse = modelMapper.map(
 				updatedLicense,
 				MyLicenseInfoResponse.class
 			);
@@ -360,7 +333,7 @@ public class LicenseService {
 			// 라이선스 축소
 			oldLicense.setUserId(null);
 			oldLicense.setStatus(LicenseStatus.UNUSE);
-			this.licenseRepository.save(oldLicense);
+			licenseRepository.save(oldLicense);
 
 			// 해당 제품 라이선스 초과 상태 체크
 			if (licenseProduct.getStatus().equals(LicenseProductStatus.EXCEEDED)) {
@@ -401,6 +374,7 @@ public class LicenseService {
 				detailsInfo.getWorkspaceId());
 			WorkspaceInfoResponse workspaceInfoResponse = workspaceInfoResponseMessage.getData();
 			if (workspaceInfoResponse.getUuid() == null || workspaceInfoResponse.getUuid().isEmpty()) {
+				log.info("[WORKSPACE_NOT_FOUND] - {}", detailsInfo.toString());
 				continue;
 			}
 			MyLicensePlanInfoResponse licensePlanInfoResponse = new MyLicensePlanInfoResponse();

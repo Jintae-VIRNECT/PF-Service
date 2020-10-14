@@ -2,6 +2,7 @@ package com.virnect.license.api;
 
 import javax.validation.Valid;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +33,7 @@ import com.virnect.license.global.error.ErrorCode;
 
 @Api
 @Slf4j
+@Profile(value = "!onpremise")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/licenses")
