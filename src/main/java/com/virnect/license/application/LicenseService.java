@@ -122,7 +122,7 @@ public class LicenseService {
 				AtomicInteger unUsedLicenseAmount = new AtomicInteger();
 				AtomicInteger usedLicenseAmount = new AtomicInteger();
 				// Product Info
-				licenseProductInfo.setProductId(product.getId());
+				licenseProductInfo.setProductId(product.getBillProductId());
 				licenseProductInfo.setProductName(product.getName());
 				// licenseProductInfo.setLicenseType(product.getProductType().getName());
 

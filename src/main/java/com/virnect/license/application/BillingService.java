@@ -275,6 +275,17 @@ public class BillingService {
 		if (resourceCalculate.getTotalDownloadHit() > FIRST_WORKSPACE_DOWNLOAD_HITS) {
 			userLicensePlan.setMaxDownloadHit(resourceCalculate.getTotalDownloadHit());
 		}
+
+		// 만약 결제 실패로 인한 비활설화 상태의 플랜정보인 경우
+		if (userLicensePlan.getPlanStatus().equals(PlanStatus.INACTIVE)) {
+			log.info("[INACTIVE_LICENSE_PLAN_CHANGE_TO_ACTIVE] - {}", userLicensePlan.toString());
+			// 각 제품 플랜 상태를 활성화 상태로 변경
+			userLicensePlan.getLicenseProductList().forEach(lp -> {
+				log.info("[INACTIVE_LICENSE_PLAN_CHANGE_TO_ACTIVE][LICENSE_PRODUCT] - {}", lp.toString());
+				lp.setStatus(LicenseProductStatus.ACTIVE);
+			});
+		}
+
 		userLicensePlan.setPaymentId(licenseAllocateRequest.getPaymentId());
 		userLicensePlan.setCountryCode(licenseAllocateRequest.getUserCountryCode());
 		userLicensePlan.setEndDate(userLicensePlan.getEndDate().plusMonths(1));
