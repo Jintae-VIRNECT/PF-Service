@@ -2,18 +2,17 @@
 RELEASE
 
 New Features
-- 라이선스 플랜 축소 추가 대응
-- 회원 탈퇴 API 추가
-- 라이선스 할당 해제 시, 라이선스 축소 상태 확인 및 변경 로직 추가
-- 환불 시, 라이선스 플랜 종료 및 라이선스 관련 정보 비활성화, 정기 결제 취소 처리 추가
-- 빌링 관련 요청 로그 출력 기능 추가
-- 내 사용중인 플랜 목록 조회 시, 해당 제품 플랜의 상태값 정보 추가
-- PF-Config 서버 연동, 환경 설정 정보 동기화 기능 추가
-- 기간 결제시 라이선스 기간 설정 기능 추가, 라이선스 기간은 쿠폰 기간 설정 정보에 따름
+- 없음
 
 Bug Fixes
-- 라이선스 지급 시, 해당 플랜이 비활성화 되어있었던 경우 플랜 활성화 및 제품 플랜 활성화 프로세스 추가
+- 라이선스 지금 API 요청 처리 시, 이전 라이선스 플랜(license_plan)의 상태가 비활성화(INACTIVE)인 경우
+  해당 라이선스 플랜을 활성화(INACTIVE)하고, 하위 제품 라이선스 플랜(license_product)의 상태 값이 동기화 되지 않던 문제 수정
+  https://virtualconnection.atlassian.net/browse/DPLA-906
+  https://virtualconnection.atlassian.net/browse/DPLA-908
 
+- 워크스페이스 라이선스 플랜 조회 조건 수정
+ 기존: ACTIVE only
+ 변경: ACTIVE or INACTIVE
 
 Limitation
 - 없음
