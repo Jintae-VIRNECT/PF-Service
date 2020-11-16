@@ -441,10 +441,10 @@ public class BillingService {
 						"[BILLING][INCREASE_PRODUCT] - [{}] is {} to {}", allocateProduct.toString(),
 						originLicenseProduct.getQuantity(), allocateProduct.getProductAmount()
 					);
+					assignLicenseProductMoreThanOriginLicensePlan(allocateProduct, originLicenseProduct);
 					originLicenseProductResourceUpdate(allocateProduct, originLicenseProduct);
 					originLicenseProduct.setStatus(LicenseProductStatus.ACTIVE);
 					licenseProductRepository.save(originLicenseProduct);
-					assignLicenseProductMoreThanOriginLicensePlan(allocateProduct, originLicenseProduct);
 				}
 
 				// 라이선스 상품 축소 지급 요청 (기존 제품 라이선스 수 > 할당 요청의 제품 라이선스 수)
