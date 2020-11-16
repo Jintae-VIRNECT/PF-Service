@@ -3,6 +3,7 @@ package com.virnect.license.application.rest.workspace;
 import java.util.ArrayList;
 
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import feign.hystrix.FallbackFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,7 @@ import com.virnect.license.global.common.ApiResponse;
  * @since 2020.04.29
  */
 @Slf4j
-@Component
+@Service
 public class WorkspaceRestFallbackFactory implements FallbackFactory<WorkspaceRestService> {
 	@Override
 	public WorkspaceRestService create(Throwable cause) {

@@ -2,6 +2,7 @@ package com.virnect.license.application.rest.user;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import feign.hystrix.FallbackFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +11,7 @@ import com.virnect.license.dto.rest.user.UserInfoRestResponse;
 import com.virnect.license.global.common.ApiResponse;
 
 @Slf4j
-@Component
+@Service
 public class UserRestFallbackFactory implements FallbackFactory<UserRestService> {
 	@Override
 	public UserRestService create(Throwable cause) {

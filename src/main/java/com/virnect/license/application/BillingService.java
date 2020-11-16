@@ -108,24 +108,25 @@ public class BillingService {
 			PlanStatus.TERMINATE
 		);
 
-		// 3-1. 현재 기간 결제 라이선스 플랜이 활성화 되어있는 경우
-		if (licensePlan.isPresent() && licensePlan.get().isTermPlan()) {
-			List<HashMap<String, Object>> detailMessage = new ArrayList<>();
-			HashMap<String, Object> rejectMessage = new HashMap<>();
-			rejectMessage.put("type", "plan");
-			rejectMessage.put("requestAmount", 0);
-			rejectMessage.put("exceededAmount", 0);
-			rejectMessage.put("availableAmount", 0);
-			rejectMessage.put("message", "previous term plan is exist and activated.");
-			detailMessage.add(rejectMessage);
-			log.error("[BILLING_LICENSE_ALLOCATE_CHECK][ERROR_MESSAGE] - {}", detailMessage.toString());
-			log.error("[BILLING_LICENSE_ALLOCATE_CHECK][PREVIOUS_PLAN] - {}", licensePlan.get().toString());
-			throw new LicenseAllocateDeniedException(
-				ErrorCode.ERR_BILLING_PRODUCT_ALLOCATE_DENIED, allocateCheckRequest.getUserId(), detailMessage
-			);
-		}
+		// 3-1. 현재 기간 결제 라이선스 플랜이 활성화 되어있는 경우 -> 기간결제 중, 신규 결제 요청건 수락.
+		// if (licensePlan.isPresent() && licensePlan.get().isTermPlan()) {
+		// 	List<HashMap<String, Object>> detailMessage = new ArrayList<>();
+		// 	HashMap<String, Object> rejectMessage = new HashMap<>();
+		// 	rejectMessage.put("type", "plan");
+		// 	rejectMessage.put("requestAmount", 0);
+		// 	rejectMessage.put("exceededAmount", 0);
+		// 	rejectMessage.put("availableAmount", 0);
+		// 	rejectMessage.put("message", "previous term plan is exist and activated.");
+		// 	detailMessage.add(rejectMessage);
+		// 	log.error("[BILLING_LICENSE_ALLOCATE_CHECK][ERROR_MESSAGE] - {}", detailMessage.toString());
+		// 	log.error("[BILLING_LICENSE_ALLOCATE_CHECK][PREVIOUS_PLAN] - {}", licensePlan.get().toString());
+		// 	throw new LicenseAllocateDeniedException(
+		// 		ErrorCode.ERR_BILLING_PRODUCT_ALLOCATE_DENIED, allocateCheckRequest.getUserId(), detailMessage
+		// 	);
+		// }
 
 		// 4. 최대 통화 수 , 최대 용량, 최대 다운로드 횟수 비교
+
 		allocateResourceValidation(
 			requestTotalResource.getTotalCallTime(), requestTotalResource.getTotalStorageSize(),
 			requestTotalResource.getTotalDownloadHit(), allocateCheckRequest.getUserId(),
@@ -242,14 +243,6 @@ public class BillingService {
 			throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
 		}
 
-		// 8-1. 기존 활성화 되어있는 라이선스 플랜이 기간 결제인 경우
-		// 해당 플랜이 만료되기전까지 갱신 불가
-		if (userLicensePlan.isTermPlan()) {
-			log.error("[BILLING][LICENSE_ALLOCATE] - Previous License plan is term payment plan and activated.");
-			log.error("[BILLING][LICENSE_ALLOCATE][PLAN_INFO] - {}", userLicensePlan.toString());
-			throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
-		}
-
 		log.info("[BILLING][name:{}, uuid: {}, email: {}] - 라이선스 플랜 갱신 작업 시작.",
 			requestUserInfo.getName(), requestUserInfo.getUuid(), requestUserInfo.getEmail()
 		);
@@ -286,15 +279,39 @@ public class BillingService {
 			});
 		}
 
+		// 11. 기존 활성화 되어있는 라이선스 플랜이 기간 결제인 경우
+		if (userLicensePlan.isTermPlan()) {
+			// 기간 결제 요청일 때 100% 할인 쿠폰 정보가 없는 경우 예외 발생
+			AllocateCouponInfoResponse freeCouponInfo = Optional.ofNullable(
+				licenseAllocateRequest.getCouponList().get(0)).orElseThrow(() -> {
+				log.error(
+					"[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] - Term Payment request fail. Coupon Information Not Found.");
+				log.error("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] - {}", licenseAllocateRequest.toString());
+				return new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+			});
+
+			log.info("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][COUPON_INFO][BEGIN]");
+			licenseAllocateRequest.getCouponList()
+				.forEach(couponInfo -> log.info("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][COUPON_INFO] :: {}", couponInfo.toString()));
+			log.info("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][COUPON_INFO][END]");
+
+			LocalDateTime expiredDate = calculateExpiredDateOfTermPaymentPlan(freeCouponInfo);
+			userLicensePlan.setEndDate(expiredDate);
+			userLicensePlan.setTermPlan(true);
+			// log.error("[BILLING][LICENSE_ALLOCATE][PREVIOUS_TERM_PLAN_INFO] - {}", userLicensePlan.toString());
+			// throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+		} else {
+			// 일반 지급 월 결제의 경우
+			userLicensePlan.setEndDate(userLicensePlan.getEndDate().plusMonths(1));
+		}
+
 		userLicensePlan.setPaymentId(licenseAllocateRequest.getPaymentId());
 		userLicensePlan.setCountryCode(licenseAllocateRequest.getUserCountryCode());
-		userLicensePlan.setEndDate(userLicensePlan.getEndDate().plusMonths(1));
 		userLicensePlan.setPlanStatus(PlanStatus.ACTIVE);
 		licensePlanRepository.save(userLicensePlan);
 
 		// 라이선스 지급 인증 정보 삭제
 		licenseAssignAuthInfoRepository.deleteById(licenseAllocateRequest.getAssignAuthCode());
-
 		LicenseProductAllocateResponse response = LicenseProductAllocateResponse.builder()
 			.userId(licenseAllocateRequest.getUserId())
 			.paymentId(licenseAllocateRequest.getPaymentId())
@@ -343,16 +360,7 @@ public class BillingService {
 			});
 
 			// 라이선스 만료 기간 계산 및 기존 구독 결제 기반 라이선스 만료일 정보를 기간 결제 만료일로 갱신
-			if (freeCouponInfo.getPeriodType().equals(CouponPeriodType.DAY)) { // 일 할인인 경우
-				expiredDate = LocalDate.now().plusDays(freeCouponInfo.getPeriod())
-					.atTime(LICENSE_EXPIRED_HOUR, LICENSE_EXPIRED_MINUTE, LICENSE_EXPIRED_SECONDS);
-			} else if (freeCouponInfo.getPeriodType().equals(CouponPeriodType.MONTH)) { // 월 할인인 경우
-				expiredDate = LocalDate.now().plusMonths(freeCouponInfo.getPeriod())
-					.atTime(LICENSE_EXPIRED_HOUR, LICENSE_EXPIRED_MINUTE, LICENSE_EXPIRED_SECONDS);
-			} else if (freeCouponInfo.getPeriodType().equals(CouponPeriodType.YEAR)) { // 연 할인인 경우
-				expiredDate = LocalDate.now().plusYears(freeCouponInfo.getPeriod())
-					.atTime(LICENSE_EXPIRED_HOUR, LICENSE_EXPIRED_MINUTE, LICENSE_EXPIRED_SECONDS);
-			}
+			expiredDate = calculateExpiredDateOfTermPaymentPlan(freeCouponInfo);
 		}
 
 		// 11. 최초 구매, 라이선스 플랜 생성
@@ -844,5 +852,27 @@ public class BillingService {
 		return resourceCalculate.getTotalCallTime() == licensePlan.getMaxCallTime()
 			& resourceCalculate.getTotalStorageSize() == licensePlan.getMaxStorageSize()
 			& resourceCalculate.getTotalDownloadHit() == licensePlan.getMaxDownloadHit();
+	}
+
+	/**
+	 * 기간 결제 시, 라이선스 만료일 계산
+	 * @param freeCouponInfo - 쿠폰 정보 리스트
+	 * @return - 쿠폰 정보를 바탕으로 계산된 라이선스 만료일
+	 */
+	private LocalDateTime calculateExpiredDateOfTermPaymentPlan(AllocateCouponInfoResponse freeCouponInfo) {
+		log.info("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][USE_FREE_COUPON_INFO] - {}", freeCouponInfo.toString());
+		if (freeCouponInfo.getPeriodType().equals(CouponPeriodType.DAY)) { // 일단위 할인인 경우
+			return LocalDate.now().plusDays(freeCouponInfo.getPeriod())
+				.atTime(LICENSE_EXPIRED_HOUR, LICENSE_EXPIRED_MINUTE, LICENSE_EXPIRED_SECONDS);
+		} else if (freeCouponInfo.getPeriodType().equals(CouponPeriodType.MONTH)) { // 월단위 할인인 경우
+			return LocalDate.now().plusMonths(freeCouponInfo.getPeriod())
+				.atTime(LICENSE_EXPIRED_HOUR, LICENSE_EXPIRED_MINUTE, LICENSE_EXPIRED_SECONDS);
+		} else if (freeCouponInfo.getPeriodType().equals(CouponPeriodType.YEAR)) { // 연단위 할인인 경우
+			return LocalDate.now().plusYears(freeCouponInfo.getPeriod())
+				.atTime(LICENSE_EXPIRED_HOUR, LICENSE_EXPIRED_MINUTE, LICENSE_EXPIRED_SECONDS);
+		}
+		//해당되지 않은 타임의 경우, 1개월 단위 라이선스 연장
+		return LocalDate.now().plusDays(30)
+			.atTime(LICENSE_EXPIRED_HOUR, LICENSE_EXPIRED_MINUTE, LICENSE_EXPIRED_SECONDS);
 	}
 }
