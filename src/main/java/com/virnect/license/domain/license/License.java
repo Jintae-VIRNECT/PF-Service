@@ -12,6 +12,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Where;
 import org.hibernate.envers.Audited;
 
 import lombok.AccessLevel;
@@ -34,6 +35,7 @@ import com.virnect.license.domain.product.LicenseProduct;
 @Getter
 @Setter
 @Audited
+@Where(clause = "license_status !='TERMINATE'")
 @Table(name = "license")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class License extends BaseTimeEntity {

@@ -2,6 +2,7 @@ package com.virnect.license.application;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.virnect.license.application.rest.billing.PayAPIService;
 import com.virnect.license.application.rest.content.ContentRestService;
+import com.virnect.license.application.rest.message.MessageRestService;
 import com.virnect.license.application.rest.workspace.WorkspaceRestService;
 import com.virnect.license.dao.license.LicenseRepository;
 import com.virnect.license.dao.licenseplan.LicensePlanRepository;
@@ -45,6 +47,8 @@ import com.virnect.license.dto.response.MyLicensePlanInfoListResponse;
 import com.virnect.license.dto.response.MyLicensePlanInfoResponse;
 import com.virnect.license.dto.response.WorkspaceLicensePlanInfoResponse;
 import com.virnect.license.dto.rest.content.ContentResourceUsageInfoResponse;
+import com.virnect.license.dto.rest.message.PushRequest;
+import com.virnect.license.dto.rest.message.PushResponse;
 import com.virnect.license.dto.rest.user.WorkspaceInfoResponse;
 import com.virnect.license.exception.LicenseServiceException;
 import com.virnect.license.global.common.ApiResponse;
@@ -70,6 +74,7 @@ public class LicenseService {
 	private final LicenseProductRepository licenseProductRepository;
 	private final ModelMapper modelMapper;
 	private final PayAPIService payAPIService;
+	private final MessageRestService messageRestService;
 
 	/**
 	 * 워크스페이스 라이선스 플랜 정보 조회
@@ -331,23 +336,47 @@ public class LicenseService {
 			return new ApiResponse<>(myLicenseInfoResponse);
 		} else {
 			// 라이선스 축소
-			oldLicense.setUserId(null);
-			oldLicense.setStatus(LicenseStatus.UNUSE);
-			licenseRepository.save(oldLicense);
 
-			// 해당 제품 라이선스 초과 상태 체크
+			// 제품 라이선스 상태가 만약 초과 상태인 경우, 라이선스 종료 상태로 표시
 			if (licenseProduct.getStatus().equals(LicenseProductStatus.EXCEEDED)) {
+				oldLicense.setStatus(LicenseStatus.TERMINATE);
+				licenseRepository.save(oldLicense);
+
 				// 현재 사용중인 라이선스 갯수 계산
 				long usedLicenseAmount = licenseProduct.getLicenseList()
 					.stream()
 					.filter(l -> l.getStatus().equals(LicenseStatus.USE))
 					.count();
-				// 제품 라이선스 갯수 범위 내에 들어온 경우 
+
+				// 제품 라이선스 갯수 범위 내에 들어온 경우
 				if (usedLicenseAmount <= licenseProduct.getQuantity()) {
 					// 제품 라이선스 초과 상태에서 정상 상태로 변경
 					licenseProduct.setStatus(LicenseProductStatus.ACTIVE);
 					licenseProductRepository.save(licenseProduct);
 				}
+
+			} else { // 초과 상태가 아닌 경우, 이전 사용자 할당 정보 제거 및 미사용 상태로 변경
+				oldLicense.setUserId(null);
+				oldLicense.setStatus(LicenseStatus.UNUSE);
+				licenseRepository.save(oldLicense);
+			}
+
+
+			Map<Object, Object> pushContent = new HashMap<>();
+			pushContent.put("productName", product.getName());
+			PushRequest pushRequest = new PushRequest();
+			pushRequest.setService(productName.toLowerCase());
+			pushRequest.setWorkspaceId(workspaceId);
+			pushRequest.setUserId("system");
+			pushRequest.setTargetUserIds(Collections.singletonList(userId));
+			pushRequest.setContents(pushContent);
+			pushRequest.setEvent("licenseExpired");
+
+			log.info("[LICENSE DEALLOCATE_PUSH_MESSAGE_REQUEST] - {}", pushRequest.toString());
+			ApiResponse<PushResponse> pushResponse = messageRestService.sendPush(pushRequest);
+
+			if (pushResponse.getCode() != 200 || pushResponse.getData() == null) {
+				log.error("[LICENSE DEALLOCATE_PUSH_MESSAGE_SEND_FAIL]");
 			}
 
 			return new ApiResponse<>(true);

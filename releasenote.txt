@@ -2,7 +2,7 @@
 RELEASE
 
 New Features
-- 없음
+- 기간 결제 라이선스 사용 중, 신규 기간 라이선스 할당 요청 제한 해제
 
 Bug Fixes
 - 라이선스 지금 API 요청 처리 시, 이전 라이선스 플랜(license_plan)의 상태가 비활성화(INACTIVE)인 경우

@@ -9,5 +9,6 @@ package com.virnect.license.domain.license;
  */
 public enum LicenseStatus {
 	USE,
-	UNUSE
+	UNUSE,
+	TERMINATE
 }
