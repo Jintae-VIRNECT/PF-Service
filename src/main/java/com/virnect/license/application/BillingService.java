@@ -489,7 +489,7 @@ public class BillingService {
 	 * @param allocateProduct - 라이선스 제품 할당 요청 정보
 	 * @param originLicenseProduct - 기존 라이선스 제품 정보
 	 */
-	private void originLicenseProductResourceUpdate(
+	public void originLicenseProductResourceUpdate(
 		AllocateProductInfoResponse allocateProduct, LicenseProduct originLicenseProduct
 	) {
 		// 해당 라이선스 상품의 통화 시간 정보 변경
@@ -554,7 +554,7 @@ public class BillingService {
 	 * @param increaseLicenseProductInfo - 라이선스 할당 요청 정보
 	 * @param licenseProduct - 기존 라이선스 제품 정보
 	 */
-	private void assignLicenseProductMoreThanOriginLicensePlan(
+	public void assignLicenseProductMoreThanOriginLicensePlan(
 		AllocateProductInfoResponse increaseLicenseProductInfo, LicenseProduct licenseProduct
 	) {
 		// 추가 지급 요청 상품의 수량(추가 수량 + 이전 제품 수량) - 현재 상품의 수량 = 추가 수량
@@ -736,7 +736,7 @@ public class BillingService {
 	 * @param licenseProduct - 제품 라이선스 정보
 	 * @param quantity - 수량
 	 */
-	private void licenseGenerateAndRegisterByLicenseProduct(LicenseProduct licenseProduct, int quantity) {
+	public void licenseGenerateAndRegisterByLicenseProduct(LicenseProduct licenseProduct, int quantity) {
 		for (int i = 0; i < quantity; i++) {
 			License license = License.builder()
 				.status(LicenseStatus.UNUSE)
