@@ -292,7 +292,10 @@ public class BillingService {
 
 			log.info("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][COUPON_INFO][BEGIN]");
 			licenseAllocateRequest.getCouponList()
-				.forEach(couponInfo -> log.info("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][COUPON_INFO] :: {}", couponInfo.toString()));
+				.forEach(couponInfo -> log.info(
+					"[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][COUPON_INFO] :: {}",
+					couponInfo.toString()
+				));
 			log.info("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][COUPON_INFO][END]");
 
 			LocalDateTime expiredDate = calculateExpiredDateOfTermPaymentPlan(freeCouponInfo);
@@ -329,7 +332,7 @@ public class BillingService {
 	 * @param licenseAllocateRequest - 라이선스 할당 요청
 	 * @return 라이선스 플랜 생성 정보
 	 */
-	private LicenseProductAllocateResponse allocateNewLicensePlan(
+	public LicenseProductAllocateResponse allocateNewLicensePlan(
 		ResourceCalculate resourceCalculate,
 		UserInfoRestResponse requestUserInfo,
 		WorkspaceInfoResponse workspaceInfo,
@@ -406,7 +409,7 @@ public class BillingService {
 	 * @param licenseAllocateRequest - 라이선스 할당 요청
 	 * @param licensePlan - 기존 라이선스 플랜 정보
 	 */
-	private void renewalPreviousLicensePlan(
+	public void renewalPreviousLicensePlan(
 		LicenseProductAllocateRequest licenseAllocateRequest,
 		LicensePlan licensePlan
 	) {
@@ -457,9 +460,15 @@ public class BillingService {
 					long usedLicenseAmount = licenseRepository.countByLicenseProductAndStatus(
 						originLicenseProduct, LicenseStatus.USE);
 
+					log.info(
+						"[BILLING][DECREASE_LICENSE_PRODUCT][LICENSE_QUANTITY_COMPARE] - PRODUCT: {} -> REQUEST_AMOUNT:{} , ORIGIN_USED_AMOUNT: {} , IS_OVER = {}",
+						allocateProduct.toString(),
+						allocateProduct.getProductAmount(), usedLicenseAmount,
+						allocateProduct.getProductAmount() < usedLicenseAmount
+					);
 					// 실 사용 라이선스 갯수 > 할당 요청된 라이선스 갯수 = 라이선스 갯수 초과 표시
 					if (allocateProduct.getProductType().getId().equals(ProductTypeId.PRODUCT.getValue()) &&
-						allocateProduct.getProductAmount() > usedLicenseAmount) {
+						allocateProduct.getProductAmount() < usedLicenseAmount) {
 						originLicenseProduct.setStatus(LicenseProductStatus.EXCEEDED);
 
 						// TODO: 2020-09-04 기 할당 라이선스 초과 상황에서, 기존 제품 라이선스 중 미 사용중인 라이선스 제거 로직 추가
