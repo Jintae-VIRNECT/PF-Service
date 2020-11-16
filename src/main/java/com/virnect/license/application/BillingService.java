@@ -559,6 +559,10 @@ public class BillingService {
 	) {
 		// 추가 지급 요청 상품의 수량(추가 수량 + 이전 제품 수량) - 현재 상품의 수량 = 추가 수량
 		int newLicenseProductAmount = increaseLicenseProductInfo.getProductAmount() - licenseProduct.getQuantity();
+		log.info(
+			"[LICENSE][GENERATE] - LICENSE_PRODUCT_INFO: {} , CREATE_AMOUNT: {}",
+			licenseProduct.toString(), newLicenseProductAmount
+		);
 		licenseGenerateAndRegisterByLicenseProduct(licenseProduct, newLicenseProductAmount);
 	}
 
