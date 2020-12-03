@@ -31,8 +31,6 @@ public class MyLicenseInfoResponse {
 	private LicenseStatus status;
 	@ApiModelProperty(value = "라이선스 할당 제품명", example = "MAKE")
 	private String productName;
-	// @ApiModelProperty(value = "라이선스 타입", example = "BASIC")
-	// private String licenseType;
 	@ApiModelProperty(value = "라이선스 정보 생성일", example = "2020-04-16T16:34:35")
 	private LocalDateTime createdDate;
 	@ApiModelProperty(value = "라이선스 정보 수정일", example = "2020-04-16T16:34:35")

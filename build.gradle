@@ -1,6 +1,6 @@
-import com.github.jk1.license.render.*
-import com.github.jk1.license.filter.LicenseBundleNormalizer
 import com.github.jk1.license.filter.ExcludeTransitiveDependenciesFilter
+import com.github.jk1.license.filter.LicenseBundleNormalizer
+import com.github.jk1.license.render.InventoryMarkdownReportRenderer
 
 plugins {
     id 'org.springframework.boot' version '2.2.6.RELEASE'
@@ -8,6 +8,7 @@ plugins {
     id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
     id "io.franzbecker.gradle-lombok" version "3.3.0"
     id "com.github.jk1.dependency-license-report" version "1.13"
+    id 'com.google.cloud.tools.jib' version '1.6.0'
     id 'java'
 }
 
@@ -135,4 +136,20 @@ task unpackJar(type: Copy) {
 
 build {
     finalizedBy unpackJar
+}
+
+
+jib {
+    from {
+        image = "openjdk:8-jre-alpine"
+    }
+    container {
+        jvmFlags = ['-XX:+UseG1GC', '-Xms400m']
+        mainClass = 'com.virnect.license.LicenseApplication'
+        ports = ['8632']
+
+    }
+    to {
+        image = 'pf-license'
+    }
 }

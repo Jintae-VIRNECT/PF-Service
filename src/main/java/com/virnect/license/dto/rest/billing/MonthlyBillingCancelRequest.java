@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class MonthlyBillingCancelRequest {
 	@JsonProperty(value = "sitecode")
-	private int siteCode;
+	private long siteCode;
 	@JsonProperty(value = "userno")
 	private long userNumber;
 	@JsonProperty(value = "MSeqNo")

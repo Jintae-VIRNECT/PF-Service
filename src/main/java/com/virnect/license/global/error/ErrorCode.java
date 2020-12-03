@@ -12,6 +12,12 @@ public enum ErrorCode {
 	ERR_CREATE_COUPON(1000, "Coupon Generate fail."),
 	ERR_ALREADY_REGISTER_EVENT_COUPON(1001, "Already event coupon is registered"),
 
+	// SDK 라이선스 등록 및 검증 관련
+	ERR_SDK_LICENSE_DUPLICATE(1100,"Duplicate license serial key"),
+	ERR_SDK_LICENSE_NOT_FOND(1100,"The license could not be found."),
+	ERR_SDK_LICENSE_ALREADY_USED(1102, "This is a license that has already been used"),
+	ERR_SDK_LICENSE_TERMINATE(1102, "The license period has expired."),
+
 	// 쿠폰 등록 및 사용
 	ERR_COUPON_NOT_FOUND(2000, "Coupon not found by serial key"),
 	ERR_COUPON_REGISTER_ALREADY_REGISTER(2001, "Coupon is already register"),
