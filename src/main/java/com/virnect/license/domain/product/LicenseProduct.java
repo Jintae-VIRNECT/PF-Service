@@ -91,6 +91,7 @@ public class LicenseProduct extends BaseTimeEntity {
 		return "LicenseProduct{" +
 			"id=" + id +
 			", quantity=" + quantity +
+			", status=" + status +
 			", callTime=" + callTime +
 			", storageSize=" + storageSize +
 			", downloadHit=" + downloadHit +

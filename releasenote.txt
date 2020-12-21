@@ -2,19 +2,14 @@
 RELEASE
 
 New Features
-- 기간 결제 라이선스 사용 중, 신규 기간 라이선스 할당 요청 제한 해제
+- SDK 라이선스 발급 및 라이선스 검증 API 추가
+- Application JVM 옵션 변경 -> -"XX:+UseG1GC" 삭제 및 "-Xms" 옵션 추가
+- 페이레터 관련 API 리팩토링
 
 Bug Fixes
-- 라이선스 지금 API 요청 처리 시, 이전 라이선스 플랜(license_plan)의 상태가 비활성화(INACTIVE)인 경우
-  해당 라이선스 플랜을 활성화(INACTIVE)하고, 하위 제품 라이선스 플랜(license_product)의 상태 값이 동기화 되지 않던 문제 수정
-  https://virtualconnection.atlassian.net/browse/DPLA-906
-  https://virtualconnection.atlassian.net/browse/DPLA-908
-
-- 워크스페이스 라이선스 플랜 조회 조건 수정
- 기존: ACTIVE only
- 변경: ACTIVE or INACTIVE
+- 없음
 
 Limitation
-- 없음
+- 라이선스 플랜 만료일 검사 및 만료 처리 스케쥴 기능 추가 (구축형만 동작)
 
 Copyright (C) 2020, VIRNECT CO., LTD. - All Rights Reserved

@@ -2,7 +2,6 @@ package com.virnect.license.application;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.virnect.license.application.rest.billing.PayAPIService;
 import com.virnect.license.application.rest.content.ContentRestService;
-import com.virnect.license.application.rest.message.MessageRestService;
 import com.virnect.license.application.rest.workspace.WorkspaceRestService;
 import com.virnect.license.dao.license.LicenseRepository;
 import com.virnect.license.dao.licenseplan.LicensePlanRepository;
@@ -47,9 +46,8 @@ import com.virnect.license.dto.response.MyLicensePlanInfoListResponse;
 import com.virnect.license.dto.response.MyLicensePlanInfoResponse;
 import com.virnect.license.dto.response.WorkspaceLicensePlanInfoResponse;
 import com.virnect.license.dto.rest.content.ContentResourceUsageInfoResponse;
-import com.virnect.license.dto.rest.message.PushRequest;
-import com.virnect.license.dto.rest.message.PushResponse;
 import com.virnect.license.dto.rest.user.WorkspaceInfoResponse;
+import com.virnect.license.event.license.LicenseExpiredEvent;
 import com.virnect.license.exception.LicenseServiceException;
 import com.virnect.license.global.common.ApiResponse;
 import com.virnect.license.global.common.PageMetadataResponse;
@@ -74,7 +72,7 @@ public class LicenseService {
 	private final LicenseProductRepository licenseProductRepository;
 	private final ModelMapper modelMapper;
 	private final PayAPIService payAPIService;
-	private final MessageRestService messageRestService;
+	private final ApplicationEventPublisher applicationEventPublisher;
 
 	/**
 	 * 워크스페이스 라이선스 플랜 정보 조회
@@ -361,24 +359,13 @@ public class LicenseService {
 				licenseRepository.save(oldLicense);
 			}
 
-
 			Map<Object, Object> pushContent = new HashMap<>();
 			pushContent.put("productName", product.getName());
-			PushRequest pushRequest = new PushRequest();
-			pushRequest.setService(productName.toLowerCase());
-			pushRequest.setWorkspaceId(workspaceId);
-			pushRequest.setUserId("system");
-			pushRequest.setTargetUserIds(Collections.singletonList(userId));
-			pushRequest.setContents(pushContent);
-			pushRequest.setEvent("licenseExpired");
-
-			log.info("[LICENSE DEALLOCATE_PUSH_MESSAGE_REQUEST] - {}", pushRequest.toString());
-			ApiResponse<PushResponse> pushResponse = messageRestService.sendPush(pushRequest);
-
-			if (pushResponse.getCode() != 200 || pushResponse.getData() == null) {
-				log.error("[LICENSE DEALLOCATE_PUSH_MESSAGE_SEND_FAIL]");
-			}
-
+			LicenseExpiredEvent licenseExpiredEvent = new LicenseExpiredEvent(
+				productName.toLowerCase(), workspaceId, userId, pushContent
+			);
+			log.info("[LICENSE DEALLOCATE_PUSH_MESSAGE_REQUEST] - {}", licenseExpiredEvent.toString());
+			applicationEventPublisher.publishEvent(licenseExpiredEvent);
 			return new ApiResponse<>(true);
 		}
 	}
