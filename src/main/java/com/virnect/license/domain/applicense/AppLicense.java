@@ -13,9 +13,7 @@ import javax.persistence.Table;
 
 import org.hibernate.envers.Audited;
 
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import com.virnect.license.domain.BaseTimeEntity;
@@ -23,7 +21,6 @@ import com.virnect.license.domain.BaseTimeEntity;
 @Entity
 @Getter
 @Setter
-@Audited
 @Table(name = "app_license")
 public class AppLicense extends BaseTimeEntity {
 	@Id
@@ -44,6 +41,9 @@ public class AppLicense extends BaseTimeEntity {
 	@Column(name = "expired_at")
 	private LocalDateTime expiredDate;
 
+	@Column(name = "hit")
+	private Long hit;
+
 	@Override
 	public String toString() {
 		return "AppLicense{" +
@@ -52,6 +52,11 @@ public class AppLicense extends BaseTimeEntity {
 			", status=" + status +
 			", startDate=" + startDate +
 			", expiredDate=" + expiredDate +
+			", hit=" + hit +
 			'}';
+	}
+
+	public void increaseHit() {
+		this.hit += 1;
 	}
 }

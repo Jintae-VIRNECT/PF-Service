@@ -65,6 +65,7 @@ public class SDKLicenseService {
 		appLicense.setStartDate(startDate);
 		appLicense.setExpiredDate(expiredDate);
 		appLicense.setStatus(AppLicenseStatus.UNUSED);
+		appLicense.setHit(0L);
 
 		log.info("[SDK_LICENSE_REGISTER][GENERATE_NEW_LICENSE] - {}", appLicense.toString());
 		appLicenseRepository.save(appLicense);
@@ -101,11 +102,17 @@ public class SDKLicenseService {
 			throw new LicenseServiceException(ErrorCode.ERR_SDK_LICENSE_TERMINATE);
 		}
 
-		// 미사용인 경우, 사용으로 상태값 변경
+		// Change app license status to use, if current status unused
 		if (appLicense.getStatus().equals(AppLicenseStatus.UNUSED)) {
 			appLicense.setStatus(AppLicenseStatus.USE);
 			appLicenseRepository.save(appLicense);
 		}
+
+		// increase hit of authentication request on current license
+		appLicense.increaseHit();
+
+		// save
+		appLicenseRepository.save(appLicense);
 
 		SDKLicenseAuthenticationResponse licenseAuthenticationResponse = new SDKLicenseAuthenticationResponse();
 		licenseAuthenticationResponse.setValidationResult(true);

@@ -1,6 +1,5 @@
 package com.virnect.license.dto.response;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import io.swagger.annotations.ApiModel;
@@ -20,12 +19,14 @@ public class SDKLicenseInfoResponse {
 	private String serialKey;
 	@ApiModelProperty(value = "라이선스 상태 정보(USE:활성화, UNUSED:비활성화, TERMINATE:만료)", position = 2, example = "ACTIVE")
 	private AppLicenseStatus status;
-	@ApiModelProperty(value = "라이선스 활성화 일자", position = 3, example = "2020-05-11T02:56:35")
+	@ApiModelProperty(value = "라이선스 사용 횟수", position = 3, example = "1")
+	private Long hit;
+	@ApiModelProperty(value = "라이선스 활성화 일자", position = 4, example = "2020-05-11T02:56:35")
 	private LocalDateTime startDate;
-	@ApiModelProperty(value = "라이선스 만료 일자", position = 4, example = "2020-30-11T02:56:35")
+	@ApiModelProperty(value = "라이선스 만료 일자", position = 5, example = "2020-30-11T02:56:35")
 	private LocalDateTime expiredDate;
-	@ApiModelProperty(value = "라이선스 생성 일자", position = 5, example = "2020-30-11T02:56:35")
+	@ApiModelProperty(value = "라이선스 생성 일자", position = 6, example = "2020-30-11T02:56:35")
 	private LocalDateTime createdDate;
-	@ApiModelProperty(value = "라이선스 수정 일자", position = 6, example = "2020-30-11T02:56:35")
+	@ApiModelProperty(value = "라이선스 수정 일자", position = 7, example = "2020-30-11T02:56:35")
 	private LocalDateTime updatedDate;
 }
