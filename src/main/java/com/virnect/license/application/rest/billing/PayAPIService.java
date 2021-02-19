@@ -18,10 +18,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import com.virnect.license.dto.rest.billing.BillingProductInfoList;
-import com.virnect.license.dto.rest.billing.BillingRestResponse;
-import com.virnect.license.dto.rest.billing.MonthlyBillingCancelRequest;
-import com.virnect.license.dto.rest.billing.MonthlyBillingInfo;
+import com.virnect.license.dto.billing.response.BillingProductInfoListResponse;
+import com.virnect.license.dto.billing.response.BillingRestResponse;
+import com.virnect.license.dto.billing.request.MonthlyBillingCancelRequest;
+import com.virnect.license.dto.billing.response.MonthlyBillingInfoResponse;
 import com.virnect.license.exception.LicenseServiceException;
 import com.virnect.license.global.error.ErrorCode;
 
@@ -44,7 +44,7 @@ public class PayAPIService {
 	 * @param userNumber - 정기 결제 진행중인 사용자 식별자
 	 */
 	public void billingCancelProcess(long userNumber) {
-		BillingRestResponse<MonthlyBillingInfo> userMonthlyBillingInfo = getUserMonthlyBillingInfo(userNumber);
+		BillingRestResponse<MonthlyBillingInfoResponse> userMonthlyBillingInfo = getUserMonthlyBillingInfo(userNumber);
 
 		if(!userMonthlyBillingInfo.getData().getPaymentFlag().equals("Y")){
 			log.info("User not have monthly billing information");
@@ -56,18 +56,18 @@ public class PayAPIService {
 
 	/**
 	 * 정기 결제 취소 요청 전송
-	 * @param monthlyBillingInfo - 사용자의 정기결제 정보
+	 * @param monthlyBillingInfoResponse - 사용자의 정기결제 정보
 	 * @param userId - 사용자 식별자
 	 */
-	public void cancelUserMonthlyBilling(MonthlyBillingInfo monthlyBillingInfo, long userId) {
-		if (billingApi.equals("none") || monthlyBillingInfo == null) {
+	public void cancelUserMonthlyBilling(MonthlyBillingInfoResponse monthlyBillingInfoResponse, long userId) {
+		if (billingApi.equals("none") || monthlyBillingInfoResponse == null) {
 			log.info("BILLING API INFORMATION NOT INITIALIZED.");
 			return;
 		}
 
 		MonthlyBillingCancelRequest cancelRequest = new MonthlyBillingCancelRequest();
 		cancelRequest.setSiteCode(BILLING_SITE_CODE_VALUE);
-		cancelRequest.setUserMonthlyBillingNumber(monthlyBillingInfo.getMonthlyBillingNumber());
+		cancelRequest.setUserMonthlyBillingNumber(monthlyBillingInfoResponse.getMonthlyBillingNumber());
 		cancelRequest.setUserNumber(userId);
 
 		try {
@@ -107,7 +107,7 @@ public class PayAPIService {
 	 * @param userId - 사용자 식별자
 	 * @return - 정기 결제 내역 정보 
 	 */
-	public BillingRestResponse<MonthlyBillingInfo> getUserMonthlyBillingInfo(long userId) {
+	public BillingRestResponse<MonthlyBillingInfoResponse> getUserMonthlyBillingInfo(long userId) {
 		if (billingApi.equals("none")) {
 			log.info("BILLING API INFORMATION NOT INITIALIZED.");
 			return null;
@@ -121,8 +121,8 @@ public class PayAPIService {
 			.build()
 			.toUri();
 
-		BillingRestResponse<MonthlyBillingInfo> userMonthlyBillingInfo = restTemplate.exchange(
-			uri, HttpMethod.GET, null, new ParameterizedTypeReference<BillingRestResponse<MonthlyBillingInfo>>() {
+		BillingRestResponse<MonthlyBillingInfoResponse> userMonthlyBillingInfo = restTemplate.exchange(
+			uri, HttpMethod.GET, null, new ParameterizedTypeReference<BillingRestResponse<MonthlyBillingInfoResponse>>() {
 			}).getBody();
 
 		// 정기 결제 내역 조회 시, 페이레터 서버 에러인 경우
@@ -141,7 +141,7 @@ public class PayAPIService {
 	 * 구매 가능한 전체 상품 정보 조회
 	 * @return - 전체 상품 정보
 	 */
-	public BillingRestResponse<BillingProductInfoList> getBillingProductInfoList() {
+	public BillingRestResponse<BillingProductInfoListResponse> getBillingProductInfoList() {
 		if (billingApi.equals("none")) {
 			log.info("BILLING API INFORMATION NOT INITIALIZED.");
 			return null;
@@ -156,9 +156,9 @@ public class PayAPIService {
 
 		log.info("[PAY_API][GET_BILLING_PRODUCT_INFO_LIST][REQUEST] - {}", uri.toString());
 
-		BillingRestResponse<BillingProductInfoList> billingProductInfoListRestResponse = restTemplate.exchange(
+		BillingRestResponse<BillingProductInfoListResponse> billingProductInfoListRestResponse = restTemplate.exchange(
 			uri, HttpMethod.GET, null,
-			new ParameterizedTypeReference<BillingRestResponse<BillingProductInfoList>>() {
+			new ParameterizedTypeReference<BillingRestResponse<BillingProductInfoListResponse>>() {
 			}
 		).getBody();
 

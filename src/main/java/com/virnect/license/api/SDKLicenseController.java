@@ -18,11 +18,11 @@ import lombok.extern.slf4j.Slf4j;
 import springfox.documentation.annotations.ApiIgnore;
 
 import com.virnect.license.application.SDKLicenseService;
-import com.virnect.license.dto.request.SDKLicenseAuthenticationRequest;
-import com.virnect.license.dto.request.SDKLicenseRegisterRequest;
-import com.virnect.license.dto.response.SDKLicenseAuthenticationResponse;
-import com.virnect.license.dto.response.SDKLicenseInfoListResponse;
-import com.virnect.license.dto.response.SDKLicenseInfoResponse;
+import com.virnect.license.dto.sdk.request.SDKLicenseAuthenticationRequest;
+import com.virnect.license.dto.sdk.request.SDKLicenseRegisterRequest;
+import com.virnect.license.dto.sdk.response.SDKLicenseAuthenticationResponse;
+import com.virnect.license.dto.sdk.response.SDKLicenseInfoListResponse;
+import com.virnect.license.dto.sdk.response.SDKLicenseInfoResponse;
 import com.virnect.license.exception.LicenseServiceException;
 import com.virnect.license.global.common.ApiResponse;
 import com.virnect.license.global.common.PageRequest;

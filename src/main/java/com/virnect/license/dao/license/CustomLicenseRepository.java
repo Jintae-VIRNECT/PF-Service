@@ -1,5 +1,6 @@
 package com.virnect.license.dao.license;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -12,4 +13,6 @@ public interface CustomLicenseRepository {
 	Page<UserLicenseDetailsInfo> findAllMyLicenseInfo(String userId, Pageable pageable);
 
 	long updateAllLicenseInfoInactiveByLicenseProduct(Set<LicenseProduct> licenseProductSet);
+
+	long deleteAllLicenseByLicenseIdIn(List<Long> deleteLicenseIdList);
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -38,15 +39,15 @@ import com.virnect.license.domain.product.LicenseProduct;
 import com.virnect.license.domain.product.LicenseProductStatus;
 import com.virnect.license.domain.product.Product;
 import com.virnect.license.dto.ResourceCalculate;
-import com.virnect.license.dto.request.billing.AllocateCouponInfoResponse;
-import com.virnect.license.dto.request.billing.AllocateProductInfoResponse;
-import com.virnect.license.dto.request.billing.LicenseAllocateCheckRequest;
-import com.virnect.license.dto.request.billing.LicenseProductAllocateRequest;
-import com.virnect.license.dto.request.billing.LicenseProductDeallocateRequest;
-import com.virnect.license.dto.request.billing.ProductTypeRequest;
-import com.virnect.license.dto.response.LicenseProductAllocateCheckResponse;
-import com.virnect.license.dto.response.LicenseProductDeallocateResponse;
-import com.virnect.license.dto.response.biling.LicenseProductAllocateResponse;
+import com.virnect.license.dto.billing.request.LicenseAllocateCheckRequest;
+import com.virnect.license.dto.billing.request.LicenseProductAllocateRequest;
+import com.virnect.license.dto.billing.request.LicenseProductDeallocateRequest;
+import com.virnect.license.dto.billing.request.ProductTypeRequest;
+import com.virnect.license.dto.billing.response.AllocateCouponInfoResponse;
+import com.virnect.license.dto.billing.response.AllocateProductInfoResponse;
+import com.virnect.license.dto.billing.response.LicenseProductAllocateResponse;
+import com.virnect.license.dto.license.response.LicenseProductAllocateCheckResponse;
+import com.virnect.license.dto.license.response.LicenseProductDeallocateResponse;
 import com.virnect.license.dto.rest.user.UserInfoRestResponse;
 import com.virnect.license.dto.rest.user.WorkspaceInfoListResponse;
 import com.virnect.license.dto.rest.user.WorkspaceInfoResponse;
@@ -89,6 +90,11 @@ public class BillingService {
 	public ApiResponse<LicenseProductAllocateCheckResponse> licenseAllocateCheckRequest(
 		LicenseAllocateCheckRequest allocateCheckRequest
 	) {
+		// 요청 데이터 검증
+		if (!termLicenseAllocateRequestValidationCheck(allocateCheckRequest)) {
+			throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_ALLOCATE_DENIED);
+		}
+
 		log.info("[BILLING][LICENSE ALLOCATE CHECK REQUEST] -> [{}]", allocateCheckRequest.toString());
 		// 1. 상품 지급 여부 검사 요청 사용자 정보 조회
 		UserInfoRestResponse requestUserInfo = getUserInfoRestResponseByUserId(
@@ -281,14 +287,16 @@ public class BillingService {
 
 		// 11. 기존 활성화 되어있는 라이선스 플랜이 기간 결제인 경우
 		if (userLicensePlan.isTermPlan()) {
-			// 기간 결제 요청일 때 100% 할인 쿠폰 정보가 없는 경우 예외 발생
-			AllocateCouponInfoResponse freeCouponInfo = Optional.ofNullable(
-				licenseAllocateRequest.getCouponList().get(0)).orElseThrow(() -> {
-				log.error(
-					"[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] - Term Payment request fail. Coupon Information Not Found.");
+
+			// 기간 결제 요청일 때 쿠폰 정보가 없는 경우 예외 발생
+			if (licenseAllocateRequest.getCouponList() == null || licenseAllocateRequest.getCouponList().isEmpty()) {
+				log.error("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] - Term Payment Request Fail. Coupon Not Found.");
 				log.error("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] - {}", licenseAllocateRequest.toString());
-				return new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
-			});
+				throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+			}
+
+			// 쿠폰 정보 추출
+			AllocateCouponInfoResponse freeCouponInfo = licenseAllocateRequest.getCouponList().get(0);
 
 			log.info("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][COUPON_INFO][BEGIN]");
 			licenseAllocateRequest.getCouponList()
@@ -301,8 +309,6 @@ public class BillingService {
 			LocalDateTime expiredDate = calculateExpiredDateOfTermPaymentPlan(freeCouponInfo);
 			userLicensePlan.setEndDate(expiredDate);
 			userLicensePlan.setTermPlan(true);
-			// log.error("[BILLING][LICENSE_ALLOCATE][PREVIOUS_TERM_PLAN_INFO] - {}", userLicensePlan.toString());
-			// throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
 		} else {
 			// 일반 지급 월 결제의 경우
 			userLicensePlan.setEndDate(userLicensePlan.getEndDate().plusMonths(1));
@@ -354,13 +360,14 @@ public class BillingService {
 		// 기간 결제 요청인 경우
 		if (licenseAllocateRequest.isTermPaymentRequest()) {
 			// 기간 결제 요청일 때 100% 할인 쿠폰 정보가 없는 경우 예외 발생
-			AllocateCouponInfoResponse freeCouponInfo = Optional.ofNullable(
-				licenseAllocateRequest.getCouponList().get(0)).orElseThrow(() -> {
+			if (licenseAllocateRequest.getCouponList() == null || licenseAllocateRequest.getCouponList().isEmpty()) {
 				log.error(
 					"[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] - Term Payment request fail. Coupon Information Not Found.");
 				log.error("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] - {}", licenseAllocateRequest.toString());
-				return new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
-			});
+				throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+			}
+
+			AllocateCouponInfoResponse freeCouponInfo = licenseAllocateRequest.getCouponList().get(0);
 
 			// 라이선스 만료 기간 계산 및 기존 구독 결제 기반 라이선스 만료일 정보를 기간 결제 만료일로 갱신
 			expiredDate = calculateExpiredDateOfTermPaymentPlan(freeCouponInfo);
@@ -413,8 +420,23 @@ public class BillingService {
 		LicenseProductAllocateRequest licenseAllocateRequest,
 		LicensePlan licensePlan
 	) {
+		// 1.제품 라이선스 할당 정보
 		List<AllocateProductInfoResponse> allocateProductInfoList = licenseAllocateRequest.getProductList();
+
+		// // 1.1 제품 리소스 이용권 할당 정보
+		// List<AllocateProductInfoResponse> resourceServiceAllocateProductInfo = allocateProductInfoList.stream()
+		// 	.filter(product -> product.getProductType().getId().equals(ProductTypeId.SERVICE.getValue()))
+		// 	.collect(Collectors.toList());
+		//
+		//
+		// // 1.2 제품 라이선스 할당 정보
+		// List<AllocateProductInfoResponse> licenseProductAllocateInfo = allocateProductInfoList.stream()
+		// 	.filter(product -> product.getProductType().getId().equals(ProductTypeId.PRODUCT.getValue()))
+		// 	.collect(Collectors.toList());
+
 		for (AllocateProductInfoResponse allocateProduct : allocateProductInfoList) {
+
+			// 2.제품 정보 조회
 			Product product = productRepository.findByBillProductId(allocateProduct.getProductId())
 				.orElseThrow(
 					() -> {
@@ -427,54 +449,98 @@ public class BillingService {
 					}
 				);
 
+			// 3. 현재 라이선스 플랜에 현재 할당할 제품의 기존 정보 조회
 			Optional<LicenseProduct> licenseProductInfo = licenseProductRepository.findByLicensePlanAndProduct(
 				licensePlan, product
 			);
 
+			// 4. 제품 정보가 존재하는 경우
 			if (licenseProductInfo.isPresent()) {
-				// 기존 상품 정보 수정
+				// 기존 상품 정보
 				LicenseProduct originLicenseProduct = licenseProductInfo.get();
 
-				// 라이선스 상품 추가 지급 요청
-				if (originLicenseProduct.getQuantity() < allocateProduct.getProductAmount()) {
+				// 라이선스 상품이 아닌 이용권인 경우
+				if (allocateProduct.getProductType().getId().equals(ProductTypeId.SERVICE.getValue())) {
+					// 리소스 정보만 업데이트, 이용권의 경우 리소스 추가 동작만 존재.
+					originLicenseProductResourceUpdate(allocateProduct, originLicenseProduct);
+					licenseProductRepository.save(originLicenseProduct);
+					continue;
+				}
+
+				// 라이선스 제품인 경우
+				Set<License> originLicenses = originLicenseProduct.getLicenseList();
+				final int originLicenseAmount = originLicenses.size();
+				final int allocateLicenseAmount = allocateProduct.getProductAmount();
+				final long unUseLicenseAmount = originLicenses.stream()
+					.filter(license -> license.getStatus() == LicenseStatus.UNUSE)
+					.count();
+				final long usedLicenseAmount = originLicenses.stream()
+					.filter(license -> license.getStatus() == LicenseStatus.USE)
+					.count();
+
+				log.info("[BILLING][RENEWAL_LICENSE_INFO] allocateRequestLicenseAmount = " + allocateLicenseAmount);
+				log.info("[BILLING][RENEWAL_LICENSE_INFO] originLicenseAmount = " + originLicenseAmount);
+
+				// 라이선스 상품 추가 지급 요청 ( 등록 라이선스 수 < 할당 요청 상품의 라이선스 수)
+				if (originLicenseAmount < allocateLicenseAmount) {
 					log.info(
 						"[BILLING][INCREASE_PRODUCT] - [{}] is {} to {}", allocateProduct.toString(),
-						originLicenseProduct.getQuantity(), allocateProduct.getProductAmount()
+						originLicenseAmount, allocateLicenseAmount
 					);
-					assignLicenseProductMoreThanOriginLicensePlan(allocateProduct, originLicenseProduct);
+
+					// 추가 지급 요청 상품의 수량(상품의 추가 라이선스 수량 + 이전 상품의 라이선스 수량) - 현재 상품의 라이선스 수량 = 추가 수량
+					assignAdditionalLicenseToOriginLicenseProduct(
+						originLicenseProduct, allocateLicenseAmount - originLicenseAmount
+					);
+
 					originLicenseProductResourceUpdate(allocateProduct, originLicenseProduct);
 					originLicenseProduct.setStatus(LicenseProductStatus.ACTIVE);
 					licenseProductRepository.save(originLicenseProduct);
 				}
 
 				// 라이선스 상품 축소 지급 요청 (기존 제품 라이선스 수 > 할당 요청의 제품 라이선스 수)
-				if (originLicenseProduct.getQuantity() > allocateProduct.getProductAmount()) {
+				if (originLicenseAmount > allocateLicenseAmount) {
 					log.info(
 						"[BILLING][DECREASE_LICENSE_PRODUCT] - [{}] is {} to {}", allocateProduct.toString(),
-						originLicenseProduct.getQuantity(), allocateProduct.getProductAmount()
+						originLicenseAmount, allocateLicenseAmount
 					);
-					// 기존 제품 라이선스 리소스 정보를 할당 요청의 리소스 정보로 수정
-					originLicenseProductResourceUpdate(allocateProduct, originLicenseProduct);
+					log.info(
+						"[BILLING][DECREASE_LICENSE_PRODUCT] - [{}] -> unUsedLicenseAmount = {} , usedLicenseAmount = {}",
+						allocateProduct.toString(), unUseLicenseAmount, usedLicenseAmount
+					);
 
-					// 실 사용 라이선스 갯수 계산
-					long usedLicenseAmount = licenseRepository.countByLicenseProductAndStatus(
-						originLicenseProduct, LicenseStatus.USE);
+					// 사용 라이선스 초과 케이스
+					if (usedLicenseAmount > allocateLicenseAmount) {
+						// 제품 라이선스 정보는 초과 상태로 표시
+						originLicenseProduct.setStatus(LicenseProductStatus.EXCEEDED);
+						// 미사용 라이선스 제거
+						long deleteAmount = deleteUnUsedLicenseInformation(originLicenses);
+						log.info(
+							"[BILLING][DECREASE_LICENSE_PRODUCT][DELETE_UNUSED_LICENSE] - AMOUNT: {}", deleteAmount);
+					} else if (usedLicenseAmount == allocateLicenseAmount) {
+						// 현재 사용중인 라이선스 갯수에 맞게 축소 지급한 케이스
+						// 미사용 라이선스 제거
+						long deleteAmount = deleteUnUsedLicenseInformation(originLicenses);
+						log.info(
+							"[BILLING][DECREASE_LICENSE_PRODUCT][DELETE_UNUSED_LICENSE] - AMOUNT: {}", deleteAmount);
+					} else if (usedLicenseAmount < allocateLicenseAmount) {
+						// 현재 사용중인 라이선스 갯수 보다 크게 라이선스를 축소한 케이스
+						// 전체 라이선스 갯수에서 축소 요청 라이선스 갯수를 뺀 나머지 라이선스 갯수 만큼 삭제
+						int deleteSize = originLicenseAmount - allocateLicenseAmount;
+						long deleteAmount = deleteUnUsedLicenseInformationWithSize(originLicenses, deleteSize);
+						log.info(
+							"[BILLING][DECREASE_LICENSE_PRODUCT][DELETE_UNUSED_LICENSE] - AMOUNT: {}", deleteAmount);
+					}
 
 					log.info(
 						"[BILLING][DECREASE_LICENSE_PRODUCT][LICENSE_QUANTITY_COMPARE] - PRODUCT: {} -> REQUEST_AMOUNT:{} , ORIGIN_USED_AMOUNT: {} , IS_OVER = {}",
 						allocateProduct.toString(),
-						allocateProduct.getProductAmount(), usedLicenseAmount,
-						allocateProduct.getProductAmount() < usedLicenseAmount
+						allocateLicenseAmount, usedLicenseAmount,
+						allocateLicenseAmount < usedLicenseAmount
 					);
-					// 실 사용 라이선스 갯수 > 할당 요청된 라이선스 갯수 = 라이선스 갯수 초과 표시
-					if (allocateProduct.getProductType().getId().equals(ProductTypeId.PRODUCT.getValue()) &&
-						allocateProduct.getProductAmount() < usedLicenseAmount) {
-						originLicenseProduct.setStatus(LicenseProductStatus.EXCEEDED);
 
-						// TODO: 2020-09-04 기 할당 라이선스 초과 상황에서, 기존 제품 라이선스 중 미 사용중인 라이선스 제거 로직 추가
-					}
-					// TODO: 2020-09-04 기 할당 라이선스 축소 상황에서, 축소범위에 맞춰 미 사용중인 라이선스 제거 로직 추가
-
+					// 기존 제품 라이선스 리소스 정보를 할당 요청의 리소스 정보로 수정
+					originLicenseProductResourceUpdate(allocateProduct, originLicenseProduct);
 					licenseProductRepository.save(originLicenseProduct);
 				}
 			} else {
@@ -482,6 +548,45 @@ public class BillingService {
 				registerNewLicenseProduct(licensePlan, allocateProduct, product);
 			}
 		}
+	}
+
+	/**
+	 * 미 사용 라이선스 제거
+	 * @param originLicenses - 기존 상품의 라이선스 정보
+	 */
+	public long deleteUnUsedLicenseInformation(Set<License> originLicenses) {
+		// 미 사용중인 라이선스 정보 조회
+		List<Long> deleteLicenseIds = originLicenses.stream()
+			.filter(license -> license.getStatus() == LicenseStatus.UNUSE)
+			.map(License::getId)
+			.collect(Collectors.toList());
+
+		log.info("[BILLING][DELETE_LICENSE] - LICENSE_ID_LIST :: {}", deleteLicenseIds.toString());
+
+		// 미 사용중 라이선스 제거
+		return licenseRepository.deleteAllLicenseByLicenseIdIn(deleteLicenseIds);
+	}
+
+	/**
+	 * 미 사용 라이선스 제거
+	 * @param originLicenses - 기존 상품의 라이선스 정보
+	 * @param deleteSize - 삭제할 갯수
+	 */
+	public long deleteUnUsedLicenseInformationWithSize(Set<License> originLicenses, int deleteSize) {
+		// 미 사용중인 라이선스 정보 조회
+		List<Long> deleteLicenseIds = originLicenses.stream()
+			.filter(license -> license.getStatus() == LicenseStatus.UNUSE)
+			.map(License::getId)
+			.limit(deleteSize)
+			.collect(Collectors.toList());
+
+		log.info(
+			"[BILLING][DELETE_LICENSE] - DELETE_SIZE: {} LICENSE_ID_LIST :: {}", deleteSize,
+			deleteLicenseIds.toString()
+		);
+
+		// 미 사용중 라이선스 제거
+		return licenseRepository.deleteAllLicenseByLicenseIdIn(deleteLicenseIds);
 	}
 
 	/**
@@ -541,7 +646,7 @@ public class BillingService {
 					return new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
 				}
 			);
-		// 축소된 라이선스 갯수 할당		
+		// 축소된 라이선스 갯수 할당
 		licenseProduct.setQuantity(decreaseLicenseProductInfo.getProductAmount());
 		// 라이선스 초과 상태로 변경
 		licenseProduct.setStatus(LicenseProductStatus.EXCEEDED);
@@ -551,14 +656,12 @@ public class BillingService {
 
 	/**
 	 * 라이선스 상품 추가 지급 처리
-	 * @param increaseLicenseProductInfo - 라이선스 할당 요청 정보
 	 * @param licenseProduct - 기존 라이선스 제품 정보
+	 * @param newLicenseProductAmount - 추가 생성 라이선스 갯수
 	 */
-	public void assignLicenseProductMoreThanOriginLicensePlan(
-		AllocateProductInfoResponse increaseLicenseProductInfo, LicenseProduct licenseProduct
+	public void assignAdditionalLicenseToOriginLicenseProduct(
+		LicenseProduct licenseProduct, int newLicenseProductAmount
 	) {
-		// 추가 지급 요청 상품의 수량(추가 수량 + 이전 제품 수량) - 현재 상품의 수량 = 추가 수량
-		int newLicenseProductAmount = increaseLicenseProductInfo.getProductAmount() - licenseProduct.getQuantity();
 		log.info(
 			"[LICENSE][GENERATE] - LICENSE_PRODUCT_INFO: {} , CREATE_AMOUNT: {}",
 			licenseProduct.toString(), newLicenseProductAmount
@@ -742,13 +845,14 @@ public class BillingService {
 	 */
 	public void licenseGenerateAndRegisterByLicenseProduct(LicenseProduct licenseProduct, int quantity) {
 		for (int i = 0; i < quantity; i++) {
-			License license = License.builder()
+			License newLicense = License.builder()
 				.status(LicenseStatus.UNUSE)
 				.serialKey(UUID.randomUUID().toString().toUpperCase())
-				.licenseProduct(licenseProduct)
+				// .licenseProduct(licenseProduct)
 				.build();
-			licenseRepository.save(license);
-			log.info("[BILLING][NEW_PRODUCT_LICENSE_GENERATE] - {}", license.toString());
+			// licenseRepository.save(license);
+			licenseProduct.addNewLicense(newLicense);
+			log.info("[BILLING][NEW_PRODUCT_LICENSE_GENERATE] - {}", newLicense.toString());
 		}
 	}
 
@@ -887,5 +991,18 @@ public class BillingService {
 		//해당되지 않은 타임의 경우, 1개월 단위 라이선스 연장
 		return LocalDate.now().plusDays(30)
 			.atTime(LICENSE_EXPIRED_HOUR, LICENSE_EXPIRED_MINUTE, LICENSE_EXPIRED_SECONDS);
+	}
+
+	/**
+	 * 기간 결제로 들어온 라이선스 할당 요청 정보 검사
+	 * @param allocateCheckRequest - 라이선스 할당 정보
+	 * @return - 요청 정보 검사 결과
+	 */
+	private boolean termLicenseAllocateRequestValidationCheck(LicenseAllocateCheckRequest allocateCheckRequest) {
+		if (allocateCheckRequest.isTermPaymentRequest() &&
+			(allocateCheckRequest.getCouponList() == null || allocateCheckRequest.getCouponList().isEmpty())) {
+			return false;
+		}
+		return true;
 	}
 }
