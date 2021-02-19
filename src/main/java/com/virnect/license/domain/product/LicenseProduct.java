@@ -97,9 +97,4 @@ public class LicenseProduct extends BaseTimeEntity {
 			", downloadHit=" + downloadHit +
 			'}';
 	}
-
-	public void addNewLicense(License newLicense) {
-		newLicense.setLicenseProduct(this);
-		this.licenseList.add(newLicense);
-	}
 }

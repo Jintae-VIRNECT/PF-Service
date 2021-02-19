@@ -848,10 +848,9 @@ public class BillingService {
 			License newLicense = License.builder()
 				.status(LicenseStatus.UNUSE)
 				.serialKey(UUID.randomUUID().toString().toUpperCase())
-				// .licenseProduct(licenseProduct)
+				.licenseProduct(licenseProduct)
 				.build();
-			// licenseRepository.save(license);
-			licenseProduct.addNewLicense(newLicense);
+			licenseRepository.save(newLicense);
 			log.info("[BILLING][NEW_PRODUCT_LICENSE_GENERATE] - {}", newLicense.toString());
 		}
 	}
