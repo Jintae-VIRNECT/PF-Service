@@ -22,11 +22,11 @@ import lombok.extern.slf4j.Slf4j;
 import springfox.documentation.annotations.ApiIgnore;
 
 import com.virnect.license.application.LicenseService;
-import com.virnect.license.dto.response.LicenseSecessionResponse;
-import com.virnect.license.dto.response.MyLicenseInfoListResponse;
-import com.virnect.license.dto.response.MyLicenseInfoResponse;
-import com.virnect.license.dto.response.MyLicensePlanInfoListResponse;
-import com.virnect.license.dto.response.WorkspaceLicensePlanInfoResponse;
+import com.virnect.license.dto.license.response.LicenseSecessionResponse;
+import com.virnect.license.dto.license.response.MyLicenseInfoListResponse;
+import com.virnect.license.dto.license.response.MyLicenseInfoResponse;
+import com.virnect.license.dto.license.response.MyLicensePlanInfoListResponse;
+import com.virnect.license.dto.license.response.WorkspaceLicensePlanInfoResponse;
 import com.virnect.license.exception.LicenseServiceException;
 import com.virnect.license.global.common.ApiResponse;
 import com.virnect.license.global.common.PageRequest;
@@ -59,6 +59,7 @@ public class LicenseController {
 		if (!StringUtils.hasText(workspaceId)) {
 			throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
 		}
+		// Todo: 필터 기능 추가
 		WorkspaceLicensePlanInfoResponse responseMessage = licenseService.getWorkspaceLicensePlanInfo(workspaceId);
 		return ResponseEntity.ok(new ApiResponse<>(responseMessage));
 	}
@@ -72,6 +73,7 @@ public class LicenseController {
 		if (!StringUtils.hasText(userId)) {
 			throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
 		}
+		// Todo: 페이징 및 필터 기능 추가
 		ApiResponse<MyLicenseInfoListResponse> responseMessage = licenseService.getMyLicenseInfoList(
 			userId,
 			workspaceId

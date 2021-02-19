@@ -15,12 +15,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.virnect.license.application.BillingService;
-import com.virnect.license.dto.request.billing.LicenseAllocateCheckRequest;
-import com.virnect.license.dto.request.billing.LicenseProductAllocateRequest;
-import com.virnect.license.dto.request.billing.LicenseProductDeallocateRequest;
-import com.virnect.license.dto.response.LicenseProductAllocateCheckResponse;
-import com.virnect.license.dto.response.LicenseProductDeallocateResponse;
-import com.virnect.license.dto.response.biling.LicenseProductAllocateResponse;
+import com.virnect.license.dto.billing.request.LicenseAllocateCheckRequest;
+import com.virnect.license.dto.billing.request.LicenseProductAllocateRequest;
+import com.virnect.license.dto.billing.request.LicenseProductDeallocateRequest;
+import com.virnect.license.dto.license.response.LicenseProductAllocateCheckResponse;
+import com.virnect.license.dto.license.response.LicenseProductDeallocateResponse;
+import com.virnect.license.dto.billing.response.LicenseProductAllocateResponse;
 import com.virnect.license.exception.BillingServiceException;
 import com.virnect.license.global.common.ApiResponse;
 import com.virnect.license.global.error.ErrorCode;

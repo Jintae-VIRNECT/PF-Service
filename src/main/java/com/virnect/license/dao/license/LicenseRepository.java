@@ -3,6 +3,7 @@ package com.virnect.license.dao.license;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import com.virnect.license.domain.license.License;
 import com.virnect.license.domain.license.LicenseStatus;

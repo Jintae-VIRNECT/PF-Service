@@ -37,14 +37,14 @@ import com.virnect.license.domain.product.LicenseProductStatus;
 import com.virnect.license.domain.product.Product;
 import com.virnect.license.dto.ResourceCalculate;
 import com.virnect.license.dto.UserLicenseDetailsInfo;
-import com.virnect.license.dto.response.LicenseInfoResponse;
-import com.virnect.license.dto.response.LicenseProductInfoResponse;
-import com.virnect.license.dto.response.LicenseSecessionResponse;
-import com.virnect.license.dto.response.MyLicenseInfoListResponse;
-import com.virnect.license.dto.response.MyLicenseInfoResponse;
-import com.virnect.license.dto.response.MyLicensePlanInfoListResponse;
-import com.virnect.license.dto.response.MyLicensePlanInfoResponse;
-import com.virnect.license.dto.response.WorkspaceLicensePlanInfoResponse;
+import com.virnect.license.dto.license.response.LicenseInfoResponse;
+import com.virnect.license.dto.license.response.LicenseProductInfoResponse;
+import com.virnect.license.dto.license.response.LicenseSecessionResponse;
+import com.virnect.license.dto.license.response.MyLicenseInfoListResponse;
+import com.virnect.license.dto.license.response.MyLicenseInfoResponse;
+import com.virnect.license.dto.license.response.MyLicensePlanInfoListResponse;
+import com.virnect.license.dto.license.response.MyLicensePlanInfoResponse;
+import com.virnect.license.dto.license.response.WorkspaceLicensePlanInfoResponse;
 import com.virnect.license.dto.rest.content.ContentResourceUsageInfoResponse;
 import com.virnect.license.dto.rest.user.WorkspaceInfoResponse;
 import com.virnect.license.event.license.LicenseExpiredEvent;
@@ -237,6 +237,7 @@ public class LicenseService {
 	 */
 	@Transactional(readOnly = true)
 	public ApiResponse<MyLicenseInfoListResponse> getMyLicenseInfoList(String userId, String workspaceId) {
+		// Todo: 페이징 기능 넣기
 		LicensePlan licensePlan = licensePlanRepository.findByWorkspaceIdAndPlanStatusNot(
 			workspaceId, PlanStatus.TERMINATE)
 			.orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_LICENSE_PLAN_NOT_FOUND));
