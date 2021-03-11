@@ -8,6 +8,7 @@ import static com.virnect.license.domain.product.QProduct.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -21,6 +22,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import com.virnect.license.domain.license.License;
 import com.virnect.license.domain.license.LicenseStatus;
 import com.virnect.license.domain.product.LicenseProduct;
 import com.virnect.license.dto.UserLicenseDetailsInfo;
@@ -68,5 +70,24 @@ public class CustomLicenseRepositoryImpl implements CustomLicenseRepository {
 		return query.delete(license)
 			.where(license.id.in(deleteLicenseIdList))
 			.execute();
+	}
+
+	@Override
+	public License licenseAllocationRevokeByUserIdAndLicenseProductId(String userId, long licenseProductId) {
+		return query.selectFrom(license)
+			.where(license.licenseProduct.id.eq(licenseProductId).and(license.userId.eq(userId)))
+			.fetchOne();
+	}
+
+	@Override
+	public Optional<License> findAllocatableLicensesByLicenseProduct(
+		LicenseProduct licenseProduct
+	) {
+		return Optional.ofNullable(
+			query.selectFrom(license)
+			.where(license.licenseProduct.eq(licenseProduct))
+			.where(license.status.eq(LicenseStatus.UNUSE))
+			.fetchFirst()
+		);
 	}
 }
