@@ -267,108 +267,128 @@ public class LicenseService {
 	}
 
 	/**
-	 * 워크스페이스내에서 사용자에게 플랜 할당, 해제
+	 * 워크스페이스내에서 사용자에게 플랜 할당
 	 *
-	 * @param workspaceId - 플랜할당(해제)이 이루어지는 워크스페이스 식별자
-	 * @param userId      - 플랜 할당(해제)을 받을 사용자 식별자
-	 * @param productName - 할당(해제) 을 받을 제품명(REMOTE, MAKE, VIEW 중 1)
-	 * @return - 할당받은 라이선스 정보 or 해제 성공 여부
+	 * @param workspaceId - 플랜 할당 이 이루어지는 워크스페이스 식별자
+	 * @param userId      - 플랜 할당을 받을 사용자 식별자
+	 * @param productName - 할당을 받을 제품명(REMOTE, MAKE, VIEW 중 1)
+	 * @return - 할당받은 라이선스 정보
 	 */
 	@Transactional
-	public ApiResponse grantWorkspaceLicenseToUser(
-		String workspaceId, String userId, String productName, Boolean grant
+	public MyLicenseInfoResponse userLicenseAllocateRequestHandler(
+		String workspaceId, String userId, String productName
 	) {
-		//워크스페이스 플랜찾기
+		//워크스페이스 플랜찾기 ( 비활성화 또는 활성화)
 		LicensePlan licensePlan = licensePlanRepository.findByWorkspaceIdAndPlanStatus(
-			workspaceId,
-			PlanStatus.ACTIVE
+			workspaceId, PlanStatus.ACTIVE
 		).orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_LICENSE_PLAN_NOT_FOUND));
 
 		LicenseProduct licenseProduct = licenseProductRepository.findByLicensePlanAndProduct_Name(
 			licensePlan, productName
 		).orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_LICENSE_PRODUCT_NOT_FOUND));
 
-		Product product = licenseProduct.getProduct();
+		License currentUserLicense = licenseRepository.licenseAllocationRevokeByUserIdAndLicenseProductId(
+			userId, licenseProduct.getId());
 
-		//라이선스 부여/해제
-		License oldLicense = licenseRepository.findByUserIdAndLicenseProduct_LicensePlan_WorkspaceIdAndLicenseProduct_ProductAndStatus(
-			userId, workspaceId, product, LicenseStatus.USE);
-		if (grant) {
-			if (oldLicense != null) {
-				throw new LicenseServiceException(ErrorCode.ERR_LICENSE_ALREADY_GRANTED);
-			}
+		// 라이선스 부여, 이미 부여되어있는 경우
+		if (currentUserLicense != null) {
+			throw new LicenseServiceException(ErrorCode.ERR_LICENSE_ALREADY_GRANTED);
+		}
 
+		long usedLicenseAmount = licenseProduct.getLicenseList()
+			.stream()
+			.filter(l -> l.getStatus() == LicenseStatus.USE)
+			.count();
+
+		log.info(
+			"[LICENSE_STATUS] - LICENSE_PRODUCT_AMOUNT: {} , USED_LICENSE_AMOUNT: {} , RESULT: {}",
+			licenseProduct.getQuantity(), usedLicenseAmount, licenseProduct.getQuantity() >= usedLicenseAmount
+		);
+
+		// 현재 할당된 라이선스 수가 부여된 라이선스 갯수 보다 크거나(축소된 경우) 같은 경우
+		if (licenseProduct.getQuantity() <= usedLicenseAmount) {
+			log.error("[LICENSE_ALLOCATE_FAIL] - LICENSE_PRODUCT_AMOUNT: {} , USED_LICENSE_AMOUNT: {} , RESULT: {}",
+				licenseProduct.getQuantity(), usedLicenseAmount, licenseProduct.getQuantity() >= usedLicenseAmount
+			);
+			throw new LicenseServiceException(ErrorCode.ERR_USEFUL_LICENSE_NOT_FOUND);
+		}
+
+		Optional<License> allocatableLicenseInfo = licenseRepository.findAllocatableLicensesByLicenseProduct(
+			licenseProduct);
+
+		if (!allocatableLicenseInfo.isPresent()) {
+			throw new LicenseServiceException(ErrorCode.ERR_USEFUL_LICENSE_NOT_FOUND);
+		}
+
+		License updatedLicense = allocatableLicenseInfo.get();
+		updatedLicense.setUserId(userId);
+		updatedLicense.setStatus(LicenseStatus.USE);
+		licenseRepository.save(updatedLicense);
+
+		return modelMapper.map(
+			updatedLicense,
+			MyLicenseInfoResponse.class
+		);
+	}
+
+	/**
+	 * 사용자 라이선스 할당 해제
+	 * @param workspaceId - 워크스페이스 아이디
+	 * @param userId - 할당 해제 대상 사용자 식별자
+	 * @param productName - 할당 해제 대상 라이선스 제품명
+	 * @return 할당 해제 처리 결과
+	 */
+	@Transactional
+	public boolean userLicenseRevokeRequestHandler(String workspaceId, String userId, String productName) {
+		LicensePlan licensePlan = licensePlanRepository.findByWorkspaceIdAndPlanStatusNot(
+			workspaceId, PlanStatus.TERMINATE
+		).orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_LICENSE_PLAN_NOT_FOUND));
+
+		LicenseProduct licenseProduct = licenseProductRepository.findByLicensePlanAndProduct_Name(
+			licensePlan, productName
+		).orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_LICENSE_PRODUCT_NOT_FOUND));
+
+		License currentUserLicense = licenseRepository.licenseAllocationRevokeByUserIdAndLicenseProductId(
+			userId, licenseProduct.getId());
+
+		if(currentUserLicense == null){
+			log.info("Retrieve user license info via license plan : {} and license product: {} , but license info not found", licensePlan, licenseProduct);
+			throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
+		}
+
+		// 제품 라이선스 상태가 만약 초과 상태인 경우, 라이선스 종료 상태로 표시
+		if (licenseProduct.getStatus() == LicenseProductStatus.EXCEEDED) {
+			currentUserLicense.setStatus(LicenseStatus.TERMINATE);
+			licenseRepository.save(currentUserLicense);
+
+			// 현재 사용중인 라이선스 갯수 계산
 			long usedLicenseAmount = licenseProduct.getLicenseList()
 				.stream()
 				.filter(l -> l.getStatus().equals(LicenseStatus.USE))
 				.count();
 
-			log.info(
-				"[LICENSE_STATUS] - LICENSE_PRODUCT_AMOUNT: {} , USED_LICENSE_AMOUNT: {} , RESULT: {}",
-				licenseProduct.getQuantity(), usedLicenseAmount, licenseProduct.getQuantity() >= usedLicenseAmount
-			);
-
-			// 현재 할당된 라이선스 수가 부여된 라이선스 갯수 보다 크거나(축소된 경우) 같은 경우
-			if (licenseProduct.getQuantity() <= usedLicenseAmount) {
-				log.error("[LICENSE_ALLOCATE_FAIL] - LICENSE_PRODUCT_AMOUNT: {} , USED_LICENSE_AMOUNT: {} , RESULT: {}",
-					licenseProduct.getQuantity(), usedLicenseAmount, licenseProduct.getQuantity() >= usedLicenseAmount
-				);
-				throw new LicenseServiceException(ErrorCode.ERR_USEFUL_LICENSE_NOT_FOUND);
+			// 제품 라이선스 갯수 범위 내에 들어온 경우
+			if (usedLicenseAmount <= licenseProduct.getQuantity()) {
+				// 제품 라이선스 초과 상태에서 정상 상태로 변경
+				licenseProduct.setStatus(LicenseProductStatus.ACTIVE);
+				licenseProductRepository.save(licenseProduct);
 			}
 
-			//부여 가능한 라이선스 찾기
-			List<License> licenseList = licenseRepository.findAllByLicenseProduct_LicensePlan_WorkspaceIdAndLicenseProduct_LicensePlan_PlanStatusAndLicenseProduct_ProductAndStatus(
-				workspaceId, PlanStatus.ACTIVE, product, LicenseStatus.UNUSE);
-			if (licenseList.isEmpty()) {
-				throw new LicenseServiceException(ErrorCode.ERR_USEFUL_LICENSE_NOT_FOUND);
-			}
-
-			License updatedLicense = licenseList.get(0);
-			updatedLicense.setUserId(userId);
-			updatedLicense.setStatus(LicenseStatus.USE);
-			licenseRepository.save(updatedLicense);
-
-			MyLicenseInfoResponse myLicenseInfoResponse = modelMapper.map(
-				updatedLicense,
-				MyLicenseInfoResponse.class
-			);
-			return new ApiResponse<>(myLicenseInfoResponse);
-		} else {
-			// 라이선스 축소
-
-			// 제품 라이선스 상태가 만약 초과 상태인 경우, 라이선스 종료 상태로 표시
-			if (licenseProduct.getStatus().equals(LicenseProductStatus.EXCEEDED)) {
-				oldLicense.setStatus(LicenseStatus.TERMINATE);
-				licenseRepository.save(oldLicense);
-
-				// 현재 사용중인 라이선스 갯수 계산
-				long usedLicenseAmount = licenseProduct.getLicenseList()
-					.stream()
-					.filter(l -> l.getStatus().equals(LicenseStatus.USE))
-					.count();
-
-				// 제품 라이선스 갯수 범위 내에 들어온 경우
-				if (usedLicenseAmount <= licenseProduct.getQuantity()) {
-					// 제품 라이선스 초과 상태에서 정상 상태로 변경
-					licenseProduct.setStatus(LicenseProductStatus.ACTIVE);
-					licenseProductRepository.save(licenseProduct);
-				}
-
-			} else { // 초과 상태가 아닌 경우, 이전 사용자 할당 정보 제거 및 미사용 상태로 변경
-				oldLicense.setUserId(null);
-				oldLicense.setStatus(LicenseStatus.UNUSE);
-				licenseRepository.save(oldLicense);
-			}
-
-			Map<Object, Object> pushContent = new HashMap<>();
-			pushContent.put("productName", product.getName());
-			LicenseExpiredEvent licenseExpiredEvent = new LicenseExpiredEvent(
-				productName.toLowerCase(), workspaceId, userId, pushContent
-			);
-			log.info("[LICENSE DEALLOCATE_PUSH_MESSAGE_REQUEST] - {}", licenseExpiredEvent.toString());
-			applicationEventPublisher.publishEvent(licenseExpiredEvent);
-			return new ApiResponse<>(true);
+		} else { // 초과 상태가 아닌 경우, 이전 사용자 할당 정보 제거 및 미사용 상태로 변경
+			currentUserLicense.setUserId(null);
+			currentUserLicense.setStatus(LicenseStatus.UNUSE);
+			licenseRepository.save(currentUserLicense);
 		}
+
+		Map<Object, Object> pushContent = new HashMap<>();
+		pushContent.put("productName", productName);
+		LicenseExpiredEvent licenseExpiredEvent = new LicenseExpiredEvent(
+			productName.toLowerCase(), workspaceId, userId, pushContent
+		);
+		log.info("[LICENSE DEALLOCATE_PUSH_MESSAGE_REQUEST] - {}", licenseExpiredEvent.toString());
+		applicationEventPublisher.publishEvent(licenseExpiredEvent);
+
+		return true;
 	}
 
 	/**

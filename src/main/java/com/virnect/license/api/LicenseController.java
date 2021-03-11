@@ -95,13 +95,12 @@ public class LicenseController {
 		if (!StringUtils.hasText(workspaceId) || !StringUtils.hasText(userId) || !StringUtils.hasText(productName)) {
 			throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
 		}
-		ApiResponse<MyLicenseInfoResponse> responseMessage = licenseService.grantWorkspaceLicenseToUser(
+		MyLicenseInfoResponse responseMessage = licenseService.userLicenseAllocateRequestHandler(
 			workspaceId,
 			userId,
-			productName,
-			true
+			productName
 		);
-		return ResponseEntity.ok(responseMessage);
+		return ResponseEntity.ok(new ApiResponse<>(responseMessage));
 	}
 
 	@ApiOperation(value = "워크스페이스내에서 라이선스 할당 해제")
@@ -118,10 +117,10 @@ public class LicenseController {
 		if (!StringUtils.hasText(workspaceId) || !StringUtils.hasText(userId) || !StringUtils.hasText(productName)) {
 			throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
 		}
-		ApiResponse<Boolean> responseMessage = licenseService.grantWorkspaceLicenseToUser(workspaceId, userId,
-			productName, false
+		boolean responseMessage = licenseService.userLicenseRevokeRequestHandler(workspaceId, userId,
+			productName
 		);
-		return ResponseEntity.ok(responseMessage);
+		return ResponseEntity.ok(new ApiResponse<>(responseMessage));
 	}
 
 	@ApiOperation(value = "사용중인 플랜 목록 조회")
