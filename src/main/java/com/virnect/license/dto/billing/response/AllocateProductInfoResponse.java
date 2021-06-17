@@ -26,6 +26,18 @@ public class AllocateProductInfoResponse {
 	@ApiModelProperty(value = "상품 타입 정보", position = 6)
 	private ProductTypeRequest productType;
 
+	public long getTotalCallTime() {
+		return this.productAmount * this.productCallTime;
+	}
+
+	public long getTotalStorageSize() {
+		return this.productAmount * this.productStorage;
+	}
+
+	public long getTotalDownloadHit() {
+		return this.productAmount * this.productHit;
+	}
+
 	@Override
 	public String toString() {
 		return "LicenseAllocateProductInfoResponse{" +

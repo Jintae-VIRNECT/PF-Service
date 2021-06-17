@@ -2,10 +2,10 @@
 RELEASE
 
 New Features
-- 없음
+- 서버 프레임워크 버전 업데이트
 
 Bug Fixes
-- 라이선스 축소 시, 라이선스 미삭제로 인한 라이선스 수량 버그 수정
+- 없음
 
 Limitation
 - 없음

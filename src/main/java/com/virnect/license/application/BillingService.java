@@ -597,23 +597,34 @@ public class BillingService {
 	public void originLicenseProductResourceUpdate(
 		AllocateProductInfoResponse allocateProduct, LicenseProduct originLicenseProduct
 	) {
-		// 해당 라이선스 상품의 통화 시간 정보 변경
-		originLicenseProduct.setCallTime(
-			allocateProduct.getProductCallTime() * allocateProduct.getProductAmount()
-		);
-		// 해당 라이선스 상품의 용량 정보 변경
-		originLicenseProduct.setStorageSize(
-			allocateProduct.getProductStorage() * allocateProduct.getProductAmount()
-		);
-		// 해당 라이선스 상품의 다운로드 횟수 정보 변경
-		originLicenseProduct.setDownloadHit(
-			allocateProduct.getProductHit() * allocateProduct.getProductAmount()
-		);
+		log.info("[LICENSE PRODUCT UPDATE] Start.");
+		log.info("[LICENSE PRODUCT UPDATE] [ORIGIN] -> {}", originLicenseProduct);
+
 		// 해당 라이선스 상품의 수량 정보 변경
-		originLicenseProduct.setQuantity(allocateProduct.getProductAmount());
-		log.info("[ORIGIN LICENSE PRODUCT UPDATE] -> {} to {}",
-			originLicenseProduct.toString(), allocateProduct.toString()
+		log.info("* [UPDATE] Amount: [{}] -> [{}]",
+			originLicenseProduct.getQuantity(), allocateProduct.getProductAmount()
 		);
+		originLicenseProduct.setQuantity(allocateProduct.getProductAmount());
+
+		// 해당 라이선스 상품의 통화 시간 정보 변경
+		log.info("* [UPDATE] CallTime: [{}] -> [{}]",
+			originLicenseProduct.getCallTime(), allocateProduct.getTotalCallTime()
+		);
+		originLicenseProduct.setCallTime(allocateProduct.getTotalCallTime());
+
+		// 해당 라이선스 상품의 용량 정보 변경
+		log.info("* [UPDATE] StorageSize: [{}] -> [{}]",
+			originLicenseProduct.getStorageSize(), allocateProduct.getTotalStorageSize()
+		);
+		originLicenseProduct.setStorageSize(allocateProduct.getTotalStorageSize());
+
+		// 해당 라이선스 상품의 다운로드 횟수 정보 변경
+		log.info("* [UPDATE] DownloadHit: [{}] -> [{}]",
+			originLicenseProduct.getDownloadHit(), allocateProduct.getTotalDownloadHit()
+		);
+		originLicenseProduct.setDownloadHit(allocateProduct.getTotalDownloadHit());
+
+		log.info("[LICENSE PRODUCT UPDATE] End.");
 	}
 
 	/**

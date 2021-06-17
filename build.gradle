@@ -3,8 +3,8 @@ import com.github.jk1.license.filter.LicenseBundleNormalizer
 import com.github.jk1.license.render.InventoryMarkdownReportRenderer
 
 plugins {
-    id 'org.springframework.boot' version '2.2.6.RELEASE'
-    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'org.springframework.boot' version '2.3.8.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
     id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
     id "io.franzbecker.gradle-lombok" version "3.3.0"
     id "com.github.jk1.dependency-license-report" version "1.13"
@@ -26,15 +26,18 @@ repositories {
 }
 
 ext {
-    set('springCloudVersion', "Hoxton.SR3")
+    set('springCloudVersion', "Hoxton.SR10")
 }
 
 dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.data:spring-data-envers'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
@@ -108,31 +111,13 @@ sourceSets {
     }
 }
 
-
 //License Reporting Configuration
 licenseReport {
     renderers = [new InventoryMarkdownReportRenderer()]
     filters = [new LicenseBundleNormalizer(), new ExcludeTransitiveDependenciesFilter()]
 }
 
-// separate jar into app and library layers
-task moveLib {
-    doLast {
-        def unpackDir = "$buildDir/unpack"
-        ant.move(file: "${unpackDir}/app/BOOT-INF/lib", toFile: "${unpackDir}/lib")
-    }
-}
 
-task unpackJar(type: Copy) {
-    def unpackDir = "$buildDir/unpack"
-
-    delete unpackDir
-    from zipTree(jar.getArchiveFile())
-    into "$unpackDir/app"
-
-    finalizedBy moveLib
-}
-
-build {
-    finalizedBy unpackJar
+bootJar {
+    layered()
 }
