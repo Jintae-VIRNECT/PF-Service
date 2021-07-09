@@ -150,20 +150,17 @@ public class LicenseController {
 		@ApiImplicitParam(name = "userUUID", value = "사용자 식별자", paramType = "query", example = "4d6eab0860969a50acbfa4599fbb5ae8"),
 		@ApiImplicitParam(name = "serviceID", value = "요청 서버 명", paramType = "header", example = "user-server")
 	})
-	@DeleteMapping("/secession/{workspaceUUID}")
+	@DeleteMapping("/secession/{userUUID}")
 	public ResponseEntity<ApiResponse<LicenseSecessionResponse>> licenseSecessionRequest(
-		@PathVariable("workspaceUUID") String workspaceUUID,
-		@RequestParam("userUUID") String userUUID,
+		@PathVariable("userUUID") String userUUID,
 		@RequestParam("userNumber") long userNumber,
 		@RequestHeader("serviceID") String requestServiceID
 	) {
-		if (!StringUtils.hasText(workspaceUUID) || !StringUtils.hasText(userUUID) || !StringUtils.hasText(
+		if (!StringUtils.hasText(userUUID) || !StringUtils.hasText(
 			requestServiceID) || !requestServiceID.equals("user-server")) {
 			throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
 		}
-		LicenseSecessionResponse responseMessage = licenseService.deleteAllLicenseInfo(
-			workspaceUUID, userUUID, userNumber
-		);
+		LicenseSecessionResponse responseMessage = licenseService.deleteAllLicenseInfo(userUUID, userNumber);
 		return ResponseEntity.ok(new ApiResponse<>(responseMessage));
 	}
 }

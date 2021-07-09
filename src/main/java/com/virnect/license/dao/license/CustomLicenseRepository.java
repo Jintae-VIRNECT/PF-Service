@@ -21,4 +21,6 @@ public interface CustomLicenseRepository {
 	License licenseAllocationRevokeByUserIdAndLicenseProductId(String userId, long licenseProductId);
 
 	Optional<License> findAllocatableLicensesByLicenseProduct(LicenseProduct licenseProduct);
+
+	long revertAllLicenseByUserUUID(String userUUID);
 }

@@ -85,9 +85,17 @@ public class CustomLicenseRepositoryImpl implements CustomLicenseRepository {
 	) {
 		return Optional.ofNullable(
 			query.selectFrom(license)
-			.where(license.licenseProduct.eq(licenseProduct))
-			.where(license.status.eq(LicenseStatus.UNUSE))
-			.fetchFirst()
+				.where(license.licenseProduct.eq(licenseProduct))
+				.where(license.status.eq(LicenseStatus.UNUSE))
+				.fetchFirst()
 		);
+	}
+
+	@Override
+	public long revertAllLicenseByUserUUID(String userUUID) {
+		return query.update(license)
+			.where(license.userId.eq(userUUID))
+			.set(license.status, LicenseStatus.UNUSE)
+			.execute();
 	}
 }
