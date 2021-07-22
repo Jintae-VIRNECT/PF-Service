@@ -63,7 +63,7 @@ import com.virnect.license.global.error.ErrorCode;
 public class BillingService {
 	private static final long MAX_USER_AMOUNT = 50; // 9 명 -> 50명
 	private static final long MAX_CALL_TIME = Long.MAX_VALUE; // (270 시간 -> 무제한)
-	private static final long MAX_STORAGE_AMOUNT = 980000; // 180 기가
+	private static final long MAX_STORAGE_AMOUNT = 1024000; // 1 테라
 	private static final long MAX_DOWNLOAD_HITS = 149000; // 10만 회 + (49* 1000회) = 149000
 	private static final int LICENSE_EXPIRED_HOUR = 23; // 오후 11시
 	private static final int LICENSE_EXPIRED_MINUTE = 59; // 59분
@@ -879,15 +879,18 @@ public class BillingService {
 		long calculateMaxStorage = 0;
 		long calculateMaxHit = 0;
 		for (AllocateProductInfoResponse product : allocateProductList) {
-			ProductTypeRequest productTypeInfo = product.getProductType();
-			String productTypeName = productTypeInfo.getName();
-			if (ProductTypeName.REMOTE.is(productTypeName) || ProductTypeName.CALL_TIME.is(productTypeName)) {
-				calculateMaxCallTime += product.getProductCallTime() * product.getProductAmount();
-			} else if (ProductTypeName.MAKE.is(productTypeName) || ProductTypeName.STORAGE.is(productTypeName)) {
-				calculateMaxStorage += product.getProductStorage() * product.getProductAmount();
-			} else if (ProductTypeName.VIEW.is(productTypeName) || ProductTypeName.HIT.is(productTypeName)) {
-				calculateMaxHit += product.getProductHit() * product.getProductAmount();
-			}
+			calculateMaxHit += product.getProductHit();
+			calculateMaxCallTime += product.getProductCallTime();
+			calculateMaxStorage += product.getProductStorage();
+			// ProductTypeRequest productTypeInfo = product.getProductType();
+			// String productTypeName = productTypeInfo.getName();
+			// if (ProductTypeName.REMOTE.is(productTypeName) || ProductTypeName.CALL_TIME.is(productTypeName)) {
+			// 	calculateMaxCallTime += product.getProductCallTime() * product.getProductAmount();
+			// } else if (ProductTypeName.MAKE.is(productTypeName) || ProductTypeName.STORAGE.is(productTypeName)) {
+			// 	calculateMaxStorage += product.getProductStorage() * product.getProductAmount();
+			// } else if (ProductTypeName.VIEW.is(productTypeName) || ProductTypeName.HIT.is(productTypeName)) {
+			// 	calculateMaxHit += product.getProductHit() * product.getProductAmount();
+			// }
 		}
 		log.info("callTime: {} , storageSize: {}, Hit: {}", calculateMaxCallTime, calculateMaxStorage, calculateMaxHit);
 		return new ResourceCalculate(calculateMaxCallTime, calculateMaxStorage, calculateMaxHit);
