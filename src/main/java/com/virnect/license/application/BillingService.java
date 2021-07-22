@@ -879,9 +879,10 @@ public class BillingService {
 		long calculateMaxStorage = 0;
 		long calculateMaxHit = 0;
 		for (AllocateProductInfoResponse product : allocateProductList) {
-			calculateMaxHit += product.getProductHit();
-			calculateMaxCallTime += product.getProductCallTime();
-			calculateMaxStorage += product.getProductStorage();
+			calculateMaxHit += product.getProductAmount() * product.getProductHit();
+			calculateMaxCallTime += product.getProductAmount() * product.getProductCallTime();
+			calculateMaxStorage += product.getProductAmount() * product.getProductStorage();
+
 			// ProductTypeRequest productTypeInfo = product.getProductType();
 			// String productTypeName = productTypeInfo.getName();
 			// if (ProductTypeName.REMOTE.is(productTypeName) || ProductTypeName.CALL_TIME.is(productTypeName)) {

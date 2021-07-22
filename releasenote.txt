@@ -8,6 +8,8 @@ New Features
 Bug Fixes
 - DEVCENTER-4376 [PF-API] PF-License 회원 탈퇴 시 라이선스 정보 삭제 로직 수정
   : 라이선스 플랜 정보는 종료, 라이선스 할당 정보는 삭제 처리
+- DEVCENTER-4403 [PF-API] PF-License 리모트 사용량 정보 추가
+  : feat 리모트 사용량 api 연동 및 현재 사용량 정보에 파일 용량 추가.
 
 Limitation
 - 없음
