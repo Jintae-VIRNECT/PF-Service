@@ -56,9 +56,10 @@ public enum ErrorCode {
 	// 상품 타입 관련
 	ERR_BILLING_PRODUCT_TYPE_INFO_UPDATE(4400, "Product type info update fail."),
 
-	// 라이선스 할당 관련
+	// 라이선스 할당/해제 관련
 	ERR_LICENSE_ALREADY_GRANTED(5000, "License is already granted"),
 	ERR_USEFUL_LICENSE_NOT_FOUND(5001, "Useful License not found"),
+	ERR_LICENSE_REVOKE_NOT_FOUND(5002,"License revoke fail. No license in use."),
 
 	// 탈퇴 관련 에러
 	ERR_BILLING_MONTHLY_BILLING_INFO(6000, "Monthly Billing Info retrieve fail."),

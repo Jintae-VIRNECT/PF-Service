@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.virnect.license.domain.license.License;
+import com.virnect.license.domain.licenseplan.LicensePlan;
 import com.virnect.license.domain.product.LicenseProduct;
 import com.virnect.license.dto.UserLicenseDetailsInfo;
 
@@ -23,4 +24,6 @@ public interface CustomLicenseRepository {
 	Optional<License> findAllocatableLicensesByLicenseProduct(LicenseProduct licenseProduct);
 
 	long revertAllLicenseByUserUUID(String userUUID);
+
+	List<License> findAllLicenseByUserUUIDListAndLicensePlanAndProductName(LicensePlan licensePlan, String productName, List<String> userUUIDList);
 }

@@ -1,5 +1,7 @@
 package com.virnect.license.application;
 
+import static com.virnect.license.domain.licenseplan.PlanStatus.*;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -40,11 +42,14 @@ import com.virnect.license.dto.ResourceCalculate;
 import com.virnect.license.dto.UserLicenseDetailsInfo;
 import com.virnect.license.dto.license.response.LicenseInfoResponse;
 import com.virnect.license.dto.license.response.LicenseProductInfoResponse;
+import com.virnect.license.dto.license.response.LicenseRevokeResponse;
 import com.virnect.license.dto.license.response.LicenseSecessionResponse;
 import com.virnect.license.dto.license.response.MyLicenseInfoListResponse;
 import com.virnect.license.dto.license.response.MyLicenseInfoResponse;
 import com.virnect.license.dto.license.response.MyLicensePlanInfoListResponse;
 import com.virnect.license.dto.license.response.MyLicensePlanInfoResponse;
+import com.virnect.license.dto.license.response.UserLicenseInfo;
+import com.virnect.license.dto.license.response.UserLicenseInfoResponse;
 import com.virnect.license.dto.license.response.WorkspaceLicensePlanInfoResponse;
 import com.virnect.license.dto.rest.content.ContentResourceUsageInfoResponse;
 import com.virnect.license.dto.rest.remote.FileStorageInfoResponse;
@@ -159,12 +164,22 @@ public class LicenseService {
 		);
 		workspaceLicensePlanInfoResponse.setMasterUserUUID(licensePlanInfo.get().getUserId());
 		workspaceLicensePlanInfoResponse.setLicenseProductInfoList(new ArrayList<>(licenseProductInfoMap.values()));
-		// current used resource
 
+
+		// current used  total resource
 		workspaceLicensePlanInfoResponse.setCurrentUsageDownloadHit(workspaceCurrentResourceUsageInfo.getTotalHit());
 		workspaceLicensePlanInfoResponse.setCurrentUsageStorage(
 			workspaceCurrentResourceUsageInfo.getStorageUsage() + fileStorageInfoResponse.getTotalRemoteUseStorageSize()
 		);
+		workspaceLicensePlanInfoResponse.setCurrentUsageCallTime(0L);
+
+		// current used storage resource detail info
+		workspaceLicensePlanInfoResponse.setCurrentContentStorageUsage(workspaceCurrentResourceUsageInfo.getContentStorageUsage());
+		workspaceLicensePlanInfoResponse.setCurrentProjectStorageUsage(workspaceCurrentResourceUsageInfo.getProjectStorageUsage());
+
+		// current download hit detail info
+		workspaceLicensePlanInfoResponse.setCurrentContentDownloadHit(workspaceCurrentResourceUsageInfo.getContentTotalHit());
+		workspaceLicensePlanInfoResponse.setCurrentProjectDownloadHit(workspaceCurrentResourceUsageInfo.getProjectTotalHit());
 
 		// add service product resource
 		workspaceLicensePlanInfoResponse.setAddCallTime(serviceProductResource.getTotalCallTime());
@@ -299,7 +314,7 @@ public class LicenseService {
 	) {
 		//워크스페이스 플랜찾기 ( 비활성화 또는 활성화)
 		LicensePlan licensePlan = licensePlanRepository.findByWorkspaceIdAndPlanStatus(
-			workspaceId, PlanStatus.ACTIVE
+			workspaceId, ACTIVE
 		).orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_LICENSE_PLAN_NOT_FOUND));
 
 		LicenseProduct licenseProduct = licenseProductRepository.findByLicensePlanAndProduct_Name(
@@ -358,7 +373,9 @@ public class LicenseService {
 	 * @return 할당 해제 처리 결과
 	 */
 	@Transactional
-	public boolean userLicenseRevokeRequestHandler(String workspaceId, String userId, String productName) {
+	public LicenseRevokeResponse userLicenseRevokeRequestHandler(
+		String workspaceId, String userId, String productName
+	) {
 		LicensePlan licensePlan = licensePlanRepository.findByWorkspaceIdAndPlanStatusNot(
 			workspaceId, PlanStatus.TERMINATE
 		).orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_LICENSE_PLAN_NOT_FOUND));
@@ -375,7 +392,7 @@ public class LicenseService {
 				"Retrieve user license info via license plan : {} and license product: {} , but license info not found",
 				licensePlan, licenseProduct
 			);
-			throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
+			throw new LicenseServiceException(ErrorCode.ERR_LICENSE_REVOKE_NOT_FOUND);
 		}
 
 		// 제품 라이선스 상태가 만약 초과 상태인 경우, 라이선스 종료 상태로 표시
@@ -410,7 +427,7 @@ public class LicenseService {
 		log.info("[LICENSE DEALLOCATE_PUSH_MESSAGE_REQUEST] - {}", licenseExpiredEvent.toString());
 		applicationEventPublisher.publishEvent(licenseExpiredEvent);
 
-		return true;
+		return new LicenseRevokeResponse(true, LocalDateTime.now());
 	}
 
 	/**
@@ -499,7 +516,7 @@ public class LicenseService {
 	public LicenseSecessionResponse deleteAllLicenseInfo(String userUUID, long userNumber) {
 		// find all license plan of user
 		List<LicensePlan> licensePlanList = licensePlanRepository.findAllByUserIdAndPlanStatus(
-			userUUID, PlanStatus.ACTIVE
+			userUUID, ACTIVE
 		);
 
 		if (licensePlanList.isEmpty()) {
@@ -542,4 +559,25 @@ public class LicenseService {
 		log.info("[LICENSE_PLAN_SECESSION][TERMINATED_DONE] - {}", licensePlan);
 	}
 
+	public UserLicenseInfoResponse getUserLicenseInfos(String workspaceId, List<String> userIds, String product) {
+		LicensePlan licensePlan = licensePlanRepository.findByWorkspaceIdAndPlanStatus(workspaceId, ACTIVE)
+			.orElseThrow(() -> new LicenseServiceException(ErrorCode.ERR_LICENSE_PLAN_NOT_FOUND));
+
+		List<License> licenses = licenseRepository.findAllLicenseByUserUUIDListAndLicensePlanAndProductName(
+			licensePlan, product, userIds
+		);
+
+		List<UserLicenseInfo> userLicenseInfos = licenses.stream().map(license -> {
+			UserLicenseInfo userLicenseInfo = new UserLicenseInfo();
+			userLicenseInfo.setLicenseId(license.getId());
+			userLicenseInfo.setUserId(license.getUserId());
+			userLicenseInfo.setSerialKey(license.getSerialKey());
+			userLicenseInfo.setProductName(license.getLicenseProduct().getProduct().getName());
+			userLicenseInfo.setCreatedDate(license.getCreatedDate());
+			userLicenseInfo.setUpdatedDate(license.getUpdatedDate());
+			return userLicenseInfo;
+		}).collect(Collectors.toList());
+
+		return new UserLicenseInfoResponse(userLicenseInfos, workspaceId);
+	}
 }
