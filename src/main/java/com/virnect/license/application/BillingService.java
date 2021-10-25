@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.virnect.license.application.rest.billing.PayAPIService;
-import com.virnect.license.application.rest.user.UserRestService;
+import com.virnect.license.application.rest.account.AccountRestService;
 import com.virnect.license.application.rest.workspace.WorkspaceRestService;
 import com.virnect.license.dao.billing.LicenseAssignAuthInfoRepository;
 import com.virnect.license.dao.license.LicenseRepository;
@@ -30,7 +30,6 @@ import com.virnect.license.dao.product.ProductRepository;
 import com.virnect.license.domain.billing.CouponPeriodType;
 import com.virnect.license.domain.billing.LicenseAssignAuthInfo;
 import com.virnect.license.domain.billing.ProductTypeId;
-import com.virnect.license.domain.billing.ProductTypeName;
 import com.virnect.license.domain.license.License;
 import com.virnect.license.domain.license.LicenseStatus;
 import com.virnect.license.domain.licenseplan.LicensePlan;
@@ -42,7 +41,6 @@ import com.virnect.license.dto.ResourceCalculate;
 import com.virnect.license.dto.billing.request.LicenseAllocateCheckRequest;
 import com.virnect.license.dto.billing.request.LicenseProductAllocateRequest;
 import com.virnect.license.dto.billing.request.LicenseProductDeallocateRequest;
-import com.virnect.license.dto.billing.request.ProductTypeRequest;
 import com.virnect.license.dto.billing.response.AllocateCouponInfoResponse;
 import com.virnect.license.dto.billing.response.AllocateProductInfoResponse;
 import com.virnect.license.dto.billing.response.LicenseProductAllocateResponse;
@@ -72,7 +70,7 @@ public class BillingService {
 	private static final long FIRST_WORKSPACE_DOWNLOAD_HITS = 100000; // 최초 워크스페이스 생성 시 다운로드  100000회 추가
 	private static final String USER_REST_SERVICE_ERROR_LOG_FORMAT = "User service error response: [{}]";
 	private final ProductRepository productRepository;
-	private final UserRestService userRestService;
+	private final AccountRestService accountRestService;
 	private final WorkspaceRestService workspaceRestService;
 	private final LicensePlanRepository licensePlanRepository;
 	private final LicenseProductRepository licenseProductRepository;
@@ -962,7 +960,7 @@ public class BillingService {
 	 * @return - 사용자 정보
 	 */
 	private UserInfoRestResponse getUserInfoRestResponseByUserId(long userId, ErrorCode error) {
-		ApiResponse<UserInfoRestResponse> userInfoApiResponse = userRestService.getUserInfoByUserPrimaryId(userId);
+		ApiResponse<UserInfoRestResponse> userInfoApiResponse = accountRestService.getUserInfoByUserPrimaryId(userId);
 		if (userInfoApiResponse.getCode() != 200 || userInfoApiResponse.getData() == null) {
 			log.error(USER_REST_SERVICE_ERROR_LOG_FORMAT, userInfoApiResponse.getMessage());
 			log.error(USER_REST_SERVICE_ERROR_LOG_FORMAT, "사용자를 찾지 못함: " + userId);

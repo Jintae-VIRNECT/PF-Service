@@ -29,4 +29,18 @@ public class LicenseProductInfoResponse {
 	private LicenseProductStatus productStatus;
 	@ApiModelProperty(value = "라이선스 정보", position = 7)
 	private List<LicenseInfoResponse> licenseInfoList;
+
+
+	@Override
+	public String toString() {
+		return "LicenseProductInfoResponse{" +
+				"productId=" + productId +
+				", productName='" + productName + '\'' +
+				", quantity=" + quantity +
+				", unUseLicenseAmount=" + unUseLicenseAmount +
+				", useLicenseAmount=" + useLicenseAmount +
+				", productStatus=" + productStatus +
+				", licenseInfoList=" + licenseInfoList +
+				'}';
+	}
 }

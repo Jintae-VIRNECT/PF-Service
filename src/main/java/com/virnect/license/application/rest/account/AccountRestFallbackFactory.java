@@ -1,7 +1,6 @@
-package com.virnect.license.application.rest.user;
+package com.virnect.license.application.rest.account;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import feign.hystrix.FallbackFactory;
@@ -12,10 +11,10 @@ import com.virnect.license.global.common.ApiResponse;
 
 @Slf4j
 @Service
-public class UserRestFallbackFactory implements FallbackFactory<UserRestService> {
+public class AccountRestFallbackFactory implements FallbackFactory<AccountRestService> {
 	@Override
-	public UserRestService create(Throwable cause) {
-		return new UserRestService() {
+	public AccountRestService create(Throwable cause) {
+		return new AccountRestService() {
 			@Override
 			public ApiResponse<UserInfoRestResponse> getUserInfoByUserId(String userId) {
 				log.error("[USER_REST_SERVICE][FALL_BACK_FACTORY][ACTIVE]");

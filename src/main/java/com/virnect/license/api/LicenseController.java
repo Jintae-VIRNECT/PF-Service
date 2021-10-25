@@ -1,5 +1,7 @@
 package com.virnect.license.api;
 
+import java.util.List;
+
 import javax.validation.constraints.NotBlank;
 
 import org.springframework.http.ResponseEntity;
@@ -22,10 +24,12 @@ import lombok.extern.slf4j.Slf4j;
 import springfox.documentation.annotations.ApiIgnore;
 
 import com.virnect.license.application.LicenseService;
+import com.virnect.license.dto.license.response.LicenseRevokeResponse;
 import com.virnect.license.dto.license.response.LicenseSecessionResponse;
 import com.virnect.license.dto.license.response.MyLicenseInfoListResponse;
 import com.virnect.license.dto.license.response.MyLicenseInfoResponse;
 import com.virnect.license.dto.license.response.MyLicensePlanInfoListResponse;
+import com.virnect.license.dto.license.response.UserLicenseInfoResponse;
 import com.virnect.license.dto.license.response.WorkspaceLicensePlanInfoResponse;
 import com.virnect.license.exception.LicenseServiceException;
 import com.virnect.license.global.common.ApiResponse;
@@ -62,6 +66,26 @@ public class LicenseController {
 		// Todo: 필터 기능 추가
 		WorkspaceLicensePlanInfoResponse responseMessage = licenseService.getWorkspaceLicensePlanInfo(workspaceId);
 		return ResponseEntity.ok(new ApiResponse<>(responseMessage));
+	}
+
+	@ApiOperation(value = "워크스페이스 내 사용자 라이선스 정보 조회(서버용)")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name = "workspaceId", value = "워크스페이스 식별자", paramType = "path", required = true, defaultValue = "4d6eab0860969a50acbfa4599fbb5ae8"),
+		@ApiImplicitParam(name = "userIds", value = "사용자 식별자 번호", paramType = "query", required = true, defaultValue = "498b1839dc29ed7bb2ee90ad6985c608"),
+		@ApiImplicitParam(name = "product", value = "라이선스 조회 제품명 필터", paramType = "query"),
+	})
+	@GetMapping("/{workspaceId}")
+	public ResponseEntity<ApiResponse<UserLicenseInfoResponse>> getUserLicenseInfos(
+		@PathVariable("workspaceId") String workspaceId,
+		@RequestParam("userIds") List<String> userIds,
+		@RequestParam(value = "product", required = false) String product
+	) {
+		if (StringUtils.isEmpty(workspaceId) || userIds == null) {
+			throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
+		}
+
+		UserLicenseInfoResponse responses = licenseService.getUserLicenseInfos(workspaceId, userIds, product);
+		return ResponseEntity.ok(new ApiResponse<>(responses));
 	}
 
 	@ApiOperation(value = "워크스페이스에서 할당받은 내 라이선스 정보 조회")
@@ -110,14 +134,14 @@ public class LicenseController {
 		@ApiImplicitParam(name = "productName", value = "제품명", paramType = "query", defaultValue = "make"),
 	})
 	@PutMapping("/{workspaceId}/{userId}/revoke")
-	public ResponseEntity<ApiResponse<Boolean>> revokeWorkspaceLicenseToUser(
+	public ResponseEntity<ApiResponse<LicenseRevokeResponse>> revokeWorkspaceLicenseToUser(
 		@PathVariable("workspaceId") String workspaceId, @PathVariable("userId") String userId,
 		@RequestParam(value = "productName") String productName
 	) {
 		if (!StringUtils.hasText(workspaceId) || !StringUtils.hasText(userId) || !StringUtils.hasText(productName)) {
 			throw new LicenseServiceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
 		}
-		boolean responseMessage = licenseService.userLicenseRevokeRequestHandler(workspaceId, userId,
+		LicenseRevokeResponse responseMessage = licenseService.userLicenseRevokeRequestHandler(workspaceId, userId,
 			productName
 		);
 		return ResponseEntity.ok(new ApiResponse<>(responseMessage));

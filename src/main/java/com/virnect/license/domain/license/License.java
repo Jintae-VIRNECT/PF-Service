@@ -17,6 +17,7 @@ import org.hibernate.envers.Audited;
 
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -37,6 +38,7 @@ import com.virnect.license.domain.product.LicenseProduct;
 @Audited
 @Where(clause = "license_status !='TERMINATE'")
 @Table(name = "license")
+@EqualsAndHashCode(of = {"id"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class License extends BaseTimeEntity {
 	@Id

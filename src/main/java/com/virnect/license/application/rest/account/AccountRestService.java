@@ -1,4 +1,4 @@
-package com.virnect.license.application.rest.user;
+package com.virnect.license.application.rest.account;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,8 +15,8 @@ import com.virnect.license.global.common.ApiResponse;
  * DESCRIPTION:
  */
 
-@FeignClient(name = "user-server", fallbackFactory = UserRestFallbackFactory.class)
-public interface UserRestService {
+@FeignClient(name = "account-server", fallbackFactory = AccountRestFallbackFactory.class)
+public interface AccountRestService {
 	/**
 	 * 유저 정보 조회
 	 *

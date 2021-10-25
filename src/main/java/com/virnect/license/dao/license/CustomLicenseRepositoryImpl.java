@@ -14,8 +14,10 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.util.StringUtils;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -24,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.virnect.license.domain.license.License;
 import com.virnect.license.domain.license.LicenseStatus;
+import com.virnect.license.domain.licenseplan.LicensePlan;
 import com.virnect.license.domain.product.LicenseProduct;
 import com.virnect.license.dto.UserLicenseDetailsInfo;
 
@@ -97,5 +100,23 @@ public class CustomLicenseRepositoryImpl implements CustomLicenseRepository {
 			.where(license.userId.eq(userUUID))
 			.set(license.status, LicenseStatus.UNUSE)
 			.execute();
+	}
+
+	@Override
+	public List<License> findAllLicenseByUserUUIDListAndLicensePlanAndProductName(
+		LicensePlan targetLicensePlan, String productName, List<String> userUUIDList
+	) {
+		return query.selectFrom(license)
+			.innerJoin(license.licenseProduct, licenseProduct).fetchJoin()
+			.innerJoin(licenseProduct.licensePlan, licensePlan).fetchJoin()
+			.innerJoin(licenseProduct.product, product).fetchJoin()
+			.where(license.userId.in(userUUIDList), matchProductName(productName)).fetch();
+	}
+
+	private BooleanExpression matchProductName(String productName) {
+		if (StringUtils.isEmpty(productName)) {
+			return null;
+		}
+		return product.name.eq(productName);
 	}
 }

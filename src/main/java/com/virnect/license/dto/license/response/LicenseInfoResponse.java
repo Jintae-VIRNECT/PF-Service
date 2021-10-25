@@ -23,4 +23,15 @@ public class LicenseInfoResponse {
 	private LocalDateTime createdDate;
 	@ApiModelProperty(value = "라이선스 생성일", position = 4, example = "2020-04-16T16:34:35")
 	private LocalDateTime updatedDate;
+
+	@Override
+	public String toString() {
+		return "LicenseInfoResponse{" +
+				"licenseKey='" + licenseKey + '\'' +
+				", userId='" + userId + '\'' +
+				", status=" + status +
+				", createdDate=" + createdDate +
+				", updatedDate=" + updatedDate +
+				'}';
+	}
 }
