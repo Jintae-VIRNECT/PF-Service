@@ -211,6 +211,34 @@ pipeline {
                             --name=${REPO_NAME} ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
                     fi
                 '''
+                
+                // onpremise
+                sh '''
+                    count=`docker ps -a | grep ${REPO_NAME}-onpremise | wc -l`
+                    
+                    if [ $count -eq 0 ]
+                    then 
+                      echo "There are no running containers. Starting a new container..."
+                      docker run --restart=on-failure:10 \
+                        -d \
+                        -e VIRNECT_ENV=develop \
+                        -e CONFIG_SERVER=http://192.168.6.3:6383 \
+                        -e WRITE_YOUR=ENVIRONMENT_VARIABLE_HERE \
+                        -p 1${PORT}:${PORT} \
+                        --name=${REPO_NAME}-onpremise ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
+                    else
+                      echo "Found a running container. stop the running container..."
+                      docker stop ${REPO_NAME}-onpremise && docker rm ${REPO_NAME}-onpremise
+                      echo "Starting a new container..."
+                      docker run --restart=on-failure:10 \
+                        -d \
+                        -e VIRNECT_ENV=onpremise \
+                        -e CONFIG_SERVER=http://192.168.6.3:6383 \
+                        -e WRITE_YOUR=ENVIRONMENT_VARIABLE_HERE \
+                        -p 1${PORT}:${PORT} \
+                        --name=${REPO_NAME}-onpremise ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
+                    fi
+                '''
             }
                 
             
@@ -254,6 +282,42 @@ pipeline {
                                                     -e CONFIG_SERVER=https://stgconfig.virnect.com \
                                                     -e WRITE_YOUR=ENVIRONMENT_VARIABLE_HERE \
                                                     -e eureka.instance.ip-address=`hostname -I | awk  \'{print \$1}\'` \
+                                                    -p ${PORT}:${PORT} \
+                                                    --name=${REPO_NAME} ${aws_ecr_address}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
+                                        """
+                                    )
+                                ]
+                            )
+                        ]
+                    )
+                }
+                
+                // onpremise
+                script {
+                    sshPublisher(
+                        continueOnError: false, failOnError: true,
+                        publishers: [
+                            sshPublisherDesc(
+                                configName: 'aws-onpremise-qa',
+                                verbose: true,
+                                transfers: [
+                                    sshTransfer(
+                                        execCommand: 'aws ecr get-login --region ap-northeast-2 --no-include-email | bash'
+                                    ),
+                                    sshTransfer(
+                                        execCommand: "docker pull ${aws_ecr_address}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}"
+                                    ),
+                                    sshTransfer(
+                                        execCommand: """
+                                            echo '${REPO_NAME} Container stop and delete'
+                                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} 
+
+                                            echo '${REPO_NAME} New Container start'
+                                            docker run --restart=on-failure:10 \
+                                                    -d \
+                                                    -e VIRNECT_ENV=onpremise \
+                                                    -e CONFIG_SERVER=http://3.35.50.181:6383 \
+                                                    -e WRITE_YOUR=ENVIRONMENT_VARIABLE_HERE \
                                                     -p ${PORT}:${PORT} \
                                                     --name=${REPO_NAME} ${aws_ecr_address}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
                                         """
