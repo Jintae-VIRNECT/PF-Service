@@ -242,71 +242,6 @@ pipeline {
             }
         }
 
-        stage ('deploy to freezing') {
-            when {
-                branch 'freezing'
-            }
-                
-            steps {
-                // freezing
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'server_credentials', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                        def remote = [:]
-                        remote.name = "${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}" 
-                        remote.host = "${DEV_FREEZING_SERVER}"
-                        remote.allowAnyHosts = true 
-                        remote.user = USERNAME 
-                        remote.password = PASSWORD
-                        remote.failOnError = true
-
-                        sshCommand remote: remote, command: """
-                            docker login ${NEXUS_REGISTRY}
-                            docker pull ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
-                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} || true
-                            docker run --restart=on-failure:10 \
-                                -d \
-                                -e VIRNECT_ENV=freezing \
-                                -e CONFIG_SERVER=${DEV_CONFIG_SERVER} \
-                                -p ${PORT}:${PORT} \
-                                --name=${REPO_NAME} ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
-                        """
-                    }
-                }
-/*
-                // onpremise
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'server_credentials', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                        def remote = [:]
-                        remote.name = "${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}" 
-                        remote.host = "${DEV_ONPREMISE_SERVER}"
-                        remote.allowAnyHosts = true 
-                        remote.user = USERNAME 
-                        remote.password = PASSWORD
-                        remote.failOnError = true
-
-                        sshCommand remote: remote, command: """
-                            docker login ${NEXUS_REGISTRY}
-                            docker pull ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
-                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} || true
-                            docker run --restart=on-failure:10 \
-                                -d \
-                                -e VIRNECT_ENV=onpremise \
-                                -e CONFIG_SERVER=${DEV_CONFIG_SERVER} \
-                                -p ${PORT}:${PORT} \
-                                --name=${REPO_NAME} ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
-                        """
-                    }
-                }
-*/
-            }            
-
-            post {
-                always {
-                    jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'harington-freezing', environmentName: 'harington-freezing', environmentType: 'development'
-                }
-            }
-        }
-
         stage ('deploy to staging') {
             when {
                 branch 'staging'
@@ -472,6 +407,58 @@ pipeline {
             post {
                 always {
                     jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-production', environmentName: 'aws-production', environmentType: 'production'
+                }
+            }
+        }
+        
+        stage ('deploy to production-us') {
+            when {
+                branch 'master'
+            }
+                
+            steps {
+                script {
+                    echo "deploy production-us"
+
+                    // pull and run container
+                    sshPublisher(
+                        continueOnError: false, failOnError: true,
+                        publishers: [
+                            sshPublisherDesc(
+                                configName: 'aws-bastion-deploy-prod-us',
+                                verbose: true,
+                                transfers: [
+                                    sshTransfer(
+                                        execCommand: 'aws ecr get-login --region ap-northeast-2 --no-include-email | bash'
+                                    ),
+                                    sshTransfer(
+                                        execCommand: "docker pull ${aws_ecr_address}/${REPO_NAME}:\\${NEXT_VERSION}"
+                                    ),
+                                    sshTransfer(
+                                        execCommand: """
+                                            echo '${REPO_NAME} Container stop and delete'
+                                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} 
+
+                                            echo '${REPO_NAME} New Container start'
+                                            docker run --restart=on-failure:10 \
+                                                -d \
+                                                -e VIRNECT_ENV=production \
+                                                -e CONFIG_SERVER=${PROD_US_CONFIG_SERVER} \
+                                                -e WRITE_YOUR=ENVIRONMENT_VARIABLE_HERE \
+                                                -p ${PORT}:${PORT} \
+                                                --name=${REPO_NAME} ${aws_ecr_address}/${REPO_NAME}:${NEXT_VERSION}
+                                        """
+                                    )
+                                ]
+                            )
+                        ]
+                    )
+                }
+            }                
+
+            post {
+                always {
+                    jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-production-us', environmentName: 'aws-production-us', environmentType: 'production'
                 }
             }
         }
