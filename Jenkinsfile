@@ -14,13 +14,14 @@ pipeline {
         APP = ' '
         PREVIOUS_VERSION = sh(returnStdout: true, script: 'git semver get || git semver minor').trim()
         NEXT_VERSION = getNextSemanticVersion(to: [type: 'REF', value: 'HEAD'], patchPattern: '^[Ff]ix.*').toString()
-        SLACK_CHANNEL = '#server_jenkins'
+        SLACK_CHANNEL = '#system-monitoring'
+        AUTHOR = sh(returnStdout: true, script : 'git --no-pager show -s --pretty="format: %an"')
     }
 
     stages {
         stage ('start') {
             steps {
-                slackSend (channel: env.SLACK_CHANNEL, color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+                slackSend (channel: env.SLACK_CHANNEL, color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})(${AUTHOR})")
             }
         }
 
@@ -69,7 +70,7 @@ pipeline {
             }
         }
 
-        stage ('jacoco coverage analysis') {
+        /*stage ('jacoco coverage analysis') {
             when {
                 branch 'develop'
             }
@@ -101,7 +102,7 @@ pipeline {
                     waitForQualityGate abortPipeline: true
                 }
             }
-        }
+        }*/
 
         stage ('edit gradle version') {
             steps {
@@ -127,7 +128,8 @@ pipeline {
             }
             post {
                 always {
-                    jiraSendBuildInfo site: "${JIRA_URL}"
+                    echo "jiraSendBuildInfo"
+                    //jiraSendBuildInfo site: "${JIRA_URL}"
                 }
             }
         }
@@ -236,8 +238,9 @@ pipeline {
 
             post {
                 always {
-                    jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'harington-development', environmentName: 'harington-development', environmentType: 'development'
-                    jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'harington-development-onpremise', environmentName: 'harington-development-onpremise', environmentType: 'development'
+                    echo "jiraSendBuildInfo"
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'harington-development', environmentName: 'harington-development', environmentType: 'development'
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'harington-development-onpremise', environmentName: 'harington-development-onpremise', environmentType: 'development'
                 }
             }
         }
@@ -323,8 +326,9 @@ pipeline {
             
             post {
                 always {
-                    jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-stging', environmentName: 'aws-stging', environmentType: 'staging'
-                    jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-stging-onpremise', environmentName: 'aws-stging-onpremise', environmentType: 'staging'
+                    echo "jiraSendBuildInfo"
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-stging', environmentName: 'aws-stging', environmentType: 'staging'
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-stging-onpremise', environmentName: 'aws-stging-onpremise', environmentType: 'staging'
                 }
             }
         }
@@ -406,7 +410,8 @@ pipeline {
 
             post {
                 always {
-                    jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-production', environmentName: 'aws-production', environmentType: 'production'
+                    echo "jiraSendBuildInfo"
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-production', environmentName: 'aws-production', environmentType: 'production'
                 }
             }
         }
@@ -458,7 +463,8 @@ pipeline {
 
             post {
                 always {
-                    jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-production-us', environmentName: 'aws-production-us', environmentType: 'production'
+                    echo "jiraSendBuildInfo"
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-production-us', environmentName: 'aws-production-us', environmentType: 'production'
                 }
             }
         }
