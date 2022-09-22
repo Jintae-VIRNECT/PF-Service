@@ -14,6 +14,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.view.RedirectView;
 import org.thymeleaf.context.Context;
@@ -575,6 +576,7 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 	 * @param lang        - 사용자 언어
 	 * @return - 리다이렉트 url
 	 */
+	@Transactional
 	public RedirectView inviteWorkspaceAccept(String sessionCode, String lang) {
 		Locale locale = getLocale(lang);
 
@@ -592,6 +594,7 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 
 		if (workspaceUserRepository.findByUserIdAndWorkspace_Uuid(
 			userInvite.getInvitedUserId(), userInvite.getWorkspaceId()).isPresent()) {
+			log.error("[WORKSPACE INVITE ACCEPT] Already join");
 			return redirectView(redirectProperty.getWorkstationWeb());
 		}
 
