@@ -590,7 +590,8 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 		UserInvite userInvite = optionalUserInvite.get();
 		log.info("[WORKSPACE INVITE ACCEPT] Workspace invite session Info >> [{}]", userInvite);
 
-		if (!workspaceUserRepository.findByUserId(userInvite.getInvitedUserId()).isEmpty()) {
+		if (workspaceUserRepository.findByUserIdAndWorkspace_Uuid(
+			userInvite.getInvitedUserId(), userInvite.getWorkspaceId()).isPresent()) {
 			return redirectView(redirectProperty.getWorkstationWeb());
 		}
 
