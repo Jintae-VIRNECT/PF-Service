@@ -140,7 +140,7 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 			}
 			//1-2. 요청 유저 권한 확인
 			WorkspaceRole requestUserRole = workspaceRoleRepository.findWorkspaceRole(
-				workspaceId, memberUpdateRequest.getRequestUserId())
+					workspaceId, memberUpdateRequest.getRequestUserId())
 				.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));
 			if (!memberUpdateRequest.isUserSelfUpdateRequest() && requestUserRole.getRole() != Role.MASTER) {
 				throw new WorkspaceException(ErrorCode.ERR_WORKSPACE_INVALID_PERMISSION);
@@ -155,7 +155,7 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 		//2. 사용자 권한 변경
 		if (StringUtils.hasText(memberUpdateRequest.getRole())) {
 			WorkspaceUserPermission updateUserPermission = workspaceUserPermissionRepository.findWorkspaceUserPermission(
-				workspaceId, memberUpdateRequest.getUserId())
+					workspaceId, memberUpdateRequest.getUserId())
 				.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));
 			log.info(
 				"[REVISE MEMBER INFO] User role update. current role : {}, update role : {} ",
@@ -173,7 +173,7 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 			}
 			//2-2. 요청 유저 권한 확인
 			WorkspaceRole requestUserRole = workspaceRoleRepository.findWorkspaceRole(
-				workspaceId, memberUpdateRequest.getRequestUserId())
+					workspaceId, memberUpdateRequest.getRequestUserId())
 				.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));
 			if (!memberUpdateRequest.isUserSelfUpdateRequest() && requestUserRole.getRole() != Role.MASTER) {
 				throw new WorkspaceException(ErrorCode.ERR_WORKSPACE_INVALID_PERMISSION);
@@ -181,7 +181,7 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 
 			//2-3. 권한 변경
 			WorkspaceRole updateWorkspaceRole = workspaceRoleRepository.findByRole(
-				Role.valueOf(memberUpdateRequest.getRole()))
+					Role.valueOf(memberUpdateRequest.getRole()))
 				.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_ROLE_NOT_FOUND));
 			updateUserPermission.setWorkspaceRole(updateWorkspaceRole);
 			workspaceUserPermissionRepository.save(updateUserPermission);
@@ -231,10 +231,10 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 			//3-2. 요청 유저 권한 확인
 			if (!memberUpdateRequest.isUserSelfUpdateRequest()) {
 				WorkspaceRole requestUserRole = workspaceRoleRepository.findWorkspaceRole(
-					workspaceId, memberUpdateRequest.getRequestUserId())
+						workspaceId, memberUpdateRequest.getRequestUserId())
 					.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));
 				WorkspaceRole updateUserRole = workspaceRoleRepository.findWorkspaceRole(
-					workspaceId, memberUpdateRequest.getUserId())
+						workspaceId, memberUpdateRequest.getUserId())
 					.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));
 				if (updateUserRole.getRole() == Role.MASTER) {
 					throw new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_INFO_UPDATE_MASTER_PLAN);
@@ -554,7 +554,7 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 			.map(userInfo -> Role.valueOf(userInfo.getRole()))
 			.collect(Collectors.toList());
 		WorkspaceUserPermission requestUserPermission = workspaceUserPermissionRepository.findWorkspaceUserPermission(
-			workspaceId, requestUserId)
+				workspaceId, requestUserId)
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_INVALID_PERMISSION));
 
 		// 초대한 사람이 마스터 또는 매니저여야 한다.
@@ -576,10 +576,7 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 	 * @return - 리다이렉트 url
 	 */
 	public RedirectView inviteWorkspaceAccept(String sessionCode, String lang) {
-		Locale locale = Locale.KOREAN;
-		if (StringUtils.hasText(lang)) {
-			locale = new Locale(lang, "");
-		}
+		Locale locale = getLocale(lang);
 
 		//1-1. 초대 세션 유효성 체크
 		Optional<UserInvite> optionalUserInvite = userInviteRepository.findById(sessionCode);
@@ -591,7 +588,11 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 			return redirectView(redirectProperty.getConsoleWeb() + RedirectPath.WORKSPACE_INVITE_FAIL.getValue());
 		}
 		UserInvite userInvite = optionalUserInvite.get();
-		log.info("[WORKSPACE INVITE ACCEPT] Workspace invite session Info >> [{}]", userInvite.toString());
+		log.info("[WORKSPACE INVITE ACCEPT] Workspace invite session Info >> [{}]", userInvite);
+
+		if (!workspaceUserRepository.findByUserId(userInvite.getInvitedUserId()).isEmpty()) {
+			return redirectView(redirectProperty.getWorkstationWeb());
+		}
 
 		//1-2. 초대받은 유저가 유효한지 체크
 		ApiResponse<InviteUserInfoResponse> inviteUserInfoResponseApiResponse = userRestServiceHandler.getInviteUserRequest(
@@ -753,6 +754,14 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 		return workspaceInviteAcceptProcess.process();
 	}
 
+	private Locale getLocale(String lang) {
+		Locale locale = Locale.KOREAN;
+		if (StringUtils.hasText(lang)) {
+			locale = new Locale(lang, "");
+		}
+		return locale;
+	}
+
 	private RedirectView redirectView(String url) {
 		RedirectView redirectView = new RedirectView();
 		redirectView.setUrl(url);
@@ -808,10 +817,7 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 	}
 
 	public RedirectView inviteWorkspaceReject(String sessionCode, String lang) {
-		Locale locale = Locale.KOREAN;
-		if (StringUtils.hasText(lang)) {
-			locale = new Locale(lang, "");
-		}
+		Locale locale = getLocale(lang);
 
 		Optional<UserInvite> optionalUserInvite = userInviteRepository.findById(sessionCode);
 		if (!optionalUserInvite.isPresent()) {
@@ -904,10 +910,10 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 
 		//1-3. 요청한 사람의 권한 체크
 		WorkspaceUserPermission requestUserPermission = workspaceUserPermissionRepository.findWorkspaceUserPermission(
-			workspaceId, memberAccountDeleteRequest.getRequestUserId())
+				workspaceId, memberAccountDeleteRequest.getRequestUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_NOT_FOUND));
 		WorkspaceUserPermission deleteUserPermission = workspaceUserPermissionRepository.findWorkspaceUserPermission(
-			workspaceId, memberAccountDeleteRequest.getUserId())
+				workspaceId, memberAccountDeleteRequest.getUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_NOT_FOUND));
 
 		// 본인은 삭제할 수 없다.
@@ -966,7 +972,7 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 
 		//1-2. 요청받은 유저가 게스트 유저인지 체크
 		WorkspaceUserPermission deleteUserPermission = workspaceUserPermissionRepository.findByWorkspaceUser_WorkspaceAndWorkspaceUser_UserId(
-			workspace, memberGuestDeleteRequest.getUserId())
+				workspace, memberGuestDeleteRequest.getUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));
 		if (deleteUserPermission.getWorkspaceRole().getRole() != Role.GUEST) {
 			throw new WorkspaceException(ErrorCode.ERR_WORKSPACE_GUEST_USER_DELETE);
