@@ -233,8 +233,7 @@ public class WorkspaceUserController {
         if (!StringUtils.hasText(sessionCode)) {
             throw new WorkspaceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
         }
-        RedirectView redirectView = workspaceUserService.inviteWorkspaceAccept(sessionCode, lang);
-        return redirectView;
+        return workspaceUserService.inviteWorkspaceAccept(sessionCode, lang);
     }
 
     @ApiOperation(
