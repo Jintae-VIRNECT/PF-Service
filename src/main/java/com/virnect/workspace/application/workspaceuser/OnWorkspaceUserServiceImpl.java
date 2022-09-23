@@ -592,12 +592,6 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 		UserInvite userInvite = optionalUserInvite.get();
 		log.info("[WORKSPACE INVITE ACCEPT] Workspace invite session Info >> [{}]", userInvite);
 
-		if (workspaceUserRepository.findByUserIdAndWorkspace_Uuid(
-			userInvite.getInvitedUserId(), userInvite.getWorkspaceId()).isPresent()) {
-			log.error("[WORKSPACE INVITE ACCEPT] Already join");
-			return redirectView(redirectProperty.getWorkstationWeb());
-		}
-
 		//1-2. 초대받은 유저가 유효한지 체크
 		ApiResponse<InviteUserInfoResponse> inviteUserInfoResponseApiResponse = userRestServiceHandler.getInviteUserRequest(
 			userInvite.getInvitedUserEmail());
@@ -708,24 +702,33 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 				return workspaceInviteAcceptProcess.process();
 			}
 		}
-		//워크스페이스 소속 넣기 (workspace_user)
-		WorkspaceUser workspaceUser = WorkspaceUser.builder()
-			.workspace(workspace)
-			.userId(userInvite.getInvitedUserId())
-			.build();
-		workspaceUserRepository.save(workspaceUser);
 
-		//워크스페이스 권한 부여하기 (workspace_user_permission)
-		WorkspaceRole workspaceRole = workspaceRoleRepository.findByRole(Role.valueOf(userInvite.getRole()))
-			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_UNEXPECTED_SERVER_ERROR));
-		WorkspacePermission workspacePermission = workspacePermissionRepository.findByPermission(Permission.ALL)
-			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_UNEXPECTED_SERVER_ERROR));
-		WorkspaceUserPermission newWorkspaceUserPermission = WorkspaceUserPermission.builder()
-			.workspaceUser(workspaceUser)
-			.workspaceRole(workspaceRole)
-			.workspacePermission(workspacePermission)
-			.build();
-		workspaceUserPermissionRepository.save(newWorkspaceUserPermission);
+		if (workspaceUserRepository.findByUserIdAndWorkspace_Uuid(
+			userInvite.getInvitedUserId(), userInvite.getWorkspaceId()).isPresent()) {
+			log.error("[WORKSPACE INVITE ACCEPT] Already join");
+			return redirectView(redirectProperty.getWorkstationWeb());
+		} else {
+			//워크스페이스 소속 넣기 (workspace_user)
+			WorkspaceUser workspaceUser = WorkspaceUser.builder()
+				.workspace(workspace)
+				.userId(userInvite.getInvitedUserId())
+				.build();
+			workspaceUserRepository.save(workspaceUser);
+
+			//워크스페이스 권한 부여하기 (workspace_user_permission)
+			WorkspaceRole workspaceRole = workspaceRoleRepository.findByRole(Role.valueOf(userInvite.getRole()))
+				.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_UNEXPECTED_SERVER_ERROR));
+			WorkspacePermission workspacePermission = workspacePermissionRepository.findByPermission(Permission.ALL)
+				.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_UNEXPECTED_SERVER_ERROR));
+			WorkspaceUserPermission newWorkspaceUserPermission = WorkspaceUserPermission.builder()
+				.workspaceUser(workspaceUser)
+				.workspaceRole(workspaceRole)
+				.workspacePermission(workspacePermission)
+				.build();
+			workspaceUserPermissionRepository.save(newWorkspaceUserPermission);
+
+			log.info("[WORKSPACE INVITE ACCEPT] Workspace user save");
+		}
 
 		String message;
 		if (Role.valueOf(userInvite.getRole()) == Role.MANAGER) {
