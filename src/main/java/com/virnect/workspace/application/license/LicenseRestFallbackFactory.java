@@ -1,8 +1,11 @@
 package com.virnect.workspace.application.license;
 
+import java.util.List;
+
 import com.virnect.workspace.application.license.dto.LicenseRevokeResponse;
 import com.virnect.workspace.application.license.dto.MyLicenseInfoListResponse;
 import com.virnect.workspace.application.license.dto.MyLicenseInfoResponse;
+import com.virnect.workspace.application.license.dto.UserLicenseInfoResponse;
 import com.virnect.workspace.application.license.dto.WorkspaceLicensePlanInfoResponse;
 import com.virnect.workspace.global.common.ApiResponse;
 import feign.hystrix.FallbackFactory;
@@ -40,6 +43,14 @@ public class LicenseRestFallbackFactory implements FallbackFactory<LicenseRestSe
             @Override
             public ApiResponse<LicenseRevokeResponse> revokeWorkspaceLicenseToUser(String workspaceId, String userId, String productName) {
                 return new ApiResponse<>(new LicenseRevokeResponse());
+            }
+
+            // 워크스페이스 라이선스 전체 조회용.
+            @Override
+            public ApiResponse<UserLicenseInfoResponse> getUserLicenseInfoList(String workspaceId, List<String> workspaceUserIdList, String productName) {
+                log.info("[LICENSE RESET API FALLBACK]  getUserLicenseInfoList ::: ");
+                log.error(cause.getMessage(), cause);
+                return new ApiResponse<>(new UserLicenseInfoResponse());
             }
         };
     }
