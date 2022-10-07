@@ -1,6 +1,7 @@
 package com.virnect.workspace.global.common;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.util.StringUtils;
 
 import java.util.Objects;
 
@@ -35,6 +36,10 @@ public final class PageRequest {
 
         if (!(sortDirection.equals("ASC") || sortDirection.equals("DESC"))) {
             sortDirection = "DESC";
+        }
+        if (StringUtils.isEmpty(sortName) || sortName.equalsIgnoreCase("email")
+            || sortName.equalsIgnoreCase("nickname")) {
+            sortName = "createdDate";
         }
 
         if (sortName == null || sortName.isEmpty()) {
