@@ -1,11 +1,8 @@
 package com.virnect.workspace.application.license;
 
-import java.util.List;
-
 import com.virnect.workspace.application.license.dto.LicenseRevokeResponse;
 import com.virnect.workspace.application.license.dto.MyLicenseInfoListResponse;
 import com.virnect.workspace.application.license.dto.MyLicenseInfoResponse;
-import com.virnect.workspace.application.license.dto.UserLicenseInfoResponse;
 import com.virnect.workspace.application.license.dto.WorkspaceLicensePlanInfoResponse;
 import com.virnect.workspace.global.common.ApiResponse;
 import com.virnect.workspace.global.config.FeignConfiguration;
@@ -35,11 +32,4 @@ public interface LicenseRestService {
 
     @PutMapping(value = "/licenses/{workspaceId}/{userId}/revoke")
     ApiResponse<LicenseRevokeResponse> revokeWorkspaceLicenseToUser(@PathVariable("workspaceId") String workspaceId, @PathVariable("userId") String userId, @RequestParam(value = "productName") String productName);
-
-    // 워크스페이스 라이선스 전체 조회용.
-    @GetMapping(value = "/licenses/{workspaceId}")
-    ApiResponse<UserLicenseInfoResponse> getUserLicenseInfoList(
-        @PathVariable("workspaceId") String workspaceId, @RequestParam("userIds") List<String> workspaceUserIdList,
-        @RequestParam("product") String productName
-    );
 }
