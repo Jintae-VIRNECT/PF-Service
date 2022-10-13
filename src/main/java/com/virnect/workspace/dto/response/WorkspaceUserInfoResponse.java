@@ -29,7 +29,7 @@ public class WorkspaceUserInfoResponse {
     private String createdDate;
     private String updatedDate;
     private LocalDateTime joinDate;
-    private String[] LicenseProducts = new String[0];
+    private String[] LicenseProducts;
 
     @Override
     public String toString() {

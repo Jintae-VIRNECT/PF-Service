@@ -34,7 +34,7 @@ class WorkspaceUserControllerTest {
 
 	@Test
 	void getMembers() throws Exception {
-		String workspaceUUID = "aNgtFNEVMCOwG";
+		String workspaceUUID = "4d6eab0860969a50acbfa4599fbb5ae8";
 		String url = "/workspaces/" + workspaceUUID + "/members";
 
 		mockMvc.perform(
