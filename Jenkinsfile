@@ -24,7 +24,7 @@ pipeline {
                 slackSend (channel: env.SLACK_CHANNEL, color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})(${AUTHOR})")
                 script{
                     if("${ADD_NOTION}"=='1'){
-                        sh "node /var/lib/jenkins/zabbixToNotion/addToNotion.js $BUILD_TIMESTAMP ${env.JOB_NAME} ${env.BUILD_NUMBER} ${env.BUILD_URL} ${AUTHOR}"
+                        sh "node ${ADD_NOTION_PATH} $BUILD_TIMESTAMP ${env.JOB_NAME} ${env.BUILD_NUMBER} ${env.BUILD_URL} ${AUTHOR}"
                     }
                 }
             }
