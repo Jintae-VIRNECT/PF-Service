@@ -14,7 +14,7 @@ pipeline {
         APP = ' '
         PREVIOUS_VERSION = sh(returnStdout: true, script: 'git semver get || git semver minor').trim()
         NEXT_VERSION = getNextSemanticVersion(to: [type: 'REF', value: 'HEAD'], patchPattern: '^[Ff]ix.*').toString()
-        SLACK_CHANNEL = '#system-monitoring'
+        SLACK_CHANNEL = "${SLACK_ALERT_CHANNEL}"
         AUTHOR = sh(returnStdout: true, script : 'git --no-pager show -s --pretty="format: %an"')
     }
 
@@ -22,6 +22,11 @@ pipeline {
         stage ('start') {
             steps {
                 slackSend (channel: env.SLACK_CHANNEL, color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})(${AUTHOR})")
+                script{
+                    if("${ADD_NOTION}"=='1'){
+                        sh "node ${ADD_NOTION_PATH} $BUILD_TIMESTAMP ${env.JOB_NAME} ${env.BUILD_NUMBER} ${env.BUILD_URL} ${AUTHOR}"
+                    }
+                }
             }
         }
 
@@ -70,7 +75,7 @@ pipeline {
             }
         }
 
-        stage ('jacoco coverage analysis') {
+        /*stage ('jacoco coverage analysis') {
             when {
                 branch 'develop'
             }
@@ -85,7 +90,7 @@ pipeline {
                     fi
                     '''
             }
-        }
+        }*/
 /*
         stage ('sonarqube code analysis') {
             when {
@@ -128,7 +133,8 @@ pipeline {
             }
             post {
                 always {
-                    jiraSendBuildInfo site: "${JIRA_URL}"
+                    echo "jiraSendBuildInfo"
+                    //jiraSendBuildInfo site: "${JIRA_URL}"
                 }
             }
         }
@@ -208,7 +214,7 @@ pipeline {
                 }
 
                 // onpremise
-                script {
+                /*script {
                     withCredentials([usernamePassword(credentialsId: 'server_credentials', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                         def remote = [:]
                         remote.name = "${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}" 
@@ -230,7 +236,7 @@ pipeline {
                                 --name=${REPO_NAME} ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
                         """
                     }
-                }
+                }*/
             }
 
             
@@ -287,7 +293,7 @@ pipeline {
                 }
                 
                 // onpremise
-                script {
+                /*script {
                     sshPublisher(
                         continueOnError: false, failOnError: true,
                         publishers: [
@@ -320,7 +326,7 @@ pipeline {
                             )
                         ]
                     )
-                }
+                }*/
             }
             
             post {
