@@ -20,13 +20,13 @@ import lombok.Setter;
 @Setter
 @ApiModel
 public class WorkspaceTitleUpdateRequest {
-	@ApiModelProperty(value = "고객사명 변경 유저 식별자", required = true, example = "498b1839dc29ed7bb2ee90ad6985c608", position = 0)
+	@ApiModelProperty(value = "고객사명 변경 유저 식별자", required = true, example = "498b1839dc29ed7bb2ee90ad6985c608")
 	@NotBlank
 	private String userId;
 
 	@ApiModelProperty(value = "고객사명", required = true, position = 1)
 	@NotBlank
-	@Length(max=19, message = "워크스페이스 고객사명은 최대 19자까지 가능합니다.")
+	@Length(max=20, message = "워크스페이스 고객사명은 최대 20자까지 가능합니다.")
 	private String title;
 
 	@Override

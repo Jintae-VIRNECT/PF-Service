@@ -14,13 +14,19 @@ pipeline {
         APP = ' '
         PREVIOUS_VERSION = sh(returnStdout: true, script: 'git semver get || git semver minor').trim()
         NEXT_VERSION = getNextSemanticVersion(to: [type: 'REF', value: 'HEAD'], patchPattern: '^[Ff]ix.*').toString()
-        SLACK_CHANNEL = '#server_jenkins'
+        SLACK_CHANNEL = "${SLACK_ALERT_CHANNEL}"
+        AUTHOR = sh(returnStdout: true, script : 'git --no-pager show -s --pretty="format: %an"')
     }
 
     stages {
         stage ('start') {
             steps {
-                slackSend (channel: env.SLACK_CHANNEL, color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+                slackSend (channel: env.SLACK_CHANNEL, color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})(${AUTHOR})")
+                script{
+                    if("${ADD_NOTION}"=='1'){
+                        sh "node ${ADD_NOTION_PATH} $BUILD_TIMESTAMP ${env.JOB_NAME} ${env.BUILD_NUMBER} ${env.BUILD_URL} ${AUTHOR}"
+                    }
+                }
             }
         }
 
@@ -69,7 +75,7 @@ pipeline {
             }
         }
 
-        stage ('jacoco coverage analysis') {
+        /*stage ('jacoco coverage analysis') {
             when {
                 branch 'develop'
             }
@@ -84,8 +90,8 @@ pipeline {
                     fi
                     '''
             }
-        }
-
+        }*/
+/*
         stage ('sonarqube code analysis') {
             when {
                 branch 'develop'
@@ -102,7 +108,7 @@ pipeline {
                 }
             }
         }
-
+*/
         stage ('edit gradle version') {
             steps {
                 script {
@@ -127,7 +133,8 @@ pipeline {
             }
             post {
                 always {
-                    jiraSendBuildInfo site: "${JIRA_URL}"
+                    echo "jiraSendBuildInfo"
+                    //jiraSendBuildInfo site: "${JIRA_URL}"
                 }
             }
         }
@@ -207,7 +214,7 @@ pipeline {
                 }
 
                 // onpremise
-                script {
+                /*script {
                     withCredentials([usernamePassword(credentialsId: 'server_credentials', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                         def remote = [:]
                         remote.name = "${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}" 
@@ -229,80 +236,16 @@ pipeline {
                                 --name=${REPO_NAME} ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
                         """
                     }
-                }
+                }*/
             }
 
             
 
             post {
                 always {
-                    jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'harington-development', environmentName: 'harington-development', environmentType: 'development'
-                    jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'harington-development-onpremise', environmentName: 'harington-development-onpremise', environmentType: 'development'
-                }
-            }
-        }
-
-        stage ('deploy to freezing') {
-            when {
-                branch 'freezing'
-            }
-                
-            steps {
-                // freezing
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'server_credentials', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                        def remote = [:]
-                        remote.name = "${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}" 
-                        remote.host = "${DEV_FREEZING_SERVER}"
-                        remote.allowAnyHosts = true 
-                        remote.user = USERNAME 
-                        remote.password = PASSWORD
-                        remote.failOnError = true
-
-                        sshCommand remote: remote, command: """
-                            docker login ${NEXUS_REGISTRY}
-                            docker pull ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
-                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} || true
-                            docker run --restart=on-failure:10 \
-                                -d \
-                                -e VIRNECT_ENV=freezing \
-                                -e CONFIG_SERVER=${DEV_CONFIG_SERVER} \
-                                -p ${PORT}:${PORT} \
-                                --name=${REPO_NAME} ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
-                        """
-                    }
-                }
-/*
-                // onpremise
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'server_credentials', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                        def remote = [:]
-                        remote.name = "${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}" 
-                        remote.host = "${DEV_ONPREMISE_SERVER}"
-                        remote.allowAnyHosts = true 
-                        remote.user = USERNAME 
-                        remote.password = PASSWORD
-                        remote.failOnError = true
-
-                        sshCommand remote: remote, command: """
-                            docker login ${NEXUS_REGISTRY}
-                            docker pull ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
-                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} || true
-                            docker run --restart=on-failure:10 \
-                                -d \
-                                -e VIRNECT_ENV=onpremise \
-                                -e CONFIG_SERVER=${DEV_CONFIG_SERVER} \
-                                -p ${PORT}:${PORT} \
-                                --name=${REPO_NAME} ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
-                        """
-                    }
-                }
-*/
-            }            
-
-            post {
-                always {
-                    jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'harington-freezing', environmentName: 'harington-freezing', environmentType: 'development'
+                    echo "jiraSendBuildInfo"
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'harington-development', environmentName: 'harington-development', environmentType: 'development'
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'harington-development-onpremise', environmentName: 'harington-development-onpremise', environmentType: 'development'
                 }
             }
         }
@@ -350,7 +293,7 @@ pipeline {
                 }
                 
                 // onpremise
-                script {
+                /*script {
                     sshPublisher(
                         continueOnError: false, failOnError: true,
                         publishers: [
@@ -383,13 +326,14 @@ pipeline {
                             )
                         ]
                     )
-                }
+                }*/
             }
             
             post {
                 always {
-                    jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-stging', environmentName: 'aws-stging', environmentType: 'staging'
-                    jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-stging-onpremise', environmentName: 'aws-stging-onpremise', environmentType: 'staging'
+                    echo "jiraSendBuildInfo"
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-stging', environmentName: 'aws-stging', environmentType: 'staging'
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-stging-onpremise', environmentName: 'aws-stging-onpremise', environmentType: 'staging'
                 }
             }
         }
@@ -471,7 +415,61 @@ pipeline {
 
             post {
                 always {
-                    jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-production', environmentName: 'aws-production', environmentType: 'production'
+                    echo "jiraSendBuildInfo"
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-production', environmentName: 'aws-production', environmentType: 'production'
+                }
+            }
+        }
+        
+        stage ('deploy to production-us') {
+            when {
+                branch 'master'
+            }
+                
+            steps {
+                script {
+                    echo "deploy production-us"
+
+                    // pull and run container
+                    sshPublisher(
+                        continueOnError: false, failOnError: true,
+                        publishers: [
+                            sshPublisherDesc(
+                                configName: 'aws-bastion-deploy-prod-us',
+                                verbose: true,
+                                transfers: [
+                                    sshTransfer(
+                                        execCommand: 'aws ecr get-login --region ap-northeast-2 --no-include-email | bash'
+                                    ),
+                                    sshTransfer(
+                                        execCommand: "docker pull ${aws_ecr_address}/${REPO_NAME}:\\${NEXT_VERSION}"
+                                    ),
+                                    sshTransfer(
+                                        execCommand: """
+                                            echo '${REPO_NAME} Container stop and delete'
+                                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} 
+
+                                            echo '${REPO_NAME} New Container start'
+                                            docker run --restart=on-failure:10 \
+                                                -d \
+                                                -e VIRNECT_ENV=production \
+                                                -e CONFIG_SERVER=${PROD_US_CONFIG_SERVER} \
+                                                -e WRITE_YOUR=ENVIRONMENT_VARIABLE_HERE \
+                                                -p ${PORT}:${PORT} \
+                                                --name=${REPO_NAME} ${aws_ecr_address}/${REPO_NAME}:${NEXT_VERSION}
+                                        """
+                                    )
+                                ]
+                            )
+                        ]
+                    )
+                }
+            }                
+
+            post {
+                always {
+                    echo "jiraSendBuildInfo"
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-production-us', environmentName: 'aws-production-us', environmentType: 'production'
                 }
             }
         }

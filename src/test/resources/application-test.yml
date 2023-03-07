@@ -16,7 +16,7 @@ spring:
       hibernate:
         format_sql: true
   redis:
-    host: 192.168.6.3
+    host: 192.168.0.211
     port: 6379
   servlet:
     multipart:
@@ -57,14 +57,14 @@ eureka:
 
 ## Mail send redirect Url
 redirect:
-  workspace-server: "http://192.168.6.3:8082"
-  workstation-web: "https://192.168.6.3:8878"
-  contact-web: "https://192.168.6.3:3000/contact/inquiry"
-  account-web: "https://192.168.6.3:8822"
-  support-web: "https://192.168.6.3:3000/support"
-  terms-web: "https://192.168.6.3:8883/terms"
-  members-web: "https://192.168.6.3:8878/members"
-  console-web: "https://192.168.6.3:8883"
+  workspace-server: "http://192.168.0.211:8082"
+  workstation-web: "https://192.168.0.211:8878"
+  contact-web: "https://192.168.0.211:3000/contact/inquiry"
+  account-web: "https://192.168.0.211:8822"
+  support-web: "https://192.168.0.211:3000/support"
+  terms-web: "https://192.168.0.211:8883/terms"
+  members-web: "https://192.168.0.211:8878/members"
+  console-web: "https://192.168.0.211:8883"
 
 ## Feign
 feign:
@@ -109,17 +109,17 @@ management:
 minio:
   access-key: "virnect"
   secret-key: "Qjsprxm13@$"
-  server: "https://192.168.6.3:2838"
+  server: "https://192.168.0.211:2838"
   bucket: "virnect-platform"
   resource: "workspace/profile"
   extension: "gif,jpg,jpeg,png"
 
 account-server:
   ribbon:
-    listOfServers: http://192.168.6.3:8322
+    listOfServers: http://192.168.0.211:8322
 license-server:
   ribbon:
-    listOfServers: http://192.168.6.3:8632
+    listOfServers: http://192.168.0.211:8632
 message-server:
   ribbon:
-    listOfServers: http://192.168.6.3:8084
+    listOfServers: http://192.168.0.211:8084
