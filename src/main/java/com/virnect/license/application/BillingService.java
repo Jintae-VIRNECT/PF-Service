@@ -19,8 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import com.virnect.license.application.rest.billing.PayAPIService;
 import com.virnect.license.application.rest.account.AccountRestService;
+import com.virnect.license.application.rest.billing.PayAPIService;
 import com.virnect.license.application.rest.workspace.WorkspaceRestService;
 import com.virnect.license.dao.billing.LicenseAssignAuthInfoRepository;
 import com.virnect.license.dao.license.LicenseRepository;
@@ -61,7 +61,7 @@ import com.virnect.license.global.error.ErrorCode;
 public class BillingService {
 	private static final long MAX_USER_AMOUNT = 50; // 9 명 -> 50명
 	private static final long MAX_CALL_TIME = Long.MAX_VALUE; // (270 시간 -> 무제한)
-	private static final long MAX_STORAGE_AMOUNT = 1024000; // 1 테라
+	private static final long MAX_STORAGE_AMOUNT = 2167808; // 상품 총 스토리지 사용량
 	private static final long MAX_DOWNLOAD_HITS = 149000; // 10만 회 + (49* 1000회) = 149000
 	private static final int LICENSE_EXPIRED_HOUR = 23; // 오후 11시
 	private static final int LICENSE_EXPIRED_MINUTE = 59; // 59분
@@ -195,7 +195,7 @@ public class BillingService {
 	) {
 		// 1. 상품 지급 인증 정보 조회
 		LicenseAssignAuthInfo licenseAssignAuthInfo = licenseAssignAuthInfoRepository.findById(
-			licenseAllocateRequest.getAssignAuthCode())
+				licenseAllocateRequest.getAssignAuthCode())
 			.orElseThrow(() -> new BillingServiceException(
 				ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_AUTHENTICATION_CODE));
 
