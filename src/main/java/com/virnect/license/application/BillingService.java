@@ -250,7 +250,6 @@ public class BillingService {
 		log.info("[BILLING][name:{}, uuid: {}, email: {}] - 라이선스 플랜 갱신 작업 시작.",
 			requestUserInfo.getName(), requestUserInfo.getUuid(), requestUserInfo.getEmail()
 		);
-
 		// 9. 상품 정보 변경 유무 확인(= 정기 결제 요청 유무 확인)
 		boolean isRegularAllocateRequest = isRegularAllocateRequest(resourceCalculate, userLicensePlan);
 
@@ -282,31 +281,33 @@ public class BillingService {
 				lp.setStatus(LicenseProductStatus.ACTIVE);
 			});
 		}
-
 		// 11. 기존 활성화 되어있는 라이선스 플랜이 기간 결제인 경우
 		if (userLicensePlan.isTermPlan()) {
-
-			// 기간 결제 요청일 때 쿠폰 정보가 없는 경우 예외 발생
+			// 기간 결제 후 정기결제로 전환 시 ( 무료 쿠폰 사용 후 결제)
 			if (licenseAllocateRequest.getCouponList() == null || licenseAllocateRequest.getCouponList().isEmpty()) {
-				log.error("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] - Term Payment Request Fail. Coupon Not Found.");
-				log.error("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] - {}", licenseAllocateRequest.toString());
-				throw new BillingServiceException(ErrorCode.ERR_BILLING_PRODUCT_LICENSE_ASSIGNMENT_FROM_PAYMENT);
+				userLicensePlan.setEventPlan(false);
+				userLicensePlan.setTermPlan(false);
+				userLicensePlan.setEndDate(LocalDateTime.now().plusMonths(1));
+				log.info(
+					"[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] changed termPlan : [{} to {}] ",
+					userLicensePlan.isTermPlan(), licenseAllocateRequest.isTermPaymentRequest()
+				);
+			} else {
+				// 쿠폰 정보 추출
+				AllocateCouponInfoResponse freeCouponInfo = licenseAllocateRequest.getCouponList().get(0);
+
+				log.info("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][COUPON_INFO][BEGIN]");
+				licenseAllocateRequest.getCouponList()
+					.forEach(couponInfo -> log.info(
+						"[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][COUPON_INFO] :: {}",
+						couponInfo.toString()
+					));
+				log.info("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][COUPON_INFO][END]");
+
+				LocalDateTime expiredDate = calculateExpiredDateOfTermPaymentPlan(freeCouponInfo);
+				userLicensePlan.setEndDate(expiredDate);
+				userLicensePlan.setTermPlan(true);
 			}
-
-			// 쿠폰 정보 추출
-			AllocateCouponInfoResponse freeCouponInfo = licenseAllocateRequest.getCouponList().get(0);
-
-			log.info("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][COUPON_INFO][BEGIN]");
-			licenseAllocateRequest.getCouponList()
-				.forEach(couponInfo -> log.info(
-					"[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][COUPON_INFO] :: {}",
-					couponInfo.toString()
-				));
-			log.info("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT][COUPON_INFO][END]");
-
-			LocalDateTime expiredDate = calculateExpiredDateOfTermPaymentPlan(freeCouponInfo);
-			userLicensePlan.setEndDate(expiredDate);
-			userLicensePlan.setTermPlan(true);
 		} else {
 			// 일반 지급 월 결제의 경우
 			userLicensePlan.setEndDate(userLicensePlan.getEndDate().plusMonths(1));
