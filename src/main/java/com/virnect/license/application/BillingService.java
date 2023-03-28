@@ -288,10 +288,7 @@ public class BillingService {
 				userLicensePlan.setEventPlan(false);
 				userLicensePlan.setTermPlan(false);
 				userLicensePlan.setEndDate(LocalDateTime.now().plusMonths(1));
-				log.info(
-					"[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] changed termPlan : [{} to {}] ",
-					userLicensePlan.isTermPlan(), licenseAllocateRequest.isTermPaymentRequest()
-				);
+				log.info("[BILLING][LICENSE_ALLOCATE_TERM_PAYMENT] changed termPlan :  {} ", userLicensePlan);
 			} else {
 				// 쿠폰 정보 추출
 				AllocateCouponInfoResponse freeCouponInfo = licenseAllocateRequest.getCouponList().get(0);
