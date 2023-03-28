@@ -1,199 +1,494 @@
+/* SpringBoot API Server Docker Based Jenkinsfile */
 pipeline {
     agent any
 
+    options {
+        timeout(time: 2, unit: 'HOURS')
+    }
+
     environment {
-        GIT_TAG = sh(returnStdout: true, script: 'git for-each-ref refs/tags --sort=-creatordate --format="%(refname)" --count=1 | cut -d/  -f3').trim()
-        REPO_NAME = sh(returnStdout: true, script: 'git config --get remote.origin.url | sed "s/.*:\\/\\/github.com\\///;s/.git$//"').trim()
+        REPO_URL = sh(returnStdout: true, script: 'git config --get remote.origin.url').trim()
+        REPO_NAME = sh(returnStdout: true, script: 'git config --get remote.origin.url | rev | cut -f 1 -d "/" | rev | sed "s/.git//gi";sed "/^ *$/d"').toLowerCase().trim() 
+        PORT = sh(returnStdout: true, script: 'cat docker/Dockerfile | egrep EXPOSE | awk \'{print $2}\'').trim()
+        BRANCH_NAME = "${BRANCH_NAME.toLowerCase().trim()}"
+        APP = ' '
+        PREVIOUS_VERSION = sh(returnStdout: true, script: 'git semver get || git semver minor').trim()
+        NEXT_VERSION = getNextSemanticVersion(to: [type: 'REF', value: 'HEAD'], patchPattern: '^[Ff]ix.*').toString()
+        SLACK_CHANNEL = "${SLACK_ALERT_CHANNEL}"
+        AUTHOR = sh(returnStdout: true, script : 'git --no-pager show -s --pretty="format: %an"')
     }
 
     stages {
-        stage('Build') {
-            parallel {
-                stage('Develop Branch') {
-                    when {
-                        branch 'develop'
-                    }
-                    steps {
-                        sh 'docker build -t pf-license -f docker/Dockerfile .'
-                    }
-                }
-
-                stage('Staging Branch') {
-                    when {
-                        branch 'staging'
-                    }
-                    steps {
-                        sh 'git checkout ${GIT_TAG}'
-                        sh 'docker build -t pf-license:${GIT_TAG} -f docker/Dockerfile .'
-                    }
-                }
-            }
-        }
-
-        stage('Test') {
+        stage ('start') {
             steps {
-                echo 'Test Stage'
+                slackSend (channel: env.SLACK_CHANNEL, color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})(${AUTHOR})")
+                script{
+                    if("${ADD_NOTION}"=='1'){
+                        sh "node ${ADD_NOTION_PATH} $BUILD_TIMESTAMP ${env.JOB_NAME} ${env.BUILD_NUMBER} ${env.BUILD_URL} ${AUTHOR}"
+                    }
+                }
             }
         }
 
-        stage('Deploy') {
-            parallel {
-
-                stage('Develop Branch') {
-                    when {
-                        branch 'develop'
+        stage ('compatibility check') {
+            when { anyOf { branch 'master'; branch 'staging'; branch 'develop'} }
+            environment {
+                IS_REBASE_MERGE_FROM_MASTER = sh(script: "git branch --contains ${PREVIOUS_VERSION} | grep ${BRANCH_NAME}", returnStatus: true)
+            }
+            steps {
+                script {
+                    echo """
+                    LATEST RELEASE VERSION: ${PREVIOUS_VERSION} \n
+                    NEXT VERSION: ${NEXT_VERSION} \n
+                    """
+                    if (env.IS_REBASE_MERGE_FROM_MASTER != '0') {
+                        echo """버전 호환이 맞지 않습니다. 아래 명령어를 통해 Rebase Merge 후 다시 시도해 주세요. \n
+                            git rabase origin/master \n
+                            git push -f origin ${BRANCH_NAME} \n
+                        """
+                        
+                        deleteDir()
+                        currentBuild.getRawBuild().getExecutor().interrupt(Result.ABORTED)
+                        sleep(1)
                     }
-                    steps {
-                        sh 'count=`docker ps -a | grep pf-license | grep -v batch | wc -l`; if [ ${count} -gt 0 ]; then echo "Running STOP&DELETE"; docker stop pf-license && docker rm pf-license; else echo "Not Running STOP&DELETE"; fi;'
-                        sh 'docker run -p 8632:8632 -e "CONFIG_SERVER=http://192.168.6.3:6383" -e "VIRNECT_ENV=develop" -d --restart=always --name=pf-license pf-license'
-                        sh 'count=`docker ps -a | grep pf-license-onpremise | grep -v batch | wc -l`; if [ ${count} -gt 0 ]; then echo "Running STOP&DELETE"; docker stop pf-license-onpremise && docker rm pf-license-onpremise; else echo "Not Running STOP&DELETE"; fi;'
-                        sh 'docker run -p 18632:8632 -e "CONFIG_SERVER=http://192.168.6.3:6383" -e "VIRNECT_ENV=onpremise" -d --restart=always --name=pf-license-onpremise pf-license'
-                        catchError() {
-                             sh "if [ `docker images | grep pf-license |  grep -v batch | grep -v 103505534696 | wc -l` -gt 2 ]; then docker rmi  -f \$(docker images | grep \"pf-license\" | grep -v batch | grep -v \\${GIT_TAG} | grep -v \"latest\" | awk \'{print \$3}\'); else echo \"Just One Images...\"; fi;"
+                }
+            }
+        }
+
+        stage ('version update commit check') {
+            when {
+                branch 'master'
+            }
+            environment {
+                IS_UPDATE_COMMIT = sh(script: "git log -1 | grep 'chore: SOFTWARE VERSION UPDATED'", returnStatus: true)
+            }
+            steps {
+                script {
+                    if (env.IS_UPDATE_COMMIT == '0') {
+                        echo "version update commit, not running..."
+                        echo "clean up current directory"
+                        deleteDir()
+                        currentBuild.getRawBuild().getExecutor().interrupt(Result.SUCCESS)
+                        sleep(1)
+                    }
+                }
+            }
+        }
+
+        /*stage ('jacoco coverage analysis') {
+            when {
+                branch 'develop'
+            }
+            steps {
+                sh '''
+                    chmod +x ./gradlew && ./gradlew jacocoTestReport || IS_FAIL=true
+                    if [[ $IS_FAIL = "true" ]]; then
+                        echo "JaCoCo Report Failure"
+                        exit 1
+                    else
+                        echo "JaCoCo Report Success"
+                    fi
+                    '''
+            }
+        }
+
+        stage ('sonarqube code analysis') {
+            when {
+                branch 'develop'
+            }
+            environment {
+                scannerHome = tool 'sonarqube-scanner'
+            }
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    sh "${scannerHome}/bin/sonar-scanner"
+                }                
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }*/
+
+        stage ('edit gradle version') {
+            steps {
+                script {
+                    if ("${BRANCH_NAME}" == 'master') {
+                        sh '''
+                            sed -i "/version =/ c\\version = \'${NEXT_VERSION}\'" build.gradle
+                        '''
+                    } else {
+                        sh '''
+                            sed -i "/version =/ c\\version = \'${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}\'" build.gradle
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage ('build docker image') {
+            steps {
+                script {
+                    APP = docker.build("""${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}""", "-f ./docker/Dockerfile .")
+                }
+            }
+            post {
+                always {
+                    echo "jiraSendBuildInfo"
+                    //jiraSendBuildInfo site: "${JIRA_URL}"
+                }
+            }
+        }
+        
+        stage ('save image to nexus') {
+            steps {
+                script {
+                    docker.withRegistry("""https://${NEXUS_REGISTRY}""", "jenkins_to_nexus") {
+                        APP.push("${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}")
+
+                        if ("${BRANCH_NAME}" == 'master') {
+                            APP.push("${NEXT_VERSION}")
+                            APP.push("latest")
                         }
                     }
                 }
+            }
+        }
 
-                stage('Staging Branch') {
-                    when {
-                        branch 'staging'
-                    }
-                    steps {
-                        script {
-                            docker.withRegistry("https://$aws_ecr_address", 'ecr:ap-northeast-2:aws-ecr-credentials') {
-                                docker.image("pf-license:${GIT_TAG}").push("${GIT_TAG}")
-                                docker.image("pf-license:${GIT_TAG}").push("latest")
-                            }
-                        }
+        stage ('save image to ecr') {
+            when { anyOf { branch 'master'; branch 'staging' } }
+            steps {
+                script {
+                    docker.withRegistry("https://$aws_ecr_address", 'ecr:ap-northeast-2:aws-ecr-credentials') {
+                        APP.push("${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}")
 
-                        script {
-                            sshPublisher(
-                                continueOnError: false, failOnError: true,
-                                publishers: [
-                                    sshPublisherDesc(
-                                        configName: 'aws-bastion-deploy-qa',
-                                        verbose: true,
-                                        transfers: [
-                                            sshTransfer(
-                                                execCommand: 'aws ecr get-login --region ap-northeast-2 --no-include-email | bash'
-                                            ),
-                                            sshTransfer(
-                                                execCommand: "docker pull $aws_ecr_address/pf-license:\\${GIT_TAG}"
-                                            ),
-                                            sshTransfer(
-                                                execCommand: 'count=`docker ps -a | grep pf-license | grep -v batch | wc -l`; if [ ${count} -gt 0 ]; then echo "Running STOP&DELETE"; docker stop pf-license && docker rm pf-license; else echo "Not Running STOP&DELETE"; fi;'
-                                            ),
-                                            sshTransfer(
-                                                execCommand: "docker run -p 8632:8632 --restart=always -e 'CONFIG_SERVER=https://stgconfig.virnect.com' -e 'VIRNECT_ENV=staging' -e eureka.instance.ip-address=`hostname -I | awk  \'{print \$1}\'` -d --name=pf-license $aws_ecr_address/pf-license:\\${GIT_TAG}"
-                                            ),
-                                            sshTransfer(
-                                                execCommand: "if [ `docker images | grep pf-license | grep -v batch | wc -l` -ne 1 ]; then docker rmi  -f \$(docker images | grep \"pf-license\" | grep -v batch | grep -v \\${GIT_TAG} | awk \'{print \$3}\'); else echo \"Just One Images...\"; fi;"
-                                            )
-                                        ]
-                                    )
-                                ]
-                            )
-                        }
-                        script {
-                            sshPublisher(
-                                continueOnError: false, failOnError: true,
-                                publishers: [
-                                    sshPublisherDesc(
-                                        configName: 'aws-onpremise-qa',
-                                        verbose: true,
-                                        transfers: [
-                                            sshTransfer(
-                                                execCommand: 'aws ecr get-login --region ap-northeast-2 --no-include-email | bash'
-                                            ),
-                                            sshTransfer(
-                                                execCommand: "docker pull $aws_ecr_address/pf-license:\\${GIT_TAG}"
-                                            ),
-                                            sshTransfer(
-                                                execCommand: 'count=`docker ps -a | grep pf-license | grep -v batch | wc -l`; if [ ${count} -gt 0 ]; then echo "Running STOP&DELETE"; docker stop pf-license && docker rm pf-license; else echo "Not Running STOP&DELETE"; fi;'
-                                            ),
-                                            sshTransfer(
-                                                execCommand: "docker run -p 8632:8632 --restart=always -e 'CONFIG_SERVER=http://3.35.50.181:6383' -e 'VIRNECT_ENV=onpremise' -e eureka.instance.ip-address=`hostname -I | awk  \'{print \$1}\'` -d --name=pf-license $aws_ecr_address/pf-license:\\${GIT_TAG}"
-                                            ),
-                                            sshTransfer(
-                                                execCommand: "if [ `docker images | grep pf-license | grep -v batch | wc -l` -ne 1 ]; then docker rmi  -f \$(docker images | grep \"pf-license\" | grep -v batch | grep -v \\${GIT_TAG} | awk \'{print \$3}\'); else echo \"Just One Images...\"; fi;"
-                                            )
-                                        ]
-                                    )
-                                ]
-                            )
-                        }
-                        script {
-                            def GIT_TAG_CONTENT = sh(returnStdout: true, script: 'git for-each-ref refs/tags/$GIT_TAG --format=\'%(contents)\' | sed -z \'s/\\\n/\\\\n/g\'')
-                            def payload = """
-                            {"tag_name": "$GIT_TAG", "name": "$GIT_TAG", "body": "$GIT_TAG_CONTENT", "target_commitish": "master", "draft": false, "prerelease": true}
-                            """                             
-
-                            sh "curl -d '$payload' -X POST 'https://api.github.com/repos/$REPO_NAME/releases?access_token=$securitykey'"
-                            def GIT_TAG_RELEASE = sh(returnStdout: true, script: 'git for-each-ref refs/tags/$GIT_TAG --format=\'%(contents)\' | sed -z \'s/\\\n/\\\n\\\n/g\'')
-                            sh "curl -H \"Content-Type: application/json\" --data '{\"summary\": \"GITHUB Release note\",\"sections\" : [{ \"facts\": [{\"name\": \"REPO_NAME\",\"value\": \"\'\"$REPO_NAME\"\'\"},{\"name\": \"TAG_VERSION\",\"value\": \"\'\"$GIT_TAG\"\'\"},{\"NAME\": \"Branch\",\"value\": \"Staging\"},{\"name\": \"Information\",\"value\": \"\'\"$GIT_TAG_RELEASE\"\'\"}],\"markdown\": true}]}' -X POST 'https://virtualconnect.webhook.office.com/webhookb2/41e17451-4a57-4a25-b280-60d2d81e3dc9@d70d3a32-a4b8-4ac8-93aa-8f353de411ef/IncomingWebhook/642d8eba6da64076aba68a6bb6cc3e96/d0ac2f62-c503-4802-8bf9-f6368d7f39f8'"
-
+                        if ("${BRANCH_NAME}" == 'master') {
+                            APP.push("${NEXT_VERSION}")
+                            APP.push("latest")
                         }
                     }
                 }
+            }
+        }
 
-                stage('Master Branch') {
-                    when {
-                        branch 'master'
+/*
+        stage ('image scanning') {
+            when {
+                branch 'develop'
+            }
+            steps {
+                writeFile file: 'anchore_images', text: "${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}"
+                anchore name: 'anchore_images'
+            }
+        }
+ */
+
+        stage ('deploy to development') {
+            when {
+                branch 'develop'
+            }
+                
+            steps {
+                // develop
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'server_credentials', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                        def remote = [:]
+                        remote.name = "${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}" 
+                        remote.host = "${DEV_SERVER}"
+                        remote.allowAnyHosts = true 
+                        remote.user = USERNAME 
+                        remote.password = PASSWORD
+                        remote.failOnError = true
+
+                        sshCommand remote: remote, command: """
+                            docker login ${NEXUS_REGISTRY}
+                            docker pull ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
+                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} || true
+                            docker run --restart=on-failure:10 \
+                                -d \
+                                -e VIRNECT_ENV=develop \
+                                -e CONFIG_SERVER=${DEV_CONFIG_SERVER} \
+                                -p ${PORT}:${PORT} \
+                                --name=${REPO_NAME} ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
+                        """
                     }
-                    steps {
-                        script {
-                            sshPublisher(
-                                continueOnError: false, failOnError: true,
-                                publishers: [
-                                    sshPublisherDesc(
-                                        configName: 'aws-bastion-deploy-prod',
-                                        verbose: true,
-                                        transfers: [
-                                            sshTransfer(
-                                                execCommand: 'aws ecr get-login --region ap-northeast-2 --no-include-email | bash'
-                                            ),
-                                            sshTransfer(
-                                                execCommand: "docker pull $aws_ecr_address/pf-license:\\${GIT_TAG}"
-                                            ),
-                                            sshTransfer(
-                                                execCommand: 'count=`docker ps -a | grep pf-license | grep -v batch | wc -l`; if [ ${count} -gt 0 ]; then echo "Running STOP&DELETE"; docker stop pf-license && docker rm pf-license; else echo "Not Running STOP&DELETE"; fi;'
-                                            ),
-                                            sshTransfer(
-                                                execCommand: "docker run -p 8632:8632 --restart=always -e 'CONFIG_SERVER=https://config.virnect.com' -e 'VIRNECT_ENV=production' -e eureka.instance.ip-address=`hostname -I | awk  \'{print \$1}\'` -d --name=pf-license $aws_ecr_address/pf-license:\\${GIT_TAG}"
-                                            ),
-                                            sshTransfer(
-                                                execCommand: "if [ `docker images | grep pf-license | grep -v batch | wc -l` -ne 1 ]; then docker rmi  -f \$(docker images | grep \"pf-license\" | grep -v batch | grep -v \\${GIT_TAG} | awk \'{print \$3}\'); else echo \"Just One Images...\"; fi;"
-                                            )
-                                        ]
+                }
+
+                // onpremise
+                /*script {
+                    withCredentials([usernamePassword(credentialsId: 'server_credentials', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                        def remote = [:]
+                        remote.name = "${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}" 
+                        remote.host = "${DEV_ONPREMISE_SERVER}"
+                        remote.allowAnyHosts = true 
+                        remote.user = USERNAME 
+                        remote.password = PASSWORD
+                        remote.failOnError = true
+
+                        sshCommand remote: remote, command: """
+                            docker login ${NEXUS_REGISTRY}
+                            docker pull ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
+                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} || true
+                            docker run --restart=on-failure:10 \
+                                -d \
+                                -e VIRNECT_ENV=onpremise \
+                                -e CONFIG_SERVER=${DEV_CONFIG_SERVER} \
+                                -p ${PORT}:${PORT} \
+                                --name=${REPO_NAME} ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
+                        """
+                    }
+                }*/
+            }
+
+            
+
+            post {
+                always {
+                    echo "jiraSendBuildInfo"
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'harington-development', environmentName: 'harington-development', environmentType: 'development'
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'harington-development-onpremise', environmentName: 'harington-development-onpremise', environmentType: 'development'
+                }
+            }
+        }
+
+        stage ('deploy to staging') {
+            when {
+                branch 'staging'
+            }
+                
+            steps {
+                script {
+                    sshPublisher(
+                        continueOnError: false, failOnError: true,
+                        publishers: [
+                            sshPublisherDesc(
+                                configName: 'aws-bastion-deploy-qa',
+                                verbose: true,
+                                transfers: [
+                                    sshTransfer(
+                                        execCommand: 'aws ecr get-login --region ap-northeast-2 --no-include-email | bash'
+                                    ),
+                                    sshTransfer(
+                                        execCommand: "docker pull ${aws_ecr_address}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}"
+                                    ),
+                                    sshTransfer(
+                                        execCommand: """
+                                            echo '${REPO_NAME} Container stop and delete'
+                                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} 
+
+                                            echo '${REPO_NAME} New Container start'
+                                            docker run --restart=on-failure:10 \
+                                                    -d \
+                                                    -e VIRNECT_ENV=staging \
+                                                    -e CONFIG_SERVER=${STG_CONFIG_SERVER} \
+                                                    -e WRITE_YOUR=ENVIRONMENT_VARIABLE_HERE \
+                                                    -e eureka.instance.ip-address=`hostname -I | awk  \'{print \$1}\'` \
+                                                    -p ${PORT}:${PORT} \
+                                                    --name=${REPO_NAME} ${aws_ecr_address}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
+                                        """
                                     )
                                 ]
                             )
-                        }
+                        ]
+                    )
+                }
+                
+                // onpremise
+                /*script {
+                    sshPublisher(
+                        continueOnError: false, failOnError: true,
+                        publishers: [
+                            sshPublisherDesc(
+                                configName: 'aws-onpremise-qa',
+                                verbose: true,
+                                transfers: [
+                                    sshTransfer(
+                                        execCommand: 'aws ecr get-login --region ap-northeast-2 --no-include-email | bash'
+                                    ),
+                                    sshTransfer(
+                                        execCommand: "docker pull ${aws_ecr_address}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}"
+                                    ),
+                                    sshTransfer(
+                                        execCommand: """
+                                            echo '${REPO_NAME} Container stop and delete'
+                                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} 
 
-                        script {
-                            def GIT_RELEASE_INFO = sh(returnStdout: true, script: 'curl -X GET https:/api.github.com/repos/$REPO_NAME/releases/tags/$GIT_TAG?access_token=$securitykey')
-                            def RELEASE = readJSON text: "$GIT_RELEASE_INFO"
-                            def RELEASE_ID = RELEASE.id
-                            def payload = """
-                            {"prerelease": false}
-                            """
+                                            echo '${REPO_NAME} New Container start'
+                                            docker run --restart=on-failure:10 \
+                                                    -d \
+                                                    -e VIRNECT_ENV=onpremise \
+                                                    -e CONFIG_SERVER=${STG_ONPRE_CONFIG_SERVER} \
+                                                    -e WRITE_YOUR=ENVIRONMENT_VARIABLE_HERE \
+                                                    -p ${PORT}:${PORT} \
+                                                    --name=${REPO_NAME} ${aws_ecr_address}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
+                                        """
+                                    )
+                                ]
+                            )
+                        ]
+                    )
+                }*/
+            }
+            
+            post {
+                always {
+                    echo "jiraSendBuildInfo"
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-stging', environmentName: 'aws-stging', environmentType: 'staging'
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-stging-onpremise', environmentName: 'aws-stging-onpremise', environmentType: 'staging'
+                }
+            }
+        }
 
-                            sh "echo '$RELEASE'"
+        stage ('git push and create release on github') {
+            when { branch 'master'; expression { env.PREVIOUS_VERSION != env.NEXT_VERSION } }
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'github_api_access_token', variable: 'TOKEN')]) {
+                        sh '''
+                            git add build.gradle
+                            git commit -m "chore: SOFTWARE VERSION UPDATED"
+                            git push https://$TOKEN@github.com/virnect-corp/$REPO_NAME.git
+                        '''
 
-                            sh "curl -d '$payload' -X PATCH 'https://api.github.com/repos/$REPO_NAME/releases/$RELEASE_ID?access_token=$securitykey'"
-                            def GIT_TAG_RELEASE = sh(returnStdout: true, script: 'git for-each-ref refs/tags/$GIT_TAG --format=\'%(contents)\' | sed -z \'s/\\\n/\\\n\\\n/g\'')
-                            sh "curl -H \"Content-Type: application/json\" --data '{\"summary\": \"GITHUB Release note\",\"sections\" : [{ \"facts\": [{\"name\": \"REPO_NAME\",\"value\": \"\'\"$REPO_NAME\"\'\"},{\"name\": \"TAG_VERSION\",\"value\": \"\'\"$GIT_TAG\"\'\"},{\"NAME\": \"Branch\",\"value\": \"Master\"},{\"name\": \"Information\",\"value\": \"\'\"$GIT_TAG_RELEASE\"\'\"}],\"markdown\": true}]}' -X POST 'https://virtualconnect.webhook.office.com/webhookb2/41e17451-4a57-4a25-b280-60d2d81e3dc9@d70d3a32-a4b8-4ac8-93aa-8f353de411ef/IncomingWebhook/5433af0a21da48a799418f2c7a046d3d/d0ac2f62-c503-4802-8bf9-f6368d7f39f8'"
-
-                        }
+                        env.CHANGE_LOG = gitChangelog returnType: 'STRING', 
+                            from: [type: 'REF', value: "${PREVIOUS_VERSION}"],
+                            to: [type: 'REF', value: 'master'],
+                            template: "{{#tags}}{{#ifContainsBreaking commits}}### Breaking Changes \\r\\n {{#commits}}{{#ifCommitBreaking .}}{{#eachCommitScope .}} **{{.}}** {{/eachCommitScope}}{{{commitDescription .}}}([{{hash}}](https://github.com/{{ownerName}}/{{repoName}}/commit/{{hash}})) \\r\\n {{/ifCommitBreaking}}{{/commits}}{{/ifContainsBreaking}} {{#ifContainsType commits type='feat'}} ### Features \\r\\n {{#commits}}{{#ifCommitType . type='feat'}}{{#eachCommitScope .}} **{{.}}** {{/eachCommitScope}}{{{commitDescription .}}}([{{hash}}](https://github.com/{{ownerName}}/{{repoName}}/commit/{{hash}})) \\r\\n {{/ifCommitType}}{{/commits}}{{/ifContainsType}} {{#ifContainsType commits type='fix'}}### Bug Fixes \\r\\n {{#commits}}{{#ifCommitType . type='fix'}}{{#eachCommitScope .}} **{{.}}** {{/eachCommitScope}}{{{commitDescription .}}}([{{hash}}](https://github.com/{{ownerName}}/{{repoName}}/commit/{{hash}})) \\r\\n {{/ifCommitType}}{{/commits}}{{/ifContainsType}} \\r\\n Copyright (C) 2020, VIRNECT CO., LTD. - All Rights Reserved \\r\\n {{/tags}}"
+                                                
+                        sh '''
+                            curl \
+                                -X POST \
+                                -H "Accept: application/vnd.github.manifold-preview" \
+                                -H "Authorization: token $TOKEN" \
+                                -H "Content-Type: application/json" \
+                                https://api.github.com/repos/virnect-corp/$REPO_NAME/releases \
+                                -d '{"tag_name": "'"${NEXT_VERSION}"'", "target_commitish": "master", "name": "'"$NEXT_VERSION"'", "draft": false, "prerelease": false, "body": "'"$CHANGE_LOG"'"}'
+                        '''
                     }
+                }
+            }
+        }
+
+        stage ('deploy to production') {
+            when {
+                branch 'master'
+            }
+                
+            steps {
+                script {
+                    echo "deploy production"
+
+                    // pull and run container
+                    sshPublisher(
+                        continueOnError: false, failOnError: true,
+                        publishers: [
+                            sshPublisherDesc(
+                                configName: 'aws-bastion-deploy-prod',
+                                verbose: true,
+                                transfers: [
+                                    sshTransfer(
+                                        execCommand: 'aws ecr get-login --region ap-northeast-2 --no-include-email | bash'
+                                    ),
+                                    sshTransfer(
+                                        execCommand: "docker pull ${aws_ecr_address}/${REPO_NAME}:\\${NEXT_VERSION}"
+                                    ),
+                                    sshTransfer(
+                                        execCommand: """
+                                            echo '${REPO_NAME} Container stop and delete'
+                                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} 
+
+                                            echo '${REPO_NAME} New Container start'
+                                            docker run --restart=on-failure:10 \
+                                                -d \
+                                                -e VIRNECT_ENV=production \
+                                                -e CONFIG_SERVER=${PROD_CONFIG_SERVER} \
+                                                -e WRITE_YOUR=ENVIRONMENT_VARIABLE_HERE \
+                                                -p ${PORT}:${PORT} \
+                                                --name=${REPO_NAME} ${aws_ecr_address}/${REPO_NAME}:${NEXT_VERSION}
+                                        """
+                                    )
+                                ]
+                            )
+                        ]
+                    )
+                }
+            }                
+
+            post {
+                always {
+                    echo "jiraSendBuildInfo"
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-production', environmentName: 'aws-production', environmentType: 'production'
+                }
+            }
+        }
+        
+        stage ('deploy to production-us') {
+            when {
+                branch 'master'
+            }
+                
+            steps {
+                script {
+                    echo "deploy production-us"
+
+                    // pull and run container
+                    sshPublisher(
+                        continueOnError: false, failOnError: true,
+                        publishers: [
+                            sshPublisherDesc(
+                                configName: 'aws-bastion-deploy-prod-us',
+                                verbose: true,
+                                transfers: [
+                                    sshTransfer(
+                                        execCommand: 'aws ecr get-login --region ap-northeast-2 --no-include-email | bash'
+                                    ),
+                                    sshTransfer(
+                                        execCommand: "docker pull ${aws_ecr_address}/${REPO_NAME}:\\${NEXT_VERSION}"
+                                    ),
+                                    sshTransfer(
+                                        execCommand: """
+                                            echo '${REPO_NAME} Container stop and delete'
+                                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} 
+
+                                            echo '${REPO_NAME} New Container start'
+                                            docker run --restart=on-failure:10 \
+                                                -d \
+                                                -e VIRNECT_ENV=production \
+                                                -e CONFIG_SERVER=${PROD_US_CONFIG_SERVER} \
+                                                -e WRITE_YOUR=ENVIRONMENT_VARIABLE_HERE \
+                                                -p ${PORT}:${PORT} \
+                                                --name=${REPO_NAME} ${aws_ecr_address}/${REPO_NAME}:${NEXT_VERSION}
+                                        """
+                                    )
+                                ]
+                            )
+                        ]
+                    )
+                }
+            }                
+
+            post {
+                always {
+                    echo "jiraSendBuildInfo"
+                    //jiraSendDeploymentInfo site: "${JIRA_URL}", environmentId: 'aws-production-us', environmentName: 'aws-production-us', environmentType: 'production'
                 }
             }
         }
     }
 
     post {
-        always {
-            office365ConnectorSend webhookUrl:'https://virtualconnect.webhook.office.com/webhookb2/9b126938-3d1f-4493-98bb-33f25285af65@d70d3a32-a4b8-4ac8-93aa-8f353de411ef/IncomingWebhook/72710a45ecce45e4bf72663717e7f323/d5a8ebb7-7fe2-4cd2-817c-1884fd25e7b0'
+        success {
+            slackSend (channel: env.SLACK_CHANNEL, color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
+        failure {
+            slackSend (channel: env.SLACK_CHANNEL, color: '#FF0000', message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
+        aborted {
+            slackSend (channel: env.SLACK_CHANNEL, color: '#808080', message: "ABORTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
+
+        cleanup {
+            echo 'clean up current directory'
+            deleteDir()
         }
     }
 }
