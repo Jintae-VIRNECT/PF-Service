@@ -14,6 +14,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class UserInfoModifyRequest {
-    @ApiModelProperty(value = "변경할 닉네임", position = 2, notes = "변경할 경우 입력하면됩니다.", example = "닉넴")
-    private final String nickname;
+	@ApiModelProperty(value = "변경할 닉네임", position = 2, notes = "변경할 경우 입력하면됩니다.", example = "닉넴")
+	private final String nickname;
 }

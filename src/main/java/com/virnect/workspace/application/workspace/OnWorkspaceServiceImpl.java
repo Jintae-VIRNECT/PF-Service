@@ -50,6 +50,7 @@ import com.virnect.workspace.infra.file.FileService;
 @Service
 @Profile("!onpremise")
 public class OnWorkspaceServiceImpl extends WorkspaceService {
+	private static final int MAX_HAVE_WORKSPACE_AMOUNT = 49; //최대 생성 가능한 워크스페이스 수
 	private final WorkspaceRepository workspaceRepository;
 	private final FileService fileUploadService;
 	private final WorkspaceUserRepository workspaceUserRepository;
@@ -59,8 +60,6 @@ public class OnWorkspaceServiceImpl extends WorkspaceService {
 	private final WorkspaceMapStruct workspaceMapStruct;
 	private final ApplicationEventPublisher applicationEventPublisher;
 	private final WorkspaceSettingRepository workspaceSettingRepository;
-
-	private static final int MAX_HAVE_WORKSPACE_AMOUNT = 49; //최대 생성 가능한 워크스페이스 수
 
 	public OnWorkspaceServiceImpl(
 		WorkspaceRepository workspaceRepository, WorkspaceUserRepository workspaceUserRepository,
@@ -221,7 +220,7 @@ public class OnWorkspaceServiceImpl extends WorkspaceService {
 	@Override
 	public WorkspaceFaviconUpdateResponse updateWorkspaceFavicon(
 		String workspaceId, WorkspaceFaviconUpdateRequest workspaceFaviconUpdateRequest
-	)  {
+	) {
 		WorkspaceUserPermission workspaceUser = workspaceUserPermissionRepository.findWorkspaceUserPermission(
 				workspaceId, workspaceFaviconUpdateRequest.getUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));

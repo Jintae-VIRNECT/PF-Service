@@ -34,7 +34,7 @@ spring:
 
 logging:
   level:
-#    org.hibernate.type.descriptor.sql: debug
+    #    org.hibernate.type.descriptor.sql: debug
     com.virnect.workspace.application.*: TRACE
     .*: TRACE
 ## Server Configuration

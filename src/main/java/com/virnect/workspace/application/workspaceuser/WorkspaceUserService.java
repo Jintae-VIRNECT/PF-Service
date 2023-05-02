@@ -98,6 +98,7 @@ import com.virnect.workspace.global.error.ErrorCode;
 @Service
 @RequiredArgsConstructor
 public abstract class WorkspaceUserService {
+	private static final int MAX_WORKSPACE_USER_AMOUNT = 50;//워크스페이스 최대 멤버 수(마스터 본인 포함)
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceUserRepository workspaceUserRepository;
 	private final WorkspaceRoleRepository workspaceRoleRepository;
@@ -110,8 +111,6 @@ public abstract class WorkspaceUserService {
 	private final WorkspacePermissionRepository workspacePermissionRepository;
 	private final RemoteRestService remoteRestService;
 	private final UserRestServiceHandler userRestServiceHandler;
-
-	private static final int MAX_WORKSPACE_USER_AMOUNT = 50;//워크스페이스 최대 멤버 수(마스터 본인 포함)
 
 	/**
 	 * 멤버 조회
@@ -571,10 +570,10 @@ public abstract class WorkspaceUserService {
 		}
 		//1-2. 내보낼 유저 권한 검증
 		WorkspaceUserPermission requestUserPermission = workspaceUserPermissionRepository.findWorkspaceUserPermission(
-			workspaceId, memberKickOutRequest.getUserId())
+				workspaceId, memberKickOutRequest.getUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));
 		WorkspaceUserPermission kickedUserPermission = workspaceUserPermissionRepository.findWorkspaceUserPermission(
-			workspaceId, memberKickOutRequest.getKickedUserId())
+				workspaceId, memberKickOutRequest.getKickedUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));
 		//내보내는 유저가 마스터인경우
 		if (kickedUserPermission.getWorkspaceRole().getRole() == Role.MASTER) {
@@ -776,7 +775,7 @@ public abstract class WorkspaceUserService {
 
 		//1-2. 요청한 사람의 권한 체크
 		WorkspaceUserPermission requestUserPermission = workspaceUserPermissionRepository.findWorkspaceUserPermission(
-			workspaceId, memberAccountCreateRequest.getUserId())
+				workspaceId, memberAccountCreateRequest.getUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));
 		if (!isMasterOrManagerRole(requestUserPermission.getWorkspaceRole())) {
 			throw new WorkspaceException(ErrorCode.ERR_WORKSPACE_INVALID_PERMISSION);
@@ -830,7 +829,7 @@ public abstract class WorkspaceUserService {
 				.workspace(requestUserPermission.getWorkspaceUser().getWorkspace())
 				.build();
 			WorkspaceRole workspaceRole = workspaceRoleRepository.findByRole(
-				Role.valueOf(memberAccountCreateInfo.getRole()))
+					Role.valueOf(memberAccountCreateInfo.getRole()))
 				.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_ROLE_NOT_FOUND));
 			WorkspacePermission workspacePermission = workspacePermissionRepository.findByPermission(Permission.ALL)
 				.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_PERMISSION_NOT_FOUND));
@@ -885,18 +884,18 @@ public abstract class WorkspaceUserService {
 		Workspace workspace = workspaceRepository.findByUuid(workspaceId)
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_NOT_FOUND));
 		WorkspaceUserPermission requestUserPermission = workspaceUserPermissionRepository.findByWorkspaceUser_WorkspaceAndWorkspaceUser_UserId(
-			workspace, passwordChangeRequest.getRequestUserId())
+				workspace, passwordChangeRequest.getRequestUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_NOT_FOUND));
 		WorkspaceUserPermission updateUserPermission = workspaceUserPermissionRepository.findByWorkspaceUser_WorkspaceAndWorkspaceUser_UserId(
-			workspace, passwordChangeRequest.getUserId())
+				workspace, passwordChangeRequest.getUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_NOT_FOUND));
 		if (!passwordChangeRequest.getRequestUserId().equals(passwordChangeRequest.getUserId())) {
 			// 요청한 사람이 마스터 또는 매니저여야 한다.
-			if (!isMasterOrManagerRole(requestUserPermission.getWorkspaceRole())){
+			if (!isMasterOrManagerRole(requestUserPermission.getWorkspaceRole())) {
 				throw new WorkspaceException(ErrorCode.ERR_WORKSPACE_INVALID_PERMISSION);
 			}
 			// 매니저 유저는 매니저 유저를 수정 할 수 없다.
-			if (isBothManagerRole(requestUserPermission.getWorkspaceRole(),updateUserPermission.getWorkspaceRole())) {
+			if (isBothManagerRole(requestUserPermission.getWorkspaceRole(), updateUserPermission.getWorkspaceRole())) {
 				throw new WorkspaceException(ErrorCode.ERR_WORKSPACE_INVALID_PERMISSION);
 			}
 		}
@@ -1203,10 +1202,10 @@ public abstract class WorkspaceUserService {
 		//1-2. 변경 요청 유저 권한 검증
 		if (!memberProfileUpdateRequest.isUserSelfUpdateRequest()) {
 			WorkspaceRole requestUserRole = workspaceRoleRepository.findWorkspaceRole(
-				workspaceId, memberProfileUpdateRequest.getRequestUserId())
+					workspaceId, memberProfileUpdateRequest.getRequestUserId())
 				.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));
 			WorkspaceRole updateUserRole = workspaceRoleRepository.findWorkspaceRole(
-				workspaceId, memberProfileUpdateRequest.getUserId())
+					workspaceId, memberProfileUpdateRequest.getUserId())
 				.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));
 			if (!isMasterOrManagerRole(requestUserRole)) {
 				throw new WorkspaceException(ErrorCode.ERR_WORKSPACE_INVALID_PERMISSION);

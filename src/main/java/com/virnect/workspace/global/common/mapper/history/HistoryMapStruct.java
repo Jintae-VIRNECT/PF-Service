@@ -1,8 +1,9 @@
 package com.virnect.workspace.global.common.mapper.history;
 
+import org.mapstruct.Mapper;
+
 import com.virnect.workspace.domain.histroy.History;
 import com.virnect.workspace.dto.response.WorkspaceHistoryListResponse;
-import org.mapstruct.Mapper;
 
 /**
  * Project: PF-Workspace
@@ -13,5 +14,5 @@ import org.mapstruct.Mapper;
  */
 @Mapper(componentModel = "spring")
 public interface HistoryMapStruct {
-    WorkspaceHistoryListResponse.WorkspaceHistory historyToWorkspaceHistory(History history);
+	WorkspaceHistoryListResponse.WorkspaceHistory historyToWorkspaceHistory(History history);
 }

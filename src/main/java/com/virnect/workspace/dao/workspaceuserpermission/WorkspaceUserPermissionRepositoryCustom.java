@@ -18,19 +18,19 @@ import com.virnect.workspace.domain.workspace.WorkspaceUserPermission;
  * DESCRIPTION:
  */
 public interface WorkspaceUserPermissionRepositoryCustom {
-    long deleteAllWorkspaceUserPermissionByWorkspaceUser(List<WorkspaceUser> workspaceUserList);
+	long deleteAllWorkspaceUserPermissionByWorkspaceUser(List<WorkspaceUser> workspaceUserList);
 
-    Page<WorkspaceUserPermission> getContainedUserIdList(List<String> userIdList, Pageable pageable, String workspaceId);
+	Page<WorkspaceUserPermission> getContainedUserIdList(List<String> userIdList, Pageable pageable, String workspaceId);
 
-    Page<WorkspaceUserPermission> getWorkspaceUserList(Pageable pageable, String workspaceId);
+	Page<WorkspaceUserPermission> getWorkspaceUserList(Pageable pageable, String workspaceId);
 
-    List<WorkspaceUserPermission> findRecentWorkspaceUserList(int size, String workspaceId);
+	List<WorkspaceUserPermission> findRecentWorkspaceUserList(int size, String workspaceId);
 
-    Optional<WorkspaceUserPermission> findWorkspaceUserPermission(String workspaceId, String userId);
+	Optional<WorkspaceUserPermission> findWorkspaceUserPermission(String workspaceId, String userId);
 
-    List<String> getUserIdsByInUserListAndEqRole(List<String> userIdList, List<Role> roleList, String workspaceId);
+	List<String> getUserIdsByInUserListAndEqRole(List<String> userIdList, List<Role> roleList, String workspaceId);
 
-    Page<WorkspaceUserPermission> getWorkspaceUserPageByInUserList(List<String> userIdList, Pageable newPageable, String workspaceId);
+	Page<WorkspaceUserPermission> getWorkspaceUserPageByInUserList(List<String> userIdList, Pageable newPageable, String workspaceId);
 
-    List<WorkspaceUserPermission> getWorkspaceUserListByInUserList(List<String> userIdList, String workspaceId);
+	List<WorkspaceUserPermission> getWorkspaceUserListByInUserList(List<String> userIdList, String workspaceId);
 }

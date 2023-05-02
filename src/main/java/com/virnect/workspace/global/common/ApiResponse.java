@@ -16,16 +16,16 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class ApiResponse<T> {
-    @ApiModelProperty(value = "API 응답 데이터", dataType = "object")
-    T data;
+	@ApiModelProperty(value = "API 응답 데이터", dataType = "object")
+	T data;
 
-    @ApiModelProperty(value = "API 응답 상태 코드", dataType = "int")
-    int code = 200;
+	@ApiModelProperty(value = "API 응답 상태 코드", dataType = "int")
+	int code = 200;
 
-    @ApiModelProperty(value = "API 응답 메세지", dataType = "string")
-    String message = "complete";
+	@ApiModelProperty(value = "API 응답 메세지", dataType = "string")
+	String message = "complete";
 
-    public ApiResponse(T data) {
-        this.data = data;
-    }
+	public ApiResponse(T data) {
+		this.data = data;
+	}
 }

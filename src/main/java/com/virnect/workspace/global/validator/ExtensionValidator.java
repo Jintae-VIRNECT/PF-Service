@@ -9,11 +9,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class ExtensionValidator implements ConstraintValidator<AllowedExtension, MultipartFile> {
 	AllowedExtension.Extension[] allowedExtensions;
+
 	@Override
 	public void initialize(AllowedExtension allowedExtension) {
 		allowedExtensions = allowedExtension.extensions();
 	}
-
 
 	@Override
 	public boolean isValid(MultipartFile multipartFile, ConstraintValidatorContext context) {
@@ -23,7 +23,6 @@ public class ExtensionValidator implements ConstraintValidator<AllowedExtension,
 
 		int dotIndex = multipartFile.getOriginalFilename().lastIndexOf('.');
 		String extension = dotIndex == -1 ? "" : multipartFile.getOriginalFilename().substring(dotIndex + 1);
-
 
 		return Arrays.stream(allowedExtensions).anyMatch(allowedExtension -> allowedExtension.name().equals(extension.toUpperCase()));
 	}

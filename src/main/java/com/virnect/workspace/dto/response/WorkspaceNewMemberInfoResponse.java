@@ -1,10 +1,11 @@
 package com.virnect.workspace.dto.response;
 
-import com.virnect.workspace.domain.workspace.Role;
+import java.time.LocalDateTime;
+
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import com.virnect.workspace.domain.workspace.Role;
 
 /**
  * Project: PF-Workspace
@@ -16,11 +17,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class WorkspaceNewMemberInfoResponse {
-    private String uuid;
-    private String nickName;
-    private String name;
-    private String email;
-    private String profile;
-    private Role role;
-    private LocalDateTime joinDate;
+	private String uuid;
+	private String nickName;
+	private String name;
+	private String email;
+	private String profile;
+	private Role role;
+	private LocalDateTime joinDate;
 }

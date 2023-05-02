@@ -38,38 +38,39 @@ import com.virnect.workspace.global.error.ErrorResponseMessage;
 @EnableSwagger2
 @RequiredArgsConstructor
 public class SwaggerConfiguration {
-    private final ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
 
+	@Bean
+	public Docket docket() throws JsonProcessingException {
+		Contact contact = new Contact("이주경", "https://virnect.com", "ljk@virnect.com");
 
-    @Bean
-    public Docket docket() throws JsonProcessingException {
-        Contact contact = new Contact("이주경", "https://virnect.com", "ljk@virnect.com");
+		ApiInfo apiInfo = new ApiInfoBuilder()
+			.contact(contact)
+			.description("워크스페이스 API")
+			.version("v0.0.1")
+			.title("VIRNECT Platform Workspace Service API Document.")
+			.license("VIRNECT INC All rights reserved.")
+			.build();
 
-        ApiInfo apiInfo = new ApiInfoBuilder()
-            .contact(contact)
-            .description("워크스페이스 API")
-            .version("v0.0.1")
-            .title("VIRNECT Platform Workspace Service API Document.")
-            .license("VIRNECT INC All rights reserved.")
-            .build();
+		List<ResponseMessage> responseMessages = new ArrayList<>();
+		for (ErrorCode errorCode : ErrorCode.values()) {
+			responseMessages.add(new ResponseMessageBuilder().code(errorCode.getCode())
+				.message(objectMapper.writeValueAsString(new ErrorResponseMessage(errorCode)))
+				.build());
+		}
+		responseMessages.add(new ResponseMessageBuilder().code(200).message("success").build());
 
-        List<ResponseMessage> responseMessages = new ArrayList<>();
-        for (ErrorCode errorCode : ErrorCode.values()) {
-            responseMessages.add(new ResponseMessageBuilder().code(errorCode.getCode()).message(objectMapper.writeValueAsString(new ErrorResponseMessage(errorCode))).build());
-        }
-        responseMessages.add(new ResponseMessageBuilder().code(200).message("success").build());
+		return new Docket(DocumentationType.SWAGGER_2)
+			.useDefaultResponseMessages(false)
+			.globalResponseMessage(RequestMethod.GET, responseMessages)
+			.globalResponseMessage(RequestMethod.POST, responseMessages)
+			.globalResponseMessage(RequestMethod.PUT, responseMessages)
+			.globalResponseMessage(RequestMethod.DELETE, responseMessages)
+			.select()
+			.apis(RequestHandlerSelectors.basePackage("com.virnect.workspace.api"))
+			.paths(PathSelectors.any())
+			.build()
+			.apiInfo(apiInfo);
 
-        return new Docket(DocumentationType.SWAGGER_2)
-            .useDefaultResponseMessages(false)
-            .globalResponseMessage(RequestMethod.GET, responseMessages)
-            .globalResponseMessage(RequestMethod.POST, responseMessages)
-            .globalResponseMessage(RequestMethod.PUT, responseMessages)
-            .globalResponseMessage(RequestMethod.DELETE, responseMessages)
-            .select()
-            .apis(RequestHandlerSelectors.basePackage("com.virnect.workspace.api"))
-            .paths(PathSelectors.any())
-            .build()
-            .apiInfo(apiInfo);
-
-    }
+	}
 }

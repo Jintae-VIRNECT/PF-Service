@@ -1,7 +1,6 @@
 package com.virnect.workspace.dto.response;
 
 import io.swagger.annotations.ApiModelProperty;
-import jdk.nashorn.internal.ir.annotations.Reference;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -15,8 +14,8 @@ public class WorkspaceRemoteLogoUpdateResponse {
 	private final String remoteAndroidSplashLogo;
 
 	@ApiModelProperty(value = "그레이 로고 이미지 URL", example = "", position = 2)
-	private final String remoteAndroidLoginLogo ;
+	private final String remoteAndroidLoginLogo;
 
 	@ApiModelProperty(value = "화이트 로고 이미지 URL", example = "", position = 3)
-	private final String remoteHololens2CommonLogo ;
+	private final String remoteHololens2CommonLogo;
 }

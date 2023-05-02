@@ -1,12 +1,14 @@
 package com.virnect.workspace.dao.workspaceuser;
 
+import java.util.List;
+
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.virnect.workspace.domain.workspace.QWorkspaceUser;
-import com.virnect.workspace.domain.workspace.Workspace;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
+import com.virnect.workspace.domain.workspace.QWorkspaceUser;
+import com.virnect.workspace.domain.workspace.Workspace;
 
 /**
  * Project: PF-Workspace
@@ -17,18 +19,18 @@ import java.util.List;
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class WorkspaceUserRepositoryImpl implements WorkspaceUserRepositoryCustom {
-    private final JPAQueryFactory jpaQueryFactory;
-    QWorkspaceUser qWorkspaceUser = QWorkspaceUser.workspaceUser;
+	private final JPAQueryFactory jpaQueryFactory;
+	QWorkspaceUser qWorkspaceUser = QWorkspaceUser.workspaceUser;
 
-    @Override
-    public long deleteAllWorkspaceUserByWorkspace(Workspace workspace) {
-        return jpaQueryFactory.delete(qWorkspaceUser).where(qWorkspaceUser.workspace.eq(workspace)).execute();
-    }
+	@Override
+	public long deleteAllWorkspaceUserByWorkspace(Workspace workspace) {
+		return jpaQueryFactory.delete(qWorkspaceUser).where(qWorkspaceUser.workspace.eq(workspace)).execute();
+	}
 
-    @Override
-    public List<String> getWorkspaceUserIdList(String workspaceId) {
-        return jpaQueryFactory.select(qWorkspaceUser.userId)
-                .from(qWorkspaceUser)
-                .where(qWorkspaceUser.workspace.uuid.eq(workspaceId)).fetch();
-    }
+	@Override
+	public List<String> getWorkspaceUserIdList(String workspaceId) {
+		return jpaQueryFactory.select(qWorkspaceUser.userId)
+			.from(qWorkspaceUser)
+			.where(qWorkspaceUser.workspace.uuid.eq(workspaceId)).fetch();
+	}
 }

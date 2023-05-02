@@ -13,5 +13,5 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class InviteSessionDeleteEvent {
-    private final String sessionCode;
+	private final String sessionCode;
 }

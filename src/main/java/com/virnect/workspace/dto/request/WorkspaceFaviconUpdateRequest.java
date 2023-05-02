@@ -26,7 +26,7 @@ public class WorkspaceFaviconUpdateRequest {
 	@NotBlank
 	private String userId;
 
-	@AllowedExtension(extensions = {AllowedExtension.Extension.PNG, AllowedExtension.Extension.JPG,AllowedExtension.Extension.ICO})
+	@AllowedExtension(extensions = {AllowedExtension.Extension.PNG, AllowedExtension.Extension.JPG, AllowedExtension.Extension.ICO})
 	@ApiModelProperty(value = "파비콘 이미지", required = true, position = 1)
 	private MultipartFile favicon;
 

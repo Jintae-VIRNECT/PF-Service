@@ -1,7 +1,8 @@
 package com.virnect.workspace.dao.group;
 
-import com.virnect.workspace.domain.group.GroupRole;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.virnect.workspace.domain.group.GroupRole;
 
 /**
  * Project: PF-Workspace
@@ -10,6 +11,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * EMAIL: ljk@virnect.com
  * DESCRIPTION:
  */
-public interface GroupRoleRepository extends JpaRepository<GroupRole, Long>  {
-    GroupRole findByRole(String role);
+public interface GroupRoleRepository extends JpaRepository<GroupRole, Long> {
+	GroupRole findByRole(String role);
 }

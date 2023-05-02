@@ -1,10 +1,10 @@
 package com.virnect.workspace.dto.response;
 
+import java.util.List;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 /**
  * Project: PF-Workspace
@@ -16,14 +16,14 @@ import java.util.List;
 @Getter
 @RequiredArgsConstructor
 public class WorkspaceHistoryListResponse {
-    private final List<WorkspaceHistory> workspaceHistoryList;
-    private final PageMetadataRestResponse pageMeta;
+	private final List<WorkspaceHistory> workspaceHistoryList;
+	private final PageMetadataRestResponse pageMeta;
 
-    @Getter
-    @Setter
-    public static class WorkspaceHistory{
-        private String message;
-        private String createdDate;
-        private String updatedDate;
-    }
+	@Getter
+	@Setter
+	public static class WorkspaceHistory {
+		private String message;
+		private String createdDate;
+		private String updatedDate;
+	}
 }

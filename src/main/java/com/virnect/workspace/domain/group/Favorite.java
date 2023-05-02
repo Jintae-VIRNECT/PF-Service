@@ -8,6 +8,6 @@ package com.virnect.workspace.domain.group;
  * DESCRIPTION:
  */
 public enum Favorite {
-    YES,
-    NO
+	YES,
+	NO
 }

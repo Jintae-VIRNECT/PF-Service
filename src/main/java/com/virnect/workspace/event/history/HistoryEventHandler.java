@@ -1,11 +1,13 @@
 package com.virnect.workspace.event.history;
 
-import com.virnect.workspace.dao.history.HistoryRepository;
-import com.virnect.workspace.domain.histroy.History;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import com.virnect.workspace.dao.history.HistoryRepository;
+import com.virnect.workspace.domain.histroy.History;
 
 /**
  * Project: PF-Workspace
@@ -18,16 +20,16 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class HistoryEventHandler {
-    private final HistoryRepository historyRepository;
+	private final HistoryRepository historyRepository;
 
-    @EventListener(HistoryAddEvent.class)
-    public void historyAddEventListener(HistoryAddEvent historyAddEvent) {
-        History history = History.builder()
-                .message(historyAddEvent.getMessage())
-                .userId(historyAddEvent.getUserId())
-                .workspace(historyAddEvent.getWorkspace())
-                .build();
-        log.info("[WORKSPACE HISTORY ADD EVENT] - [{}]", historyAddEvent.toString());
-        historyRepository.save(history);
-    }
+	@EventListener(HistoryAddEvent.class)
+	public void historyAddEventListener(HistoryAddEvent historyAddEvent) {
+		History history = History.builder()
+			.message(historyAddEvent.getMessage())
+			.userId(historyAddEvent.getUserId())
+			.workspace(historyAddEvent.getWorkspace())
+			.build();
+		log.info("[WORKSPACE HISTORY ADD EVENT] - [{}]", historyAddEvent);
+		historyRepository.save(history);
+	}
 }

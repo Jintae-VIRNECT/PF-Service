@@ -398,8 +398,8 @@ public abstract class WorkspaceService {
 			return null;
 		}
 		int dotIndex = defaultImageName.getName().indexOf(".");
-		String fixedFileName = defaultImageName.getName().substring(0,dotIndex);
-		return fileUploadService.uploadByFixedName(file, workspaceId,fixedFileName);
+		String fixedFileName = defaultImageName.getName().substring(0, dotIndex);
+		return fileUploadService.uploadByFixedName(file, workspaceId, fixedFileName);
 	}
 
 	public String getLogoUrl(

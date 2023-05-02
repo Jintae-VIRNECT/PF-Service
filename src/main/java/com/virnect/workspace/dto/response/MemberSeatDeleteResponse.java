@@ -1,9 +1,9 @@
 package com.virnect.workspace.dto.response;
 
+import java.time.LocalDateTime;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import java.time.LocalDateTime;
 
 /**
  * Project: PF-Workspace
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 @RequiredArgsConstructor
 public class MemberSeatDeleteResponse {
-    private final boolean result;
-    private final String deletedUserId;
-    private final LocalDateTime deletedDate;
+	private final boolean result;
+	private final String deletedUserId;
+	private final LocalDateTime deletedDate;
 }

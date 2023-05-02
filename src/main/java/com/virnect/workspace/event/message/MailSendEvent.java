@@ -1,13 +1,14 @@
 package com.virnect.workspace.event.message;
 
-import com.virnect.workspace.global.constant.Mail;
-import lombok.Getter;
-
-import org.thymeleaf.context.Context;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import org.thymeleaf.context.Context;
+
+import lombok.Getter;
+
+import com.virnect.workspace.global.constant.Mail;
 
 /**
  * Project: PF-Workspace
@@ -18,33 +19,34 @@ import java.util.Locale;
  */
 @Getter
 public class MailSendEvent {
-    private final Context context;
-    private final Mail mailType;
-    private final Locale locale;
-    private final List<String> receiverList;
+	private final Context context;
+	private final Mail mailType;
+	private final Locale locale;
+	private final List<String> receiverList;
 
-    public MailSendEvent(Context context, Mail mailType, Locale locale, List<String> receiverList) {
-        this.context = context;
-        this.mailType = mailType;
-        this.locale = locale;
-        this.receiverList = receiverList;
-    }
-    public MailSendEvent(Context context, Mail mailType, Locale locale, String receiver) {
-        this.context = context;
-        this.mailType = mailType;
-        this.locale = locale;
-        List<String> receivers = new ArrayList<>();
-        receivers.add(receiver);
-        this.receiverList = receivers;
-    }
+	public MailSendEvent(Context context, Mail mailType, Locale locale, List<String> receiverList) {
+		this.context = context;
+		this.mailType = mailType;
+		this.locale = locale;
+		this.receiverList = receiverList;
+	}
 
-    @Override
-    public String toString() {
-        return "MailSendEvent{" +
-                //"context=" + context +
-                "mailType=" + mailType +
-                ", locale=" + locale +
-                ", receiverList=" + receiverList +
-                '}';
-    }
+	public MailSendEvent(Context context, Mail mailType, Locale locale, String receiver) {
+		this.context = context;
+		this.mailType = mailType;
+		this.locale = locale;
+		List<String> receivers = new ArrayList<>();
+		receivers.add(receiver);
+		this.receiverList = receivers;
+	}
+
+	@Override
+	public String toString() {
+		return "MailSendEvent{" +
+			//"context=" + context +
+			"mailType=" + mailType +
+			", locale=" + locale +
+			", receiverList=" + receiverList +
+			'}';
+	}
 }

@@ -7,7 +7,6 @@ package com.virnect.workspace.dao.workspace;
  * EMAIL: ljk@virnect.com
  * DESCRIPTION:
  */
-public class WorkspaceRepositoryImpl implements WorkspaceRepositoryCustom{
-
+public class WorkspaceRepositoryImpl implements WorkspaceRepositoryCustom {
 
 }

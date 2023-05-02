@@ -1,11 +1,11 @@
 package com.virnect.workspace.api;
 
+import java.time.LocalDateTime;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.time.LocalDateTime;
 
 /**
  * @author jeonghyeon.chang (johnmark)
@@ -18,8 +18,8 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/")
 public class HealthController {
-    @GetMapping("/healthCheck")
-    public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("Workspace Server Health Check " + LocalDateTime.now());
-    }
+	@GetMapping("/healthCheck")
+	public ResponseEntity<String> healthCheck() {
+		return ResponseEntity.ok("Workspace Server Health Check " + LocalDateTime.now());
+	}
 }

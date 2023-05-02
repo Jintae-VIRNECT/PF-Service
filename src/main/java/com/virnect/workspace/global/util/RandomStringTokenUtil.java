@@ -1,10 +1,11 @@
 package com.virnect.workspace.global.util;
 
-import com.virnect.workspace.global.constant.UUIDType;
-import org.apache.commons.lang3.RandomStringUtils;
-
 import java.util.Random;
 import java.util.UUID;
+
+import org.apache.commons.lang3.RandomStringUtils;
+
+import com.virnect.workspace.global.constant.UUIDType;
 
 /**
  * Project: PF-Workspace
@@ -22,11 +23,11 @@ public class RandomStringTokenUtil {
 			case PIN_NUMBER: {
 				Random random = new Random(System.currentTimeMillis());
 
-				int range = (int)Math.pow(10,6);
+				int range = (int)Math.pow(10, 6);
 				int trim = (int)Math.pow(10, 5);
-				int result = random.nextInt(range)+trim;
+				int result = random.nextInt(range) + trim;
 
-				if(result>range){
+				if (result > range) {
 					result = result - trim;
 				}
 

@@ -1,9 +1,9 @@
 package com.virnect.workspace.dto.request;
 
+import javax.validation.constraints.NotBlank;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.validation.constraints.NotBlank;
 
 /**
  * Project: PF-Workspace
@@ -15,8 +15,8 @@ import javax.validation.constraints.NotBlank;
 @Getter
 @Setter
 public class MemberKickOutRequest {
-    @NotBlank
-    private String userId;
-    @NotBlank
-    private String kickedUserId;
+	@NotBlank
+	private String userId;
+	@NotBlank
+	private String kickedUserId;
 }

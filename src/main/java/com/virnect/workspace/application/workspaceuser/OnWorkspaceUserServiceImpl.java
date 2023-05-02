@@ -80,6 +80,7 @@ import com.virnect.workspace.global.util.RandomStringTokenUtil;
 @Service
 @Profile("!onpremise")
 public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
+	private static final int MAX_JOIN_WORKSPACE_AMOUNT = 49;//최대 참여 가능한 워크스페이스 수
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceUserRepository workspaceUserRepository;
 	private final WorkspaceRoleRepository workspaceRoleRepository;
@@ -92,7 +93,6 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 	private final MailContextHandler mailContextHandler;
 	private final UserRestServiceHandler userRestServiceHandler;
 	private final RemoteRestService remoteRestService;
-	private static final int MAX_JOIN_WORKSPACE_AMOUNT = 49;//최대 참여 가능한 워크스페이스 수
 
 	public OnWorkspaceUserServiceImpl(
 		WorkspaceRepository workspaceRepository, WorkspaceUserRepository workspaceUserRepository,
@@ -375,7 +375,7 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 				userInvite.setExpireTime(Duration.ofDays(7).getSeconds());
 				userInviteRepository.save(userInvite);
 				sessionCode = userInvite.getSessionCode();
-				log.info("[WORKSPACE INVITE USER] Workspace Invite Info Redis Update >> {}", userInvite.toString());
+				log.info("[WORKSPACE INVITE USER] Workspace Invite Info Redis Update >> {}", userInvite);
 			} else {
 				UserInvite newUserInvite = UserInvite.builder()
 					.sessionCode(sessionCode)
@@ -395,7 +395,7 @@ public class OnWorkspaceUserServiceImpl extends WorkspaceUserService {
 					.expireTime(Duration.ofDays(7).getSeconds())
 					.build();
 				userInviteRepository.save(newUserInvite);
-				log.info("[WORKSPACE INVITE USER] Workspace Invite Info Redis Set >> {}", newUserInvite.toString());
+				log.info("[WORKSPACE INVITE USER] Workspace Invite Info Redis Set >> {}", newUserInvite);
 			}
 
 			//3. 초대 메일 전송

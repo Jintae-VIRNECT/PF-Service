@@ -1,11 +1,12 @@
 package com.virnect.workspace.dao.workspace;
 
-import com.virnect.workspace.domain.workspace.Workspace;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import com.virnect.workspace.domain.workspace.Workspace;
 
 /**
  * Project: PF-Workspace
@@ -15,10 +16,13 @@ import java.util.Optional;
  * DESCRIPTION:
  */
 public interface WorkspaceRepository extends JpaRepository<Workspace, Long>, WorkspaceRepositoryCustom {
-    Optional<Workspace> findByUuid(String workspaceId);
-	Optional<Workspace> findByUserId(String userUUID);
-    boolean existsByUserId(String userId);
-    Page<Workspace> findAll(Pageable pageable);
+	Optional<Workspace> findByUuid(String workspaceId);
 
-    long countByUserId(String userId);
+	Optional<Workspace> findByUserId(String userUUID);
+
+	boolean existsByUserId(String userId);
+
+	Page<Workspace> findAll(Pageable pageable);
+
+	long countByUserId(String userId);
 }

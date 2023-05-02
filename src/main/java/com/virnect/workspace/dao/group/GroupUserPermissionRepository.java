@@ -1,9 +1,10 @@
 package com.virnect.workspace.dao.group;
 
-import com.virnect.workspace.domain.group.GroupUser;
-import com.virnect.workspace.domain.group.GroupUserPermission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.virnect.workspace.domain.group.GroupUser;
+import com.virnect.workspace.domain.group.GroupUserPermission;
 
 /**
  * Project: PF-Workspace
@@ -13,6 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
  * DESCRIPTION:
  */
 public interface GroupUserPermissionRepository extends JpaRepository<GroupUserPermission, Long> {
-    @Transactional
-    void deleteAllByGroupUser(GroupUser groupUser);
+	@Transactional
+	void deleteAllByGroupUser(GroupUser groupUser);
 }

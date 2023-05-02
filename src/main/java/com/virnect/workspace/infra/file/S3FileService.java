@@ -39,7 +39,7 @@ public class S3FileService implements FileService {
 	@Value("${cloud.aws.s3.bucket.extension}")
 	private String allowExtension;
 
-	private AmazonS3 amazonS3Client;
+	private final AmazonS3 amazonS3Client;
 
 	public S3FileService(AmazonS3 amazonS3) {
 		this.amazonS3Client = amazonS3;
@@ -105,7 +105,7 @@ public class S3FileService implements FileService {
 	@Override
 	public String uploadByFixedName(MultipartFile file, String workspaceUUID, String fixedFileName) {
 		String extension = FilenameUtils.getExtension(file.getOriginalFilename());
-        String fileName = fixedFileName + "." + extension;
+		String fileName = fixedFileName + "." + extension;
 		String objectName = String.format("workspace/%s/setting/%s", workspaceUUID, fileName);
 		log.info(
 			"[FILE UPLOAD] Upload File Info >> bucket : {}, object : {}, fileSize : {}", bucket, objectName,

@@ -1,8 +1,9 @@
 package com.virnect.workspace.application.message;
 
+import org.springframework.stereotype.Component;
+
 import feign.hystrix.FallbackFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 /**
  * Project: PF-Workspace
@@ -14,8 +15,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class MessageRestFallbackFactory implements FallbackFactory<MessageRestService> {
-    @Override
-    public MessageRestService create(Throwable cause) {
-        return null;
-    }
+	@Override
+	public MessageRestService create(Throwable cause) {
+		return null;
+	}
 }

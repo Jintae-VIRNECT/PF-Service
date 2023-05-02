@@ -8,10 +8,10 @@ package com.virnect.workspace.domain.workspace;
  * DESCRIPTION:
  */
 public enum Role {
-    MASTER,
-    MANAGER,
-    MEMBER,
-    GUEST;
+	MASTER,
+	MANAGER,
+	MEMBER,
+	GUEST
 
     /*public static boolean anyMatchMasterManagerMember(Role requestRole) {
         return requestRole == MASTER || requestRole == MANAGER || requestRole == MEMBER;

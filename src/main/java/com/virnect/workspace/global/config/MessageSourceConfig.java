@@ -25,30 +25,32 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 @EnableAutoConfiguration
 @ComponentScan
 public class MessageSourceConfig implements WebMvcConfigurer {
-    @Bean
-    public LocaleResolver localeResolver() {
-        CookieLocaleResolver resolver = new CookieLocaleResolver();
-        resolver.setCookieName("lang");
-        resolver.setDefaultLocale(Locale.KOREAN);//쿠키에 Locale 정보가 없을 경우 default는 ko.
-        return resolver;
-    }
-    @Bean
-    public LocaleChangeInterceptor localeChangeInterceptor() {
-        LocaleChangeInterceptor lci = new LocaleChangeInterceptor();
-        lci.setParamName("lang");
-        return lci;
-    }
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(localeChangeInterceptor());
-    }
+	@Bean
+	public LocaleResolver localeResolver() {
+		CookieLocaleResolver resolver = new CookieLocaleResolver();
+		resolver.setCookieName("lang");
+		resolver.setDefaultLocale(Locale.KOREAN);//쿠키에 Locale 정보가 없을 경우 default는 ko.
+		return resolver;
+	}
 
-    @Bean
-    public MessageSource messageSource() {
-        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.setBasename("classpath:/messages");
-        messageSource.setDefaultEncoding("UTF-8");
-        messageSource.setDefaultLocale(Locale.KOREAN);
-        return messageSource;
-    }
+	@Bean
+	public LocaleChangeInterceptor localeChangeInterceptor() {
+		LocaleChangeInterceptor lci = new LocaleChangeInterceptor();
+		lci.setParamName("lang");
+		return lci;
+	}
+
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(localeChangeInterceptor());
+	}
+
+	@Bean
+	public MessageSource messageSource() {
+		ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+		messageSource.setBasename("classpath:/messages");
+		messageSource.setDefaultEncoding("UTF-8");
+		messageSource.setDefaultLocale(Locale.KOREAN);
+		return messageSource;
+	}
 }
