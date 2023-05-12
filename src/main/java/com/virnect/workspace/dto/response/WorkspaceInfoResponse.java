@@ -2,8 +2,9 @@ package com.virnect.workspace.dto.response;
 
 import java.util.List;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 /**
  * Project: PF-Workspace
@@ -12,15 +13,32 @@ import lombok.RequiredArgsConstructor;
  * EMAIL: ljk@virnect.com
  * DESCRIPTION:
  */
-@RequiredArgsConstructor
+
 @Getter
+@NoArgsConstructor
 public class WorkspaceInfoResponse {
-	private final WorkspaceInfoDTO workspaceInfo;
-	private final List<WorkspaceUserInfoResponse> workspaceUserInfo;
-	private final long masterUserCount;
-	private final long manageUserCount;
-	private final long memberUserCount;
-	private final int remotePlanCount;
-	private final int makePlanCount;
-	private final int viewPlanCount;
+	private WorkspaceInfoDTO workspaceInfo;
+	private List<WorkspaceUserInfoResponse> workspaceUserInfo;
+	private long masterUserCount;
+	private long manageUserCount;
+	private long memberUserCount;
+	private int remotePlanCount;
+	private int makePlanCount;
+	private int viewPlanCount;
+
+	@Builder
+	public WorkspaceInfoResponse(
+		WorkspaceInfoDTO workspaceInfo,
+		List<WorkspaceUserInfoResponse> workspaceUserInfo, long masterUserCount, long manageUserCount,
+		long memberUserCount, int remotePlanCount, int makePlanCount, int viewPlanCount
+	) {
+		this.workspaceInfo = workspaceInfo;
+		this.workspaceUserInfo = workspaceUserInfo;
+		this.masterUserCount = masterUserCount;
+		this.manageUserCount = manageUserCount;
+		this.memberUserCount = memberUserCount;
+		this.remotePlanCount = remotePlanCount;
+		this.makePlanCount = makePlanCount;
+		this.viewPlanCount = viewPlanCount;
+	}
 }

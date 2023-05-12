@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -15,7 +16,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +31,7 @@ import com.virnect.workspace.application.license.LicenseRestService;
 import com.virnect.workspace.application.license.dto.LicenseRevokeResponse;
 import com.virnect.workspace.application.license.dto.MyLicenseInfoListResponse;
 import com.virnect.workspace.application.license.dto.MyLicenseInfoResponse;
+import com.virnect.workspace.application.license.dto.UserLicenseInfo;
 import com.virnect.workspace.application.license.dto.WorkspaceLicensePlanInfoResponse;
 import com.virnect.workspace.application.remote.RemoteRestService;
 import com.virnect.workspace.application.user.UserRestServiceHandler;
@@ -86,6 +87,7 @@ import com.virnect.workspace.global.common.mapper.rest.RestMapStruct;
 import com.virnect.workspace.global.constant.Mail;
 import com.virnect.workspace.global.constant.Permission;
 import com.virnect.workspace.global.error.ErrorCode;
+import com.virnect.workspace.global.util.CollectionJoinUtil;
 
 /**
  * Project: PF-Workspace
@@ -98,7 +100,6 @@ import com.virnect.workspace.global.error.ErrorCode;
 @Service
 @RequiredArgsConstructor
 public abstract class WorkspaceUserService {
-	private static final int MAX_WORKSPACE_USER_AMOUNT = 50;//워크스페이스 최대 멤버 수(마스터 본인 포함)
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceUserRepository workspaceUserRepository;
 	private final WorkspaceRoleRepository workspaceRoleRepository;
@@ -111,6 +112,10 @@ public abstract class WorkspaceUserService {
 	private final WorkspacePermissionRepository workspacePermissionRepository;
 	private final RemoteRestService remoteRestService;
 	private final UserRestServiceHandler userRestServiceHandler;
+
+	private static final int MAX_WORKSPACE_USER_AMOUNT = 50;//워크스페이스 최대 멤버 수(마스터 본인 포함)
+	private static final String ROLE_FILTER = ".*(?i)MASTER.*|.*(?i)MANAGER.*|.*(?i)MEMBER.*|.*(?i)GUEST.*";
+	private static final String LICENSE_FILTER = ".*(?i)REMOTE.*|.*(?i)MAKE.*|.*(?i)VIEW.*";
 
 	/**
 	 * 멤버 조회
@@ -128,10 +133,11 @@ public abstract class WorkspaceUserService {
 		String planFilter, com.virnect.workspace.global.common.PageRequest pageRequest, boolean paging
 	) {
 		//1. 정렬 검증으로 Pageable 재정의
-		Pageable newPageable = getPageable(pageRequest);
+		Pageable newPageable = pageRequest.of();
 
-		//2. search 필터링
-		List<String> resultUserIdList = workspaceUserRepository.getWorkspaceUserIdList(workspaceId);//워크스페이스 소속 전체 유저
+		//워크스페이스 소속 전체 유저
+		List<String> resultUserIdList = workspaceUserRepository.getWorkspaceUserIdList(workspaceId);
+
 		if (StringUtils.hasText(search)) {
 			UserInfoListRestResponse userInfoListRestResponse = userRestServiceHandler.getUserListRequest(
 				search, resultUserIdList);
@@ -141,25 +147,15 @@ public abstract class WorkspaceUserService {
 				.collect(Collectors.toList());
 		}
 
-		//3. 필터링
 		if (StringUtils.hasText(filter)) {
 			//3-1. 라이선스 플랜으로 필터링
-			if (filter.matches(".*(?i)REMOTE.*|.*(?i)MAKE.*|.*(?i)VIEW.*") && !resultUserIdList.isEmpty()) {
+			if (filter.matches(LICENSE_FILTER) && !resultUserIdList.isEmpty()) {
 				resultUserIdList = filterUserIdListByPlan(workspaceId, resultUserIdList, filter);
 			}
 			//3-2. 워크스페이스 역할로 필터링
-			else if (filter.matches(".*(?i)MASTER.*|.*(?i)MANAGER.*|.*(?i)MEMBER.*|.*(?i)GUEST.*")
-				&& !resultUserIdList.isEmpty()) {
-				String[] filters = filter.toUpperCase().split(",").length == 0 ? new String[] {filter.toUpperCase()} :
-					filter.toUpperCase().split(",");
-				List<Role> roleList = new ArrayList<>();
-				Arrays.stream(Role.values()).forEach(role -> {
-					for (String StringRole : filters) {
-						if (role.name().equals(StringRole)) {
-							roleList.add(role);
-						}
-					}
-				});
+			else if (filter.matches(ROLE_FILTER) && !resultUserIdList.isEmpty()) {
+
+				List<Role> roleList = Role.getMatchedList(filter);
 				resultUserIdList = workspaceUserPermissionRepository.getUserIdsByInUserListAndEqRole(
 					resultUserIdList, roleList, workspaceId);
 			}
@@ -173,17 +169,19 @@ public abstract class WorkspaceUserService {
 		//3-4. 유저 타입으로 필터링
 		if (StringUtils.hasText(userTypeFilter)) {
 			UserInfoListRestResponse userInfoListRestResponse = userRestServiceHandler.getUserListRequest(
-				null, resultUserIdList);
+				"", resultUserIdList);
+
 			String[] userTypes =
 				userTypeFilter.toUpperCase().split(",").length == 0 ? new String[] {userTypeFilter.toUpperCase()} :
 					userTypeFilter.toUpperCase().split(",");
-			List<String> filteredUserIdList = new ArrayList<>();
-			userInfoListRestResponse.getUserInfoList().forEach(userInfoRestResponse -> {
-				if (Arrays.stream(userTypes).anyMatch(s -> s.equals(userInfoRestResponse.getUserType().name()))) {
-					filteredUserIdList.add(userInfoRestResponse.getUuid());
-				}
-			});
-			resultUserIdList = filteredUserIdList;
+
+			resultUserIdList = userInfoListRestResponse.getUserInfoList()
+				.stream()
+				.filter(userInfoRestResponse -> Arrays.asList(userTypes)
+					.contains(userInfoRestResponse.getUserType().name()))
+				.map(UserInfoRestResponse::getUuid)
+				.collect(Collectors.toList());
+
 		}
 
 		//3-5. 라이선스 플랜으로 필터링
@@ -204,7 +202,8 @@ public abstract class WorkspaceUserService {
 			List<WorkspaceUserPermission> workspaceUserPermissionList = workspaceUserPermissionRepository.getWorkspaceUserListByInUserList(
 				resultUserIdList, workspaceId);
 			List<WorkspaceUserInfoResponse> workspaceUserListResponse = generateWorkspaceUserListResponse(
-				workspaceUserPermissionList);
+				workspaceId, workspaceUserPermissionList
+			);
 			return new WorkspaceUserInfoListResponse(workspaceUserListResponse);
 		}
 
@@ -212,7 +211,7 @@ public abstract class WorkspaceUserService {
 		Page<WorkspaceUserPermission> workspaceUserPermissionPage = workspaceUserPermissionRepository.getWorkspaceUserPageByInUserList(
 			resultUserIdList, newPageable, workspaceId);
 		List<WorkspaceUserInfoResponse> workspaceUserListResponse = generateWorkspaceUserListResponse(
-			workspaceUserPermissionPage.toList());
+			workspaceId, workspaceUserPermissionPage.toList());
 
 		PageMetadataRestResponse pageMetadataResponse = new PageMetadataRestResponse();
 		pageMetadataResponse.setTotalElements(workspaceUserPermissionPage.getTotalElements());
@@ -220,82 +219,61 @@ public abstract class WorkspaceUserService {
 		pageMetadataResponse.setCurrentPage(pageRequest.of().getPageNumber() + 1);
 		pageMetadataResponse.setCurrentSize(pageRequest.of().getPageSize());
 
-		//6. email, nickname으로 sort 요청한 경우 결과 리스트 내에서 다시 sorting.
 		if (pageRequest.getSortName().equalsIgnoreCase("email") || pageRequest.getSortName()
 			.equalsIgnoreCase("nickname")) {
 			return new WorkspaceUserInfoListResponse(
 				getSortedMemberList(pageRequest, workspaceUserListResponse), pageMetadataResponse);
 		}
 		return new WorkspaceUserInfoListResponse(workspaceUserListResponse, pageMetadataResponse);
-
 	}
 
-	private List<WorkspaceUserInfoResponse> generateWorkspaceUserListResponse(
-		List<WorkspaceUserPermission> workspaceUserPermissionList
+	public List<WorkspaceUserInfoResponse> generateWorkspaceUserListResponse(
+		String workspaceId, List<WorkspaceUserPermission> workspaceUserPermissionList
 	) {
-		List<WorkspaceUserInfoResponse> workspaceUserInfoResponseList = new ArrayList<>();
-		workspaceUserPermissionList.forEach(workspaceUserPermission -> {
-			//1. REST - USER_SERVER : 유저 정보 조회
-			UserInfoRestResponse userInfoResponse = userRestServiceHandler.getUserRequest(
-				workspaceUserPermission.getWorkspaceUser().getUserId());
-			if (!userInfoResponse.isEmtpy()) {
-				WorkspaceUserInfoResponse workspaceUserInfoResponse = restMapStruct.userInfoRestResponseToWorkspaceUserInfoResponse(
-					userInfoResponse);
-				workspaceUserInfoResponse.setRole(workspaceUserPermission.getWorkspaceRole().getRole());
-				workspaceUserInfoResponse.setJoinDate(workspaceUserPermission.getWorkspaceUser().getCreatedDate());
-				workspaceUserInfoResponse.setRoleId(workspaceUserPermission.getWorkspaceRole().getId());
-				//2. REST - LICENSE_SERVER : 유저의 라이선스 정보 조회
-				String[] userLicenseProducts = getUserLicenseProducts(
-					workspaceUserPermission.getWorkspaceUser().getWorkspace().getUuid(),
-					workspaceUserPermission.getWorkspaceUser().getUserId()
-				);
-				workspaceUserInfoResponse.setLicenseProducts(userLicenseProducts);
-				workspaceUserInfoResponseList.add(workspaceUserInfoResponse);
-			}
-		});
+		List<String> workspaceUserIdList = workspaceUserPermissionList.stream()
+			.map(workspaceUserPermission -> workspaceUserPermission.getWorkspaceUser().getUserId())
+			.collect(Collectors.toList());
+
+		//license
+		List<UserLicenseInfo> userLicenseInfoList = licenseRestService.getUserLicenseInfoList(
+			workspaceId, workspaceUserIdList, "").getData().getUserLicenseInfos();
+
+		Map<String, List<String>> productLicenseArray = UserLicenseInfo.getProductLicenseGroupedByUser(
+			userLicenseInfoList);
+
+		//user
+		List<UserInfoRestResponse> userInfoList = userRestServiceHandler.getUserListRequest(
+			"", workspaceUserIdList).getUserInfoList();
+
+		List<WorkspaceUserInfoResponse> workspaceUserInfoResponseList = CollectionJoinUtil.collections(
+				userInfoList, workspaceUserPermissionList)
+			.when((userInfoRestResponse, workspaceUserPermission) ->
+				workspaceUserPermission.getWorkspaceUser().getUserId().equals(userInfoRestResponse.getUuid()))
+			.then(
+				WorkspaceUserInfoResponse::createWorkspaceUserInfoResponse);
+
+		//라이센스 할당.
+		workspaceUserInfoResponseList
+			.stream()
+			.filter(workspaceUserInfoResponse -> productLicenseArray.containsKey(workspaceUserInfoResponse.getUuid()))
+			.forEach(
+				workspaceUserInfoResponse -> workspaceUserInfoResponse.setUserLicenseProductForWorkspaceUserInfoResponse(
+					productLicenseArray.get(workspaceUserInfoResponse.getUuid()).toArray(new String[0]))
+			);
+
 		return workspaceUserInfoResponseList;
 	}
 
-	private String[] getUserLicenseProducts(String workspaceId, String userId) {
-		MyLicenseInfoListResponse myLicenseInfoListResponse = getMyLicenseInfoRequestHandler(workspaceId, userId);
-		return myLicenseInfoListResponse.getLicenseInfoList().isEmpty() ? new String[0]
-			: myLicenseInfoListResponse.getLicenseInfoList()
-			.stream()
-			.map(MyLicenseInfoResponse::getProductName)
-			.toArray(String[]::new);
-	}
+	public List<String> filterUserIdListByPlan(String workspaceId, List<String> userIdList, String planFilter) {
 
-	private List<String> filterUserIdListByPlan(String workspaceId, List<String> userIdList, String planFilter) {
-		List<String> filterdUserIdList = new ArrayList<>();
-		for (String userId : userIdList) {
-			MyLicenseInfoListResponse myLicenseInfoListResponse = getMyLicenseInfoRequestHandler(workspaceId, userId);
-			List<MyLicenseInfoResponse> myLicenseInfoList = myLicenseInfoListResponse.getLicenseInfoList();
-			if (!CollectionUtils.isEmpty(myLicenseInfoList)) {
-				if (myLicenseInfoListResponse.getLicenseInfoList()
-					.stream()
-					.anyMatch(myLicenseInfoResponse -> planFilter.toUpperCase()
-						.contains(myLicenseInfoResponse.getProductName().toUpperCase()))) {
-					filterdUserIdList.add(userId);
-				}
-			}
-		}
-		return filterdUserIdList;
-	}
+		List<UserLicenseInfo> userLicenseInfoList = licenseRestService.getUserLicenseInfoList(
+			workspaceId, userIdList, planFilter).getData().getUserLicenseInfos();
 
-	private Pageable getPageable(com.virnect.workspace.global.common.PageRequest pageRequest) {
-		//정렬을 빼고 Pageable 객체를 만든다.
-		Pageable pageable = PageRequest.of(pageRequest.of().getPageNumber(), pageRequest.of().getPageSize());
-		//정렬요청이 없는 경우에는 worksapceUser.updateDate,desc을 기본값으로 정렬하는 것으로 Pageable 객체를 수정한다.
-		if (pageRequest.getSortName().equals("updatedDate")) {
-			pageRequest.setSort("workspaceUser.updatedDate,desc");
-			pageable = pageRequest.of();
-		}
-		//워크스페이스에서 정렬이 가능한 경우에는 Pageable 객체를 수정한다.
-		if (pageRequest.getSortName().equalsIgnoreCase("role") || pageRequest.getSortName()
-			.equalsIgnoreCase(("joinDate"))) {
-			pageable = pageRequest.of();
-		}
-		return pageable;
+		return userLicenseInfoList.stream()
+			.filter(
+				userLicenseInfo -> userLicenseInfo.getProductName().toUpperCase().contains(planFilter.toUpperCase()))
+			.map(UserLicenseInfo::getUserId)
+			.collect(Collectors.toList());
 	}
 
 	MyLicenseInfoListResponse getMyLicenseInfoRequestHandler(String workspaceId, String userId) {
@@ -663,24 +641,16 @@ public abstract class WorkspaceUserService {
 
 	public WorkspaceUserInfoListResponse getSimpleWorkspaceUserList(String workspaceId) {
 		List<String> workspaceUserIdList = workspaceUserRepository.getWorkspaceUserIdList(workspaceId);
-		UserInfoListRestResponse userInfoListRestResponse = userRestServiceHandler.getUserListRequest(
-			"", workspaceUserIdList);
-		List<WorkspaceUserInfoResponse> workspaceUserInfoResponseList = userInfoListRestResponse.getUserInfoList()
-			.stream()
-			.map(userInfoRestResponse -> {
-				WorkspaceUserInfoResponse workspaceUserInfoResponse = restMapStruct.userInfoRestResponseToWorkspaceUserInfoResponse(
-					userInfoRestResponse);
-				WorkspaceRole role = workspaceUserPermissionRepository.findWorkspaceUserPermission(
-					workspaceId, userInfoRestResponse.getUuid()).get().getWorkspaceRole();
-				workspaceUserInfoResponse.setRole(role.getRole());
-				workspaceUserInfoResponse.setRoleId(role.getId());
-				workspaceUserInfoResponse.setLicenseProducts(
-					getUserLicenseProductList(workspaceId, userInfoRestResponse.getUuid()));
-				return workspaceUserInfoResponse;
-			})
-			.collect(Collectors.toList());
 
-		return new WorkspaceUserInfoListResponse(workspaceUserInfoResponseList, null);
+		List<WorkspaceUserPermission> workspaceUserPermissionList = workspaceUserPermissionRepository.getWorkspaceUserListByInUserList(
+			workspaceUserIdList, workspaceId);
+
+		List<WorkspaceUserInfoResponse> workspaceUserListResponse = generateWorkspaceUserListResponse(
+			workspaceId,
+			workspaceUserPermissionList
+		);
+
+		return new WorkspaceUserInfoListResponse(workspaceUserListResponse, null);
 	}
 
 	/**
@@ -1247,5 +1217,4 @@ public abstract class WorkspaceUserService {
 	public boolean isMasterOrManagerRole(WorkspaceRole workspaceRole) {
 		return workspaceRole.getRole() == Role.MASTER || workspaceRole.getRole() == Role.MANAGER;
 	}
-
 }

@@ -3,6 +3,7 @@ package com.virnect.workspace.global.common;
 import java.util.Objects;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.util.StringUtils;
 
 /**
  * @author jeonghyeon.chang (johnmark)
@@ -11,9 +12,8 @@ import org.springframework.data.domain.Sort;
  */
 
 public final class PageRequest {
-	private static final int MAX_SIZE = 50;
 	private int page = 1;
-	private int size = 20;
+	private int size;
 	private String sort;
 
 	public void setPage(int page) {
@@ -21,11 +21,7 @@ public final class PageRequest {
 	}
 
 	public void setSize(int size) {
-		this.size = Math.min(size, MAX_SIZE);
-	}
-
-	public void setSort(String sort) {
-		this.sort = sort;
+		this.size = size;
 	}
 
 	public org.springframework.data.domain.PageRequest of() {
@@ -37,7 +33,8 @@ public final class PageRequest {
 			sortDirection = "DESC";
 		}
 
-		if (sortName == null || sortName.isEmpty()) {
+		if (StringUtils.isEmpty(sortName) || sortName.equalsIgnoreCase("email")
+			|| sortName.equalsIgnoreCase("nickname")) {
 			sortName = "createdDate";
 		}
 		if (sortName.equalsIgnoreCase("role")) {
@@ -47,7 +44,12 @@ public final class PageRequest {
 			sortName = "workspaceUser.createdDate";
 		}
 
-		return org.springframework.data.domain.PageRequest.of(page - 1, size, Sort.Direction.valueOf(sortDirection), sortName);
+		if (size == 0) {
+			setSize(Integer.MAX_VALUE);
+		}
+
+		return org.springframework.data.domain.PageRequest.of(
+			page - 1, size, Sort.Direction.valueOf(sortDirection), sortName);
 
 	}
 
@@ -55,7 +57,6 @@ public final class PageRequest {
 		String sortStr = Objects.isNull(this.sort) || this.sort.isEmpty() ? "updatedDate,DESC" : this.sort;
 		String[] sortQuery = sortStr.split(",");
 		return sortQuery[0];
-
 	}
 
 	public String getSortDirection() {

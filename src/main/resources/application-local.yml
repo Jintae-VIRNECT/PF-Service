@@ -2,69 +2,64 @@ spring:
   application:
     name: workspace-server
   datasource:
-    url: jdbc:mysql://192.168.6.3:4336/workspace?serverTimezone=UTC
+    url: jdbc:mysql://192.168.0.211:4336/workspace?serverTimezone=UTC
     username: virnect-workspace
     password: virnect1234
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     properties:
-      hibnerate:
-        format_sql: true
       org:
         hibernate:
           envers:
             audit_table_suffix: _history
   redis:
-    host: 192.168.6.3
+    host: 192.168.0.211
     port: 6379
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: true
   servlet:
     multipart:
       max-file-size: 30MB
       max-request-size: 40MB
   zipkin:
+    base-url: http://192.168.0.211:9411
+    discovery-client-enabled: false
     enabled: false
-    base-url: http://localhost:9411
-  cloud:
-    loadbalancer:
-      ribbon:
-        enabled: true
 
 logging:
   level:
-    #    org.hibernate.type.descriptor.sql: debug
-    com.virnect.workspace.application.*: TRACE
-    .*: TRACE
+    com.virnect.workspace.application.*: INFO
+
 ## Server Configuration
 server:
   port: 8082
-  ssl:
-    enabled: false
-    key-store: virnect.pfx
-    key-store-type: PKCS12
-    key-store-password: 123456
 
 ## Eureka Server Configuration
 eureka:
   instance:
     prefer-ip-address: true
+    ip-address: 10.212.134.102
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://192.168.0.211:8761/eureka
+    registry-fetch-interval-seconds: 3
     enabled: false
 
-## Mail send redirect Url
+
+## Mail send rediect Url
 redirect:
-  workspace-server: "http://192.168.6.3:8082"
-  workstation-web: "https://192.168.6.3:8878"
-  contact-web: "https://192.168.6.3:3000/contact/inquiry"
-  account-web: "https://192.168.6.3:8822"
-  support-web: "https://192.168.6.3:3000/support"
-  terms-web: "https://192.168.6.3:8883/terms"
-  members-web: "https://192.168.6.3:8878/members"
-  console-web: "https://192.168.6.3:8883"
+  workspace-server: "http://192.168.0.211:8082"
+  workstation-web: "https://192.168.0.211:8878"
+  contact-web: "https://192.168.0.211:3000/contact/inquiry"
+  account-web: "https://192.168.0.211:8822"
+  support-web: "https://www.virnect.com/support/inquiry"
+  terms-web: "https://192.168.0.211:8883/terms"
+  members-web: "https://192.168.0.211:8878/members"
+  console-web: "https://192.168.0.211:8883"
 
 ## Feign
 feign:
@@ -73,71 +68,51 @@ feign:
   client:
     config:
       default:
-        connectTimeout: 1000
-        readTimeout: 1000
         loggerLevel: FULL
+  httpClient:
+    disableSslValidation: true
+    enabled: false
+  okhttp:
+    enabled: true
 
-hystrix:
-  command:
-    "LicenseRestService":
-      execution.isolation.thread.timeoutInMilliseconds: 1000
-      metrics.rollingStats.timeInMilliseconds: 60000
-      circuitBreaker.requestVolumeThreshold: 5
-      circuitBreaker.errorThresholdPercentage: 50
-    "UserRestService":
-      execution.isolation.thread.timeoutInMilliseconds: 1000
-      metrics.rollingStats.timeInMilliseconds: 60000
-      circuitBreaker.requestVolumeThreshold: 5
-      circuitBreaker.errorThresholdPercentage: 50
-    "MessageRestService":
-      execution.isolation.thread.timeoutInMilliseconds: 1000
-      metrics.rollingStats.timeInMilliseconds: 60000
-      circuitBreaker.requestVolumeThreshold: 5
-      circuitBreaker.errorThresholdPercentage: 50
 
 # monitoring
 management:
   endpoints:
-    web:
-      exposure:
-        include: prometheus
-  metrics:
-    tags:
-      application: ${spring.application.name}
+    enabled-by-default: false
 
 ## Minio
 minio:
   access-key: "virnect"
   secret-key: "Qjsprxm13@$"
-  server: "https://192.168.6.3:2838"
+  server: "https://192.168.0.211:2838"
   bucket: "virnect-platform"
   extension: "gif,jpg,jpeg,png"
-  prefix: "https://192.168.6.3:2838/virnect-platform/"
 
-account-server:
+
+workspace-server:
   ribbon:
-    listOfServers: http://192.168.6.3:8322
+    listOfServers: http://192.168.0.211:8082
 license-server:
   ribbon:
-    listOfServers: http://192.168.6.3:8632
+    listOfServers: http://localhost:8632
 message-server:
   ribbon:
-    listOfServers: http://192.168.6.3:8084
+    listOfServers: http://192.168.0.211:8084
 remote-service-server:
   ribbon:
-    listOfServers: http://192.168.6.3:8000
+    listOfServers: http://192.168.0.211:8000
+account-server:
+  ribbon:
+    listOfServers: http://192.168.0.211:8322
 
-## AWS Storage
-cloud:
-  aws:
-    credentials:
-      access-key: AKIARQGLJD3UCFBXNUWQ
-      secret-key: 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
-    region:
-      auto: true
-    s3:
-      prefix: "https://virnect-platform-qa.s3.ap-northeast-2.amazonaws.com/"
-      bucket:
-        name: "virnect-platform-qa"
-        extension: "gif,jpg,jpeg,png"
 
+ribbon:
+  eureka:
+    enabled: false
+
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true

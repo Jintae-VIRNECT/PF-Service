@@ -3,8 +3,6 @@ package com.virnect.workspace.dao.workspaceuserpermission;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,12 +18,11 @@ import com.virnect.workspace.domain.workspace.WorkspaceUserPermission;
  * EMAIL: ljk@virnect.com
  * DESCRIPTION:
  */
-public interface WorkspaceUserPermissionRepository extends JpaRepository<WorkspaceUserPermission, Long>, WorkspaceUserPermissionRepositoryCustom {
-	Optional<WorkspaceUserPermission> findByWorkspaceUser_WorkspaceAndWorkspaceUser_UserId(Workspace workspace, String userId);
-
-	Page<WorkspaceUserPermission> findByWorkspaceUser_UserId(String userId, Pageable pageable);
-
-	List<WorkspaceUserPermission> findByWorkspaceUser_Workspace(Workspace workspace);
+public interface WorkspaceUserPermissionRepository
+	extends JpaRepository<WorkspaceUserPermission, Long>, WorkspaceUserPermissionRepositoryCustom {
+	Optional<WorkspaceUserPermission> findByWorkspaceUser_WorkspaceAndWorkspaceUser_UserId(
+		Workspace workspace, String userId
+	);
 
 	@Transactional
 	void deleteAllByWorkspaceUser(WorkspaceUser workspaceUser);
@@ -33,5 +30,4 @@ public interface WorkspaceUserPermissionRepository extends JpaRepository<Workspa
 	List<WorkspaceUserPermission> findByWorkspaceUser_WorkspaceAndWorkspaceRole_Role(Workspace workspace, Role role);
 
 	List<WorkspaceUserPermission> findByWorkspaceUser_UserId(String userId);
-
 }
