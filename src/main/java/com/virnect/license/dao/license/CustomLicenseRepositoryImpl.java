@@ -110,7 +110,16 @@ public class CustomLicenseRepositoryImpl implements CustomLicenseRepository {
 			.innerJoin(license.licenseProduct, licenseProduct).fetchJoin()
 			.innerJoin(licenseProduct.licensePlan, licensePlan).fetchJoin()
 			.innerJoin(licenseProduct.product, product).fetchJoin()
-			.where(license.userId.in(userUUIDList), matchProductName(productName)).fetch();
+			.where(
+				license.userId.in(userUUIDList),
+				eqLicensePlanId(targetLicensePlan),
+				matchProductName(productName)
+			)
+			.fetch();
+	}
+
+	private BooleanExpression eqLicensePlanId(LicensePlan targetLicensePlan) {
+		return license.licenseProduct.licensePlan.id.eq(targetLicensePlan.getId());
 	}
 
 	private BooleanExpression matchProductName(String productName) {
