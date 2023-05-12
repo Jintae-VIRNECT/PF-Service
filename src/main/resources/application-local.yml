@@ -1,0 +1,107 @@
+spring:
+  application:
+    name: license-server
+  datasource:
+    url: jdbc:mysql://192.168.0.211:4336/licenses?serverTimezone=UTC
+    username: virnect-license
+    password: virnect1234
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    open-in-view: false
+  redis:
+    host: 192.168.0.211
+  mail:
+    host: email-smtp.us-east-1.amazonaws.com
+    port: 587
+    username: AKIARQGLJD3UE2ZHS3GS
+    password: BFGOAPGhogh252JA6foPR/xqlMKz6bp7M3aEO7/FxN+s
+  sleuth:
+    sampler:
+      probability: 1.0
+  zipkin:
+    base-url: http://192.168.0.211:9411/
+
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: true
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    non-secure-port-enabled: false
+    secure-port-enabled: true
+    secure-port: ${server.port}
+  client:
+    service-url:
+      defaultZone: http://192.168.0.211:8761/eureka
+    registry-fetch-interval-seconds: 3
+    enabled: false
+
+
+server:
+  port: 8632
+  max-http-header-size: 40000
+# feign configuration
+feign:
+  hystrix:
+    enabled: true
+  #  client:
+  #    config:
+  #      default:
+  #        loggerLevel: FULL
+  httpClient:
+    disableSslValidation: true
+    enabled: false
+  okhttp:
+    enabled: true
+
+# monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+
+#logging:
+#  level:
+#    com.virnect.license.application.rest.*: trace
+
+account-server:
+  ribbon:
+    listOfServers: http://192.168.0.211:8322
+workspace-server:
+  ribbon:
+    listOfServers: http://192.168.0.211:8082
+license-server:
+  ribbon:
+    listOfServers: http://192.168.0.211:8632
+message-server:
+  ribbon:
+    listOfServers: http://192.168.0.211:8084
+remote-service-server:
+  ribbon:
+    listOfServers: http://192.168.0.211:8000
+download-server:
+  ribbon:
+    listOfServers: http://192.168.0.211:8086
+content-server:
+  ribbon:
+    listOfServers: http://192.168.0.211:8078
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+
+
+
+ribbon:
+  eureka:
+    enabled: false
