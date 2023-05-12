@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.view.RedirectView;
 import org.thymeleaf.context.Context;
@@ -32,6 +34,7 @@ import com.virnect.workspace.application.license.dto.LicenseRevokeResponse;
 import com.virnect.workspace.application.license.dto.MyLicenseInfoListResponse;
 import com.virnect.workspace.application.license.dto.MyLicenseInfoResponse;
 import com.virnect.workspace.application.license.dto.UserLicenseInfo;
+import com.virnect.workspace.application.license.dto.UserLicenseInfoResponse;
 import com.virnect.workspace.application.license.dto.WorkspaceLicensePlanInfoResponse;
 import com.virnect.workspace.application.remote.RemoteRestService;
 import com.virnect.workspace.application.user.UserRestServiceHandler;
@@ -235,8 +238,7 @@ public abstract class WorkspaceUserService {
 			.collect(Collectors.toList());
 
 		//license
-		List<UserLicenseInfo> userLicenseInfoList = licenseRestService.getUserLicenseInfoList(
-			workspaceId, workspaceUserIdList, "").getData().getUserLicenseInfos();
+		List<UserLicenseInfo> userLicenseInfoList = getUserLicenseInfos(workspaceId, workspaceUserIdList, "");
 
 		Map<String, List<String>> productLicenseArray = UserLicenseInfo.getProductLicenseGroupedByUser(
 			userLicenseInfoList);
@@ -266,14 +268,25 @@ public abstract class WorkspaceUserService {
 
 	public List<String> filterUserIdListByPlan(String workspaceId, List<String> userIdList, String planFilter) {
 
-		List<UserLicenseInfo> userLicenseInfoList = licenseRestService.getUserLicenseInfoList(
-			workspaceId, userIdList, planFilter).getData().getUserLicenseInfos();
+		List<UserLicenseInfo> userLicenseInfoList = getUserLicenseInfos(workspaceId, userIdList, planFilter);
 
 		return userLicenseInfoList.stream()
 			.filter(
 				userLicenseInfo -> userLicenseInfo.getProductName().toUpperCase().contains(planFilter.toUpperCase()))
 			.map(UserLicenseInfo::getUserId)
 			.collect(Collectors.toList());
+	}
+
+	private List<UserLicenseInfo> getUserLicenseInfos(String workspaceId, List<String> workspaceUserIdList, String productName) {
+		ApiResponse<UserLicenseInfoResponse> apiResponse = licenseRestService.getUserLicenseInfoList(
+			workspaceId, workspaceUserIdList, productName);
+
+		if (apiResponse.getCode() != 200 || ObjectUtils.isEmpty(apiResponse.getData().getUserLicenseInfos())) {
+			log.error("[WORKSPACE LICENSE NOT FOUND]  workspace uuid : {}, product name : {},", workspaceId, productName);
+			return Collections.emptyList();
+		} else {
+			return apiResponse.getData().getUserLicenseInfos();
+		}
 	}
 
 	MyLicenseInfoListResponse getMyLicenseInfoRequestHandler(String workspaceId, String userId) {
