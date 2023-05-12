@@ -1,7 +1,8 @@
 package com.virnect.workspace.dao.group;
 
-import com.virnect.workspace.domain.group.GroupPermission;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.virnect.workspace.domain.group.GroupPermission;
 
 /**
  * Project: PF-Workspace

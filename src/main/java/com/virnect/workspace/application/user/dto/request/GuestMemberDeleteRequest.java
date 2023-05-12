@@ -13,14 +13,14 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GuestMemberDeleteRequest {
-    private String masterUUID;
-    private String guestUserUUID;
+	private String masterUUID;
+	private String guestUserUUID;
 
-    @Override
-    public String toString() {
-        return "GuestMemberDeleteRequest{" +
-                "masterUUID='" + masterUUID + '\'' +
-                ", guestUserUUID='" + guestUserUUID + '\'' +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "GuestMemberDeleteRequest{" +
+			"masterUUID='" + masterUUID + '\'' +
+			", guestUserUUID='" + guestUserUUID + '\'' +
+			'}';
+	}
 }

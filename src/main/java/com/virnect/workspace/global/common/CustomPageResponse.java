@@ -1,10 +1,11 @@
 package com.virnect.workspace.global.common;
 
-import com.virnect.workspace.dto.response.PageMetadataRestResponse;
+import java.util.List;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
+import com.virnect.workspace.dto.response.PageMetadataRestResponse;
 
 /**
  * Project: PF-Workspace
@@ -16,6 +17,6 @@ import java.util.List;
 @Getter
 @RequiredArgsConstructor
 public class CustomPageResponse<T> {
-    private final List<T> afterPagingList;
-    private final PageMetadataRestResponse pageMetadataResponse;
+	private final List<T> afterPagingList;
+	private final PageMetadataRestResponse pageMetadataResponse;
 }

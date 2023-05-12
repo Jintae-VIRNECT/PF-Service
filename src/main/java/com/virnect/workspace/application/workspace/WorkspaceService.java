@@ -58,6 +58,7 @@ import com.virnect.workspace.global.common.mapper.workspace.WorkspaceMapStruct;
 import com.virnect.workspace.global.constant.LicenseProduct;
 import com.virnect.workspace.global.constant.Mail;
 import com.virnect.workspace.global.error.ErrorCode;
+import com.virnect.workspace.global.util.CollectionJoinUtil;
 import com.virnect.workspace.infra.file.DefaultImageName;
 import com.virnect.workspace.infra.file.FileService;
 
@@ -150,50 +151,52 @@ public abstract class WorkspaceService {
 		//user 정보 set
 		List<WorkspaceUserPermission> workspaceUserPermissionList = workspaceUserPermissionRepository.findByWorkspaceUser_Workspace(
 			workspace);
-		List<WorkspaceUserInfoResponse> userInfoList = workspaceUserPermissionList.stream()
-			.map(workspaceUserPermission -> {
-				UserInfoRestResponse userInfoRestResponse = userRestService.getUserInfoByUserId(
-					workspaceUserPermission.getWorkspaceUser().getUserId()).getData();
-				WorkspaceUserInfoResponse workspaceUserInfoResponse = restMapStruct.userInfoRestResponseToWorkspaceUserInfoResponse(
-					userInfoRestResponse);
-				workspaceUserInfoResponse.setRole(workspaceUserPermission.getWorkspaceRole().getRole());
-				return workspaceUserInfoResponse;
-			})
+		List<String> workspaceUserIdList = workspaceUserPermissionList.stream()
+			.map(workspaceUserPermission -> workspaceUserPermission.getWorkspaceUser().getUserId())
 			.collect(Collectors.toList());
 
-		//role 정보 set
-		long masterUserCount = workspaceUserPermissionList.stream()
-			.filter(workspaceUserPermission -> workspaceUserPermission.getWorkspaceRole().getRole() == Role.MASTER)
-			.count();
-		long managerUserCount = workspaceUserPermissionList.stream()
-			.filter(workspaceUserPermission -> workspaceUserPermission.getWorkspaceRole().getRole() == (Role.MANAGER))
-			.count();
-		long memberUserCount = workspaceUserPermissionList.stream()
-			.filter(workspaceUserPermission -> workspaceUserPermission.getWorkspaceRole().getRole() == (Role.MEMBER))
-			.count();
+		List<UserInfoRestResponse> userInfoRestResponseList = userRestService.getUserInfoList("", workspaceUserIdList)
+			.getData()
+			.getUserInfoList();
 
-		//plan 정보 set
-		int remotePlanCount = 0, makePlanCount = 0, viewPlanCount = 0;
+		List<WorkspaceUserInfoResponse> userInfoList = CollectionJoinUtil.collections(
+				userInfoRestResponseList, workspaceUserPermissionList)
+			.when((workspaceInfoResponse, workspaceUserPermission) -> workspaceInfoResponse.getUuid()
+				.equals(workspaceUserPermission.getWorkspaceUser().getUserId()))
+			.then(WorkspaceUserInfoResponse::createWorkspaceUserInfoResponse);
+
 		WorkspaceLicensePlanInfoResponse workspaceLicensePlanInfoResponse = licenseRestService.getWorkspaceLicenses(
 			workspaceId).getData();
-		if (workspaceLicensePlanInfoResponse.getLicenseProductInfoList() != null
-			&& !workspaceLicensePlanInfoResponse.getLicenseProductInfoList().isEmpty()) {
-			for (WorkspaceLicensePlanInfoResponse.LicenseProductInfoResponse licenseProductInfoResponse : workspaceLicensePlanInfoResponse.getLicenseProductInfoList()) {
-				if (licenseProductInfoResponse.getProductName().equals(LicenseProduct.REMOTE.toString())) {
-					remotePlanCount = licenseProductInfoResponse.getUseLicenseAmount();
-				}
-				if (licenseProductInfoResponse.getProductName().equals(LicenseProduct.MAKE.toString())) {
-					makePlanCount = licenseProductInfoResponse.getUseLicenseAmount();
-				}
-				if (licenseProductInfoResponse.getProductName().equals(LicenseProduct.VIEW.toString())) {
-					viewPlanCount = licenseProductInfoResponse.getUseLicenseAmount();
-				}
-			}
-		}
-		return new WorkspaceInfoResponse(
-			workspaceInfo, userInfoList, masterUserCount, managerUserCount, memberUserCount, remotePlanCount,
-			makePlanCount, viewPlanCount
-		);
+
+		return WorkspaceInfoResponse.builder()
+			.workspaceInfo(workspaceInfo)
+			.workspaceUserInfo(userInfoList)
+			.memberUserCount(getRoleCount(workspaceUserPermissionList, Role.MEMBER))
+			.manageUserCount(getRoleCount(workspaceUserPermissionList, Role.MANAGER))
+			.masterUserCount(getRoleCount(workspaceUserPermissionList, Role.MASTER))
+			.makePlanCount(getPlanCount(workspaceLicensePlanInfoResponse, LicenseProduct.MAKE))
+			.remotePlanCount(getPlanCount(workspaceLicensePlanInfoResponse, LicenseProduct.REMOTE))
+			.viewPlanCount(getPlanCount(workspaceLicensePlanInfoResponse, LicenseProduct.VIEW))
+			.build();
+	}
+
+	private Integer getPlanCount(
+		WorkspaceLicensePlanInfoResponse workspaceLicensePlanInfoResponse, LicenseProduct licenseProduct
+	) {
+
+		return workspaceLicensePlanInfoResponse.getLicenseProductInfoList()
+			.stream()
+			.filter(
+				licenseProductInfoResponse -> licenseProduct.name().equals(licenseProductInfoResponse.getProductName()))
+			.map(WorkspaceLicensePlanInfoResponse.LicenseProductInfoResponse::getUseLicenseAmount)
+			.findFirst()
+			.orElse(0);
+	}
+
+	private long getRoleCount(List<WorkspaceUserPermission> workspaceUserPermissionList, Role role) {
+		return workspaceUserPermissionList.stream()
+			.filter(workspaceUserPermission -> workspaceUserPermission.getWorkspaceRole().getRole() == role)
+			.count();
 	}
 
 	/**
@@ -331,7 +334,7 @@ public abstract class WorkspaceService {
 
 	/***
 	 * 워크스페이스 정보 전체 삭제 처리
-	 * @param workspaceUUID - 삭제할 워크스페이스의 마스터 사용자 식별자
+	 * @param userUUID - 삭제할 워크스페이스의 마스터 사용자 식별자
 	 * @return - 삭제 처리 결과
 	 */
 	@Transactional
@@ -388,7 +391,9 @@ public abstract class WorkspaceService {
 	public abstract WorkspaceCustomSettingResponse getWorkspaceCustomSetting(String workspaceId);
 
 	@Transactional
-	public abstract WorkspaceRemoteLogoUpdateResponse updateRemoteLogo(String workspaceId, WorkspaceRemoteLogoUpdateRequest remoteLogoUpdateRequest);
+	public abstract WorkspaceRemoteLogoUpdateResponse updateRemoteLogo(
+		String workspaceId, WorkspaceRemoteLogoUpdateRequest remoteLogoUpdateRequest
+	);
 
 	public String getRemoteLogoUrl(
 		DefaultImageName defaultImageName, boolean isDefaultLogo, MultipartFile file,
@@ -398,8 +403,8 @@ public abstract class WorkspaceService {
 			return null;
 		}
 		int dotIndex = defaultImageName.getName().indexOf(".");
-		String fixedFileName = defaultImageName.getName().substring(0,dotIndex);
-		return fileUploadService.uploadByFixedName(file, workspaceId,fixedFileName);
+		String fixedFileName = defaultImageName.getName().substring(0, dotIndex);
+		return fileUploadService.uploadByFixedName(file, workspaceId, fixedFileName);
 	}
 
 	public String getLogoUrl(

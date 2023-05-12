@@ -106,11 +106,11 @@ public class OffWorkspaceUserServiceImpl extends WorkspaceUserService {
 
 		// 변경 요청 유저 permission 조회
 		WorkspaceUserPermission requestUserPermission = workspaceUserPermissionRepository.findWorkspaceUserPermission(
-			workspaceId, memberUpdateRequest.getRequestUserId())
+				workspaceId, memberUpdateRequest.getRequestUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));
 		// 변경 대상 유저 permission 조회
 		WorkspaceUserPermission updateUserPermission = workspaceUserPermissionRepository.findWorkspaceUserPermission(
-			workspaceId, memberUpdateRequest.getUserId())
+				workspaceId, memberUpdateRequest.getUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));
 
 		//1. 사용자 닉네임 변경
@@ -155,7 +155,7 @@ public class OffWorkspaceUserServiceImpl extends WorkspaceUserService {
 			}
 			//2-3. 권한 변경
 			WorkspaceRole updateWorkspaceRole = workspaceRoleRepository.findByRole(
-				Role.valueOf(memberUpdateRequest.getRole()))
+					Role.valueOf(memberUpdateRequest.getRole()))
 				.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_ROLE_NOT_FOUND));
 			updateUserPermission.setWorkspaceRole(updateWorkspaceRole);
 			workspaceUserPermissionRepository.save(updateUserPermission);
@@ -284,7 +284,7 @@ public class OffWorkspaceUserServiceImpl extends WorkspaceUserService {
 		String workspaceId, MemberAccountDeleteRequest memberAccountDeleteRequest
 	) {
 		//구축형은 마스터의 비밀번호를 입력받음.
-		if(StringUtils.isEmpty(memberAccountDeleteRequest.getRequestUserPassword())){
+		if (StringUtils.isEmpty(memberAccountDeleteRequest.getRequestUserPassword())) {
 			throw new WorkspaceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
 		}
 		//1-1. 삭제하려는 유저가 전용 계정인지 체크
@@ -316,10 +316,10 @@ public class OffWorkspaceUserServiceImpl extends WorkspaceUserService {
 
 		//1-3. 요청한 사람의 권한 체크
 		WorkspaceUserPermission requestUserPermission = workspaceUserPermissionRepository.findWorkspaceUserPermission(
-			workspaceId, memberAccountDeleteRequest.getRequestUserId())
+				workspaceId, memberAccountDeleteRequest.getRequestUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_NOT_FOUND));
 		WorkspaceUserPermission deleteUserPermission = workspaceUserPermissionRepository.findWorkspaceUserPermission(
-			workspaceId, memberAccountDeleteRequest.getUserId())
+				workspaceId, memberAccountDeleteRequest.getUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_NOT_FOUND));
 
 		// 본인은 삭제할 수 없다.
@@ -372,7 +372,7 @@ public class OffWorkspaceUserServiceImpl extends WorkspaceUserService {
 		String workspaceId, MemberGuestDeleteRequest memberGuestDeleteRequest
 	) {
 		//구축형은 마스터의 비밀번호를 입력받음.
-		if(StringUtils.isEmpty(memberGuestDeleteRequest.getRequestUserPassword())){
+		if (StringUtils.isEmpty(memberGuestDeleteRequest.getRequestUserPassword())) {
 			throw new WorkspaceException(ErrorCode.ERR_INVALID_REQUEST_PARAMETER);
 		}
 		//1-1. 요청한 사람의 권한 체크
@@ -382,7 +382,7 @@ public class OffWorkspaceUserServiceImpl extends WorkspaceUserService {
 
 		//1-2. 요청받은 유저가 게스트 유저인지 체크
 		WorkspaceUserPermission deleteUserPermission = workspaceUserPermissionRepository.findByWorkspaceUser_WorkspaceAndWorkspaceUser_UserId(
-			workspace, memberGuestDeleteRequest.getUserId())
+				workspace, memberGuestDeleteRequest.getUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));
 		if (deleteUserPermission.getWorkspaceRole().getRole() != Role.GUEST) {
 			throw new WorkspaceException(ErrorCode.ERR_WORKSPACE_GUEST_USER_DELETE);
@@ -400,7 +400,8 @@ public class OffWorkspaceUserServiceImpl extends WorkspaceUserService {
 		if (masterUserInfo.isEmtpy()) {
 			throw new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND);
 		}
-		UserInfoAccessCheckRequest userInfoAccessCheckRequest = new UserInfoAccessCheckRequest(masterUserInfo.getEmail(), memberGuestDeleteRequest.getRequestUserPassword());
+		UserInfoAccessCheckRequest userInfoAccessCheckRequest = new UserInfoAccessCheckRequest(
+			masterUserInfo.getEmail(), memberGuestDeleteRequest.getRequestUserPassword());
 		ApiResponse<UserInfoAccessCheckResponse> apiResponse = userRestServiceHandler.accessCheckUserRequest(
 			masterUserInfo.getUuid(), userInfoAccessCheckRequest);
 		if (apiResponse.getCode() == 4001) {

@@ -10,11 +10,11 @@ import org.springframework.web.multipart.MultipartFile;
  * DESCRIPTION: File Upload Interface for LocalFileUpload and AWS FileUpload
  */
 public interface FileService {
-    String upload(MultipartFile file, String workspaceUUID);
+	String upload(MultipartFile file, String workspaceUUID);
 
-    void delete(final String url);
+	void delete(final String url);
 
-    String getDefaultFileUrl(DefaultImageName defaultImageName);
+	String getDefaultFileUrl(DefaultImageName defaultImageName);
 
-    String uploadByFixedName(MultipartFile file, String workspaceUUID, String fileName);
+	String uploadByFixedName(MultipartFile file, String workspaceUUID, String fileName);
 }

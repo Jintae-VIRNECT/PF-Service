@@ -21,6 +21,7 @@ import com.virnect.workspace.domain.workspace.UserType;
 @Getter
 @Setter
 public class UserInfoRestResponse {
+	public static final UserInfoRestResponse EMPTY = new UserInfoRestResponse();
 	@ApiModelProperty(value = "사용자 식별자", example = "498b1839dc29ed7bb2ee90ad6985c608")
 	private String uuid = "";
 	@ApiModelProperty(value = "사용자 이메일", position = 1, example = "smic1")
@@ -57,8 +58,6 @@ public class UserInfoRestResponse {
 	private LocalDateTime createdDate;
 	@ApiModelProperty(value = "최종 계정 정보 수정 일자", position = 17, example = "2020-01-20T14:05:30")
 	private LocalDateTime updatedDate;
-
-	public static final UserInfoRestResponse EMPTY = new UserInfoRestResponse();
 
 	public boolean isEmtpy() {
 		return StringUtils.isEmpty(uuid);

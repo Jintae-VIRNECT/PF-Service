@@ -10,16 +10,16 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.virnect.workspace.application.user.dto.request.GuestMemberDeleteRequest;
 import com.virnect.workspace.application.user.dto.request.GuestMemberRegistrationRequest;
-import com.virnect.workspace.application.user.dto.response.InviteUserInfoResponse;
 import com.virnect.workspace.application.user.dto.request.MemberDeleteRequest;
 import com.virnect.workspace.application.user.dto.request.MemberRegistrationRequest;
 import com.virnect.workspace.application.user.dto.request.MemberUserPasswordChangeRequest;
+import com.virnect.workspace.application.user.dto.request.UserInfoAccessCheckRequest;
+import com.virnect.workspace.application.user.dto.request.UserInfoModifyRequest;
+import com.virnect.workspace.application.user.dto.response.InviteUserInfoResponse;
 import com.virnect.workspace.application.user.dto.response.MemberUserPasswordChangeResponse;
 import com.virnect.workspace.application.user.dto.response.UserDeleteRestResponse;
-import com.virnect.workspace.application.user.dto.request.UserInfoAccessCheckRequest;
 import com.virnect.workspace.application.user.dto.response.UserInfoAccessCheckResponse;
 import com.virnect.workspace.application.user.dto.response.UserInfoListRestResponse;
-import com.virnect.workspace.application.user.dto.request.UserInfoModifyRequest;
 import com.virnect.workspace.application.user.dto.response.UserInfoRestResponse;
 import com.virnect.workspace.application.user.dto.response.UserProfileUpdateResponse;
 import com.virnect.workspace.global.common.ApiResponse;
@@ -35,9 +35,9 @@ import com.virnect.workspace.global.common.ApiResponse;
 @Slf4j
 @Component
 public class UserRestServiceHandler {
-	private final UserRestService userRestService;
 	private static final String PREFIX_USER_REST_SERVICE = "REST - USER_SERVER";
 	private static final String SERVICE_ID = "workspace-server";
+	private final UserRestService userRestService;
 
 	public UserInfoRestResponse getUserRequest(String userId) {
 		ApiResponse<UserInfoRestResponse> response = userRestService.getUserInfoByUserId(userId);

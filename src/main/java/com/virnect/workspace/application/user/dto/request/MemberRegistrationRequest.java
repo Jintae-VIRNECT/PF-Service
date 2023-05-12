@@ -17,14 +17,14 @@ import lombok.Setter;
 public class MemberRegistrationRequest {
 	private String email;
 	private String password;
-    private String masterUUID;
+	private String masterUUID;
 
-    @Override
-    public String toString() {
-        return "RegisterMemberRequest{" +
-                "email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", masterUUID='" + masterUUID + '\'' +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "RegisterMemberRequest{" +
+			"email='" + email + '\'' +
+			", password='" + password + '\'' +
+			", masterUUID='" + masterUUID + '\'' +
+			'}';
+	}
 }

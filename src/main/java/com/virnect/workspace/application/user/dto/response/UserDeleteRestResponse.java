@@ -20,6 +20,7 @@ import lombok.Setter;
 @Setter
 @ApiModel
 public class UserDeleteRestResponse {
+	public static final UserDeleteRestResponse EMPTY = new UserDeleteRestResponse();
 	@ApiModelProperty(value = "삭제된 사용자의 식별자 정보", example = "asdaskjdhaksdasd")
 	private String userUUID;
 	@ApiModelProperty(value = "삭제된 날짜정보", position = 1, example = "2020-01-20T14:05:30")
@@ -33,9 +34,7 @@ public class UserDeleteRestResponse {
 			'}';
 	}
 
-	public static final UserDeleteRestResponse EMPTY = new UserDeleteRestResponse();
-
-	public boolean isEmpty(){
+	public boolean isEmpty() {
 		return StringUtils.isEmpty(userUUID);
 	}
 }

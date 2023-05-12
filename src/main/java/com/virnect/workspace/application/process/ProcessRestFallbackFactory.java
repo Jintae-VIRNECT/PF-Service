@@ -1,10 +1,12 @@
 package com.virnect.workspace.application.process;
 
-import com.virnect.workspace.application.process.dto.SubProcessCountResponse;
-import com.virnect.workspace.global.common.ApiResponse;
+import org.springframework.stereotype.Component;
+
 import feign.hystrix.FallbackFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+
+import com.virnect.workspace.application.process.dto.SubProcessCountResponse;
+import com.virnect.workspace.global.common.ApiResponse;
 
 /**
  * Project: PF-Workspace
@@ -16,12 +18,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class ProcessRestFallbackFactory implements FallbackFactory<ProcessRestService> {
-    @Override
-    public ProcessRestService create(Throwable cause) {
-        log.error(cause.getMessage(), cause);
-        return workerUUID -> {
-            SubProcessCountResponse subProcessCountResponse = new SubProcessCountResponse();
-            return new ApiResponse<>(subProcessCountResponse);
-        };
-    }
+	@Override
+	public ProcessRestService create(Throwable cause) {
+		log.error(cause.getMessage(), cause);
+		return workerUUID -> {
+			SubProcessCountResponse subProcessCountResponse = new SubProcessCountResponse();
+			return new ApiResponse<>(subProcessCountResponse);
+		};
+	}
 }

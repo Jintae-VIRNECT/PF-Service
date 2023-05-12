@@ -1,9 +1,10 @@
 package com.virnect.workspace.dao.cache;
 
-import com.virnect.workspace.domain.redis.UserInvite;
+import java.util.Optional;
+
 import org.springframework.data.repository.CrudRepository;
 
-import java.util.Optional;
+import com.virnect.workspace.domain.redis.UserInvite;
 
 /**
  * Project: PF-Workspace
@@ -14,12 +15,12 @@ import java.util.Optional;
  */
 public interface UserInviteRepository extends CrudRepository<UserInvite, String> {
 
-    default Optional<UserInvite> findByWorkspaceIdAndInvitedUserEmail(String workspaceId, String invitedEmail) {
-        for (UserInvite userInvite : this.findAll()) {
-            if (userInvite != null && userInvite.getWorkspaceId().equals(workspaceId) && userInvite.getInvitedUserEmail().equals(invitedEmail)) {
-                return Optional.of(userInvite);
-            }
-        }
-        return Optional.empty();
-    }
+	default Optional<UserInvite> findByWorkspaceIdAndInvitedUserEmail(String workspaceId, String invitedEmail) {
+		for (UserInvite userInvite : this.findAll()) {
+			if (userInvite != null && userInvite.getWorkspaceId().equals(workspaceId) && userInvite.getInvitedUserEmail().equals(invitedEmail)) {
+				return Optional.of(userInvite);
+			}
+		}
+		return Optional.empty();
+	}
 }

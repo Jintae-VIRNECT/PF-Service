@@ -8,7 +8,7 @@ package com.virnect.workspace.global.constant;
  * DESCRIPTION:
  */
 public enum LicenseProduct {
-    REMOTE,
-    MAKE,
-    VIEW
+	REMOTE,
+	MAKE,
+	VIEW
 }

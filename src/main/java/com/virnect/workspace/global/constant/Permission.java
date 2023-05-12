@@ -1,7 +1,5 @@
 package com.virnect.workspace.global.constant;
 
-import lombok.Getter;
-
 /**
  * Project: PF-Workspace
  * DATE: 2020-02-04
@@ -10,9 +8,9 @@ import lombok.Getter;
  * DESCRIPTION:
  */
 public enum Permission {
-    ALL,
-    MEMBER_MANAGEMENT,
-    GROUP_MANAGEMENT,
-    CONTENTS_MANAGEMENT,
-    PROCESS_MANAGEMENT;
+	ALL,
+	MEMBER_MANAGEMENT,
+	GROUP_MANAGEMENT,
+	CONTENTS_MANAGEMENT,
+	PROCESS_MANAGEMENT
 }

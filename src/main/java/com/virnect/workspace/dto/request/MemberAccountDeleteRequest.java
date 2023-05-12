@@ -1,12 +1,12 @@
 package com.virnect.workspace.dto.request;
 
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
-
 import javax.validation.constraints.NotBlank;
 
 import org.apache.commons.lang.StringUtils;
+
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Project: PF-Workspace
@@ -37,7 +37,7 @@ public class MemberAccountDeleteRequest {
 	public String toString() {
 		return "MemberAccountDeleteRequest{" +
 			"requestUserId='" + requestUserId + '\'' +
-			", requestUserPassword='" + StringUtils.repeat("*",requestUserPassword.length()) + '\'' +
+			", requestUserPassword='" + StringUtils.repeat("*", requestUserPassword.length()) + '\'' +
 			", userId='" + userId + '\'' +
 			'}';
 	}

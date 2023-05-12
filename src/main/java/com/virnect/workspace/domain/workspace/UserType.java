@@ -8,5 +8,5 @@ package com.virnect.workspace.domain.workspace;
  * DESCRIPTION:
  */
 public enum UserType {
-	USER,WORKSPACE_ONLY_USER,GUEST_USER,SUB_USER
+	USER, WORKSPACE_ONLY_USER, GUEST_USER, SUB_USER
 }

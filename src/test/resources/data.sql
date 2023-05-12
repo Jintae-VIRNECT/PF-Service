@@ -1,12 +1,12 @@
 INSERT INTO `workspace_role`
-(`workspace_role_id`, `created_at`, `updated_at`, `description`, `role`)
+    (`workspace_role_id`, `created_at`, `updated_at`, `description`, `role`)
 VALUES (1, '2020-01-14 11:29:30', '2020-01-14 11:29:30', 'MASTER', 'MASTER')
      , (2, '2020-01-14 11:29:30', '2020-01-14 11:29:30', 'MANAGER', 'MANAGER')
      , (3, '2020-01-14 11:29:30', '2020-01-14 11:29:30', 'MEMBER', 'MEMBER')
      , (4, '2020-01-14 11:29:30', '2020-01-14 11:29:30', 'GUEST', 'GUEST');
 
 INSERT INTO `workspace_permission`
-(`workspace_permission_id`, `created_at`, `updated_at`, `description`, `permission`)
+    (`workspace_permission_id`, `created_at`, `updated_at`, `description`, `permission`)
 VALUES (1, '2020-01-14 11:30:48', '2020-01-14 11:30:48', null, 'ALL')
      , (2, '2020-01-14 11:30:48', '2020-01-14 11:30:48', null, 'MEMBER_MANAGEMENT')
      , (3, '2020-01-14 11:30:48', '2020-01-14 11:30:48', null, 'GROUP_MANAGEMENT')

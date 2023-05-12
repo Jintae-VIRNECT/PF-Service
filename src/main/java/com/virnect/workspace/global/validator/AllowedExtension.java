@@ -1,6 +1,5 @@
 package com.virnect.workspace.global.validator;
 
-import static com.virnect.workspace.global.validator.AllowedExtension.Extension.*;
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
 
@@ -17,13 +16,13 @@ import javax.validation.Payload;
 @Retention(RUNTIME)
 @Constraint(validatedBy = ExtensionValidator.class)
 public @interface AllowedExtension {
-	enum Extension{PNG, JPG, ICO}
-
 	String message() default "is not allowed extension.";
 
-	Class<?>[] groups() default { };
+	Class<?>[] groups() default {};
 
-	Class<? extends Payload>[] payload() default { };
+	Class<? extends Payload>[] payload() default {};
 
 	Extension[] extensions() default {};
+
+	enum Extension {PNG, JPG, ICO}
 }

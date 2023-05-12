@@ -248,7 +248,9 @@ class WorkspaceControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.code").value(200))
 			.andReturn();
-	}@Test
+	}
+
+	@Test
 	@DisplayName("update workspace title")
 	void updateWorkspaceTitle() throws Exception {
 		String workspaceUUID = "4d6eab0860969a50acbfa4599fbb5ae8";
@@ -259,7 +261,6 @@ class WorkspaceControllerTest {
 		WorkspaceTitleUpdateRequest workspaceTitleUpdateRequest = new WorkspaceTitleUpdateRequest();
 		workspaceTitleUpdateRequest.setTitle("VIRNECT");
 		workspaceTitleUpdateRequest.setUserId(masterUserUUID);
-
 
 		mockMvc.perform(MockMvcRequestBuilders
 				.post(url)

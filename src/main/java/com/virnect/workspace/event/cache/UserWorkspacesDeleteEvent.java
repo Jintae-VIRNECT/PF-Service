@@ -13,12 +13,12 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class UserWorkspacesDeleteEvent {
-    private final String userId;
+	private final String userId;
 
-    @Override
-    public String toString() {
-        return "UserWorkspacesDeleteEvent{" +
-                "userId='" + userId + '\'' +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "UserWorkspacesDeleteEvent{" +
+			"userId='" + userId + '\'' +
+			'}';
+	}
 }

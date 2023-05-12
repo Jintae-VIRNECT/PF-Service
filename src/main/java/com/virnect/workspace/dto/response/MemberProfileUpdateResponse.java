@@ -1,9 +1,9 @@
 package com.virnect.workspace.dto.response;
 
+import java.time.LocalDateTime;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import java.time.LocalDateTime;
 
 /**
  * Project: PF-Workspace
@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Getter
 public class MemberProfileUpdateResponse {
-    private final boolean result;
-    private final String profile;
-    private final String userId;
-    private final LocalDateTime updatedDate;
+	private final boolean result;
+	private final String profile;
+	private final String userId;
+	private final LocalDateTime updatedDate;
 }

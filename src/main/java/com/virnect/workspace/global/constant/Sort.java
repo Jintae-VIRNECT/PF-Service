@@ -1,11 +1,11 @@
 package com.virnect.workspace.global.constant;
 
-import com.virnect.workspace.dto.response.WorkspaceUserInfoResponse;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
+
+import com.virnect.workspace.dto.response.WorkspaceUserInfoResponse;
 
 /**
  * Project: PF-Workspace
@@ -15,177 +15,178 @@ import java.util.function.Function;
  * DESCRIPTION:
  */
 public enum Sort {
-    //member Sort
-    EMAIL_ASC(memberInfoDTOList -> {
-        Collections.sort(memberInfoDTOList, new CompareEmailAsc());
-        return memberInfoDTOList;
-    }),
-    EMAIL_DESC(memberInfoDTOList -> {
-        Collections.sort(memberInfoDTOList, new CompareEmailDesc());
-        return memberInfoDTOList;
-    }),
-    NICKNAME_ASC(memberInfoDTOList -> {
-        Collections.sort(memberInfoDTOList, new CompareNickNameAsc());
-        return memberInfoDTOList;
-    }),
-    NICKNAME_DESC(memberInfoDTOList -> {
-        Collections.sort(memberInfoDTOList, new CompareNickNameDesc());
-        return memberInfoDTOList;
-    }),
-    ROLE_ASC(memberInfoDTOList -> {
-        Collections.sort(memberInfoDTOList, new CompareRoleAsc());
-        return memberInfoDTOList;
-    }),
-    ROLE_DESC(memberInfoDTOList -> {
-        Collections.sort(memberInfoDTOList, new CompareRoleDesc());
-        return memberInfoDTOList;
-    }),
-    JOINDATE_ASC(memberInfoDTOList -> {
-        Collections.sort(memberInfoDTOList, new CompareJoinDateAsc());
-        return memberInfoDTOList;
-    }),
-    JOINDATE_DESC(memberInfoDTOList -> {
-        Collections.sort(memberInfoDTOList, new CompareJoinDateDesc());
-        return memberInfoDTOList;
-    }),
-    UPDATEDATE_DESC(memberInfoDTOList -> {
-        Collections.sort(memberInfoDTOList, new CompareUpdatedDateDesc());
-        return memberInfoDTOList;
-    });
+	//member Sort
+	EMAIL_ASC(memberInfoDTOList -> {
+		Collections.sort(memberInfoDTOList, new CompareEmailAsc());
+		return memberInfoDTOList;
+	}),
+	EMAIL_DESC(memberInfoDTOList -> {
+		Collections.sort(memberInfoDTOList, new CompareEmailDesc());
+		return memberInfoDTOList;
+	}),
+	NICKNAME_ASC(memberInfoDTOList -> {
+		Collections.sort(memberInfoDTOList, new CompareNickNameAsc());
+		return memberInfoDTOList;
+	}),
+	NICKNAME_DESC(memberInfoDTOList -> {
+		Collections.sort(memberInfoDTOList, new CompareNickNameDesc());
+		return memberInfoDTOList;
+	}),
+	ROLE_ASC(memberInfoDTOList -> {
+		Collections.sort(memberInfoDTOList, new CompareRoleAsc());
+		return memberInfoDTOList;
+	}),
+	ROLE_DESC(memberInfoDTOList -> {
+		Collections.sort(memberInfoDTOList, new CompareRoleDesc());
+		return memberInfoDTOList;
+	}),
+	JOINDATE_ASC(memberInfoDTOList -> {
+		Collections.sort(memberInfoDTOList, new CompareJoinDateAsc());
+		return memberInfoDTOList;
+	}),
+	JOINDATE_DESC(memberInfoDTOList -> {
+		Collections.sort(memberInfoDTOList, new CompareJoinDateDesc());
+		return memberInfoDTOList;
+	}),
+	UPDATEDATE_DESC(memberInfoDTOList -> {
+		Collections.sort(memberInfoDTOList, new CompareUpdatedDateDesc());
+		return memberInfoDTOList;
+	});
 
+	private final Function<List<WorkspaceUserInfoResponse>, List<WorkspaceUserInfoResponse>> expression;
 
-    private Function<List<WorkspaceUserInfoResponse>, List<WorkspaceUserInfoResponse>> expression;
+	Sort(Function<List<WorkspaceUserInfoResponse>, List<WorkspaceUserInfoResponse>> expression) {
+		this.expression = expression;
+	}
 
-    Sort(Function<List<WorkspaceUserInfoResponse>, List<WorkspaceUserInfoResponse>> expression) {
-        this.expression = expression;
-    }
+	public List<WorkspaceUserInfoResponse> sorting(List<WorkspaceUserInfoResponse> BeforeSortList) {
+		return expression.apply(BeforeSortList);
+	}
 
-    public List<WorkspaceUserInfoResponse> sorting(List<WorkspaceUserInfoResponse> BeforeSortList) {
-        return expression.apply(BeforeSortList);
-    }
+	/**
+	 * email으로 MemberInfoDto 내림차순(Desc) 정렬
+	 *
+	 * @author Administrator
+	 */
+	static class CompareEmailDesc implements Comparator<WorkspaceUserInfoResponse> {
 
+		@Override
+		public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
+			// TODO Auto-generated method stub
+			return o2.getEmail().compareTo(o1.getEmail());
+		}
+	}
 
-    /**
-     * email으로 MemberInfoDto 내림차순(Desc) 정렬
-     *
-     * @author Administrator
-     */
-    static class CompareEmailDesc implements Comparator<WorkspaceUserInfoResponse> {
+	/**
+	 * email으로 오름차순(Asc) 정렬
+	 *
+	 * @author Administrator
+	 */
+	static class CompareEmailAsc implements Comparator<WorkspaceUserInfoResponse> {
 
-        @Override
-        public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
-            // TODO Auto-generated method stub
-            return o2.getEmail().compareTo(o1.getEmail());
-        }
-    }
+		@Override
+		public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
+			// TODO Auto-generated method stub
+			return o1.getEmail().compareTo(o2.getEmail());
+		}
+	}
 
-    /**
-     * email으로 오름차순(Asc) 정렬
-     *
-     * @author Administrator
-     */
-    static class CompareEmailAsc implements Comparator<WorkspaceUserInfoResponse> {
+	/**
+	 * name으로 MemberInfoDto 내림차순(Desc) 정렬
+	 *
+	 * @author Administrator
+	 */
+	static class CompareNickNameDesc implements Comparator<WorkspaceUserInfoResponse> {
 
-        @Override
-        public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
-            // TODO Auto-generated method stub
-            return o1.getEmail().compareTo(o2.getEmail());
-        }
-    }
+		@Override
+		public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
+			// TODO Auto-generated method stub
+			return o2.getNickName().compareTo(o1.getNickName());
+		}
+	}
 
-    /**
-     * name으로 MemberInfoDto 내림차순(Desc) 정렬
-     *
-     * @author Administrator
-     */
-    static class CompareNickNameDesc implements Comparator<WorkspaceUserInfoResponse> {
+	/**
+	 * name으로 오름차순(Asc) 정렬
+	 *
+	 * @author Administrator
+	 */
+	static class CompareNickNameAsc implements Comparator<WorkspaceUserInfoResponse> {
 
-        @Override
-        public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
-            // TODO Auto-generated method stub
-            return o2.getNickName().compareTo(o1.getNickName());
-        }
-    }
+		@Override
+		public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
+			// TODO Auto-generated method stub
+			return o1.getNickName().compareTo(o2.getNickName());
+		}
+	}
 
-    /**
-     * name으로 오름차순(Asc) 정렬
-     *
-     * @author Administrator
-     */
-    static class CompareNickNameAsc implements Comparator<WorkspaceUserInfoResponse> {
+	/**
+	 * workspace user role으로 MemberInfoDto 내림차순(Desc) 정렬
+	 *
+	 * @author Administrator
+	 */
+	static class CompareRoleDesc implements Comparator<WorkspaceUserInfoResponse> {
 
-        @Override
-        public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
-            // TODO Auto-generated method stub
-            return o1.getNickName().compareTo(o2.getNickName());
-        }
-    }
-    /**
-     * workspace user role으로 MemberInfoDto 내림차순(Desc) 정렬
-     *
-     * @author Administrator
-     */
-    static class CompareRoleDesc implements Comparator<WorkspaceUserInfoResponse> {
+		@Override
+		public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
+			// TODO Auto-generated method stub
+			return o2.getRole().compareTo(o1.getRole());
+		}
+	}
 
-        @Override
-        public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
-            // TODO Auto-generated method stub
-            return o2.getRole().compareTo(o1.getRole());
-        }
-    }
+	/**
+	 * workspace user role으로 오름차순(Asc) 정렬
+	 *
+	 * @author Administrator
+	 */
+	static class CompareRoleAsc implements Comparator<WorkspaceUserInfoResponse> {
 
-    /**
-     * workspace user role으로 오름차순(Asc) 정렬
-     *
-     * @author Administrator
-     */
-    static class CompareRoleAsc implements Comparator<WorkspaceUserInfoResponse> {
+		@Override
+		public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
+			// TODO Auto-generated method stub
+			return o1.getRole().compareTo(o2.getRole());
+		}
+	}
 
-        @Override
-        public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
-            // TODO Auto-generated method stub
-            return o1.getRole().compareTo(o2.getRole());
-        }
-    }
-    /**
-     * joinDate 으로 MemberInfoDto 내림차순(Desc) 정렬
-     *
-     * @author Administrator
-     */
-    static class CompareJoinDateDesc implements Comparator<WorkspaceUserInfoResponse> {
+	/**
+	 * joinDate 으로 MemberInfoDto 내림차순(Desc) 정렬
+	 *
+	 * @author Administrator
+	 */
+	static class CompareJoinDateDesc implements Comparator<WorkspaceUserInfoResponse> {
 
-        @Override
-        public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
-            // TODO Auto-generated method stub
-            return o2.getJoinDate().compareTo(o1.getJoinDate());
-        }
-    }
+		@Override
+		public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
+			// TODO Auto-generated method stub
+			return o2.getJoinDate().compareTo(o1.getJoinDate());
+		}
+	}
 
-    /**
-     * joinDate 으로 오름차순(Asc) 정렬
-     *
-     * @author Administrator
-     */
-    static class CompareJoinDateAsc implements Comparator<WorkspaceUserInfoResponse> {
+	/**
+	 * joinDate 으로 오름차순(Asc) 정렬
+	 *
+	 * @author Administrator
+	 */
+	static class CompareJoinDateAsc implements Comparator<WorkspaceUserInfoResponse> {
 
-        @Override
-        public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
-            // TODO Auto-generated method stub
-            return o1.getJoinDate().compareTo(o2.getJoinDate());
-        }
-    }
-    /**
-     * updatedDate 으로 MemberInfoDto 내림차순(Desc) 정렬
-     *
-     * @author Administrator
-     */
-    static class CompareUpdatedDateDesc implements Comparator<WorkspaceUserInfoResponse> {
+		@Override
+		public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
+			// TODO Auto-generated method stub
+			return o1.getJoinDate().compareTo(o2.getJoinDate());
+		}
+	}
 
-        @Override
-        public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
-            // TODO Auto-generated method stub
-            return o2.getUpdatedDate().compareTo(o1.getUpdatedDate());
-        }
-    }
+	/**
+	 * updatedDate 으로 MemberInfoDto 내림차순(Desc) 정렬
+	 *
+	 * @author Administrator
+	 */
+	static class CompareUpdatedDateDesc implements Comparator<WorkspaceUserInfoResponse> {
+
+		@Override
+		public int compare(WorkspaceUserInfoResponse o1, WorkspaceUserInfoResponse o2) {
+			// TODO Auto-generated method stub
+			return o2.getUpdatedDate().compareTo(o1.getUpdatedDate());
+		}
+	}
 }
 

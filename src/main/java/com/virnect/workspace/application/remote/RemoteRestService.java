@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "remote-service-server", fallbackFactory = RemoteRestFallbackFactory.class)
 public interface RemoteRestService {
 	@PostMapping("/remote/guest/event")
-	void sendGuestUserDeletedEvent(@RequestParam("event") String event, @RequestParam("userId") String userId, @RequestParam("workspaceId") String workspaceId);
+	void sendGuestUserDeletedEvent(
+		@RequestParam("event") String event, @RequestParam("userId") String userId, @RequestParam("workspaceId") String workspaceId
+	);
 
 }

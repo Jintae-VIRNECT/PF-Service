@@ -1,13 +1,20 @@
 package com.virnect.workspace.global.common;
 
-import com.google.common.base.Joiner;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.stream.Collectors;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.stereotype.Component;
+
+import com.google.common.base.Joiner;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Project: PF-Workspace
@@ -20,22 +27,22 @@ import java.util.stream.Collectors;
 @Component
 public class LogTimeFilter implements Filter {
 
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        String requestUrl = null;
-        String method = null;
-        if (request instanceof HttpServletRequest) {
-            requestUrl = ((HttpServletRequest) request).getRequestURL().toString();
-            method = ((HttpServletRequest) request).getMethod();
-        }
-        String requestParam = request.getParameterMap().entrySet().stream()
-                .map(entry -> String.format("%s=%s", entry.getKey(), Joiner.on(",").join(entry.getValue())))
-                .collect(Collectors.joining(", "));
-        long startTime = System.currentTimeMillis();
-        chain.doFilter(request, response);
-        long duration = System.currentTimeMillis() - startTime;
-        log.info("Request Url : {}, take Time : {}(ms)", method + " " + requestUrl + "?" + requestParam, duration);
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+		String requestUrl = null;
+		String method = null;
+		if (request instanceof HttpServletRequest) {
+			requestUrl = ((HttpServletRequest)request).getRequestURL().toString();
+			method = ((HttpServletRequest)request).getMethod();
+		}
+		String requestParam = request.getParameterMap().entrySet().stream()
+			.map(entry -> String.format("%s=%s", entry.getKey(), Joiner.on(",").join(entry.getValue())))
+			.collect(Collectors.joining(", "));
+		long startTime = System.currentTimeMillis();
+		chain.doFilter(request, response);
+		long duration = System.currentTimeMillis() - startTime;
+		log.info("Request Url : {}, take Time : {}(ms)", method + " " + requestUrl + "?" + requestParam, duration);
 
-    }
+	}
 
 }

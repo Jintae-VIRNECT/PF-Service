@@ -1,8 +1,8 @@
 package com.virnect.workspace.dao.workspaceuser;
 
-import com.virnect.workspace.domain.workspace.Workspace;
-
 import java.util.List;
+
+import com.virnect.workspace.domain.workspace.Workspace;
 
 /**
  * Project: PF-Workspace
@@ -12,6 +12,7 @@ import java.util.List;
  * DESCRIPTION:
  */
 public interface WorkspaceUserRepositoryCustom {
-    long deleteAllWorkspaceUserByWorkspace(Workspace workspace);
-    List<String> getWorkspaceUserIdList(String workspaceId);
+	long deleteAllWorkspaceUserByWorkspace(Workspace workspace);
+
+	List<String> getWorkspaceUserIdList(String workspaceId);
 }

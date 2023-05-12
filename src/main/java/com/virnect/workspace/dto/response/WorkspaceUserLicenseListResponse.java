@@ -1,10 +1,10 @@
 package com.virnect.workspace.dto.response;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 /**
  * Project: PF-Workspace
@@ -17,6 +17,6 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 public class WorkspaceUserLicenseListResponse {
-    public List<WorkspaceUserLicenseInfoResponse> workspaceUserLicenseInfoList;
-    public PageMetadataRestResponse pageMeta;
+	public List<WorkspaceUserLicenseInfoResponse> workspaceUserLicenseInfoList;
+	public PageMetadataRestResponse pageMeta;
 }

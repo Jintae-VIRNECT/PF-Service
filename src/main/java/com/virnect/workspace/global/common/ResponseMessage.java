@@ -1,9 +1,12 @@
 package com.virnect.workspace.global.common;
 
-import lombok.*;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Project: PF-Workspace
@@ -17,17 +20,17 @@ import java.util.concurrent.ConcurrentHashMap;
 @NoArgsConstructor
 @ToString
 public class ResponseMessage {
-    Map<String, Object> data = new ConcurrentHashMap<>();
-    int code = 200;
-    String message = "complete";
+	Map<String, Object> data = new ConcurrentHashMap<>();
+	int code = 200;
+	String message = "complete";
 
-    public ResponseMessage(Map<String, Object> data) {
-        this.data = data;
-    }
+	public ResponseMessage(Map<String, Object> data) {
+		this.data = data;
+	}
 
-    public ResponseMessage addParam(String key, Object object) {
-        this.data.put(key, object);
-        return this;
-    }
+	public ResponseMessage addParam(String key, Object object) {
+		this.data.put(key, object);
+		return this;
+	}
 }
 

@@ -11,14 +11,14 @@ import com.virnect.workspace.global.error.ErrorCode;
  */
 public class WorkspaceException extends RuntimeException {
 
-    private ErrorCode errorCode;
+	private final ErrorCode errorCode;
 
-    public WorkspaceException(ErrorCode errorCode) {
-        this.errorCode = errorCode;
-    }
+	public WorkspaceException(ErrorCode errorCode) {
+		this.errorCode = errorCode;
+	}
 
-    public ErrorCode getErrorCode() {
-        return errorCode;
-    }
+	public ErrorCode getErrorCode() {
+		return errorCode;
+	}
 
 }
