@@ -5,24 +5,19 @@ import java.util.Objects;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.StringUtils;
 
+import lombok.Setter;
+
 /**
  * @author jeonghyeon.chang (johnmark)
  * @email practice1356@gmail.com
  * @since 2020.03.02
  */
 
+@Setter
 public final class PageRequest {
 	private int page = 1;
 	private int size;
 	private String sort;
-
-	public void setPage(int page) {
-		this.page = page <= 0 ? 1 : page;
-	}
-
-	public void setSize(int size) {
-		this.size = size;
-	}
 
 	public org.springframework.data.domain.PageRequest of() {
 		// sort nullable
@@ -46,6 +41,9 @@ public final class PageRequest {
 
 		if (size == 0) {
 			setSize(Integer.MAX_VALUE);
+		}
+		if (page <= 0) {
+			setPage(1);
 		}
 
 		return org.springframework.data.domain.PageRequest.of(

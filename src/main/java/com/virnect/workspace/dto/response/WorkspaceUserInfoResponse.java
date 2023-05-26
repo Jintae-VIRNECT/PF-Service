@@ -62,8 +62,8 @@ public class WorkspaceUserInfoResponse {
 	}
 
 	public static WorkspaceUserInfoResponse createWorkspaceUserInfoResponse(
-		UserInfoRestResponse userInfoRestResponse,
 		WorkspaceUserPermission workspaceUserPermission,
+		UserInfoRestResponse userInfoRestResponse,
 		String... licenseProduct
 	) {
 		return WorkspaceUserInfoResponse.builder()
