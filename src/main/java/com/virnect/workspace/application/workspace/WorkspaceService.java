@@ -160,8 +160,8 @@ public abstract class WorkspaceService {
 			.getUserInfoList();
 
 		List<WorkspaceUserInfoResponse> userInfoList = CollectionJoinUtil.collections(
-				userInfoRestResponseList, workspaceUserPermissionList)
-			.when((workspaceInfoResponse, workspaceUserPermission) -> workspaceInfoResponse.getUuid()
+				workspaceUserPermissionList, userInfoRestResponseList)
+			.when((workspaceUserPermission, workspaceInfoResponse) -> workspaceInfoResponse.getUuid()
 				.equals(workspaceUserPermission.getWorkspaceUser().getUserId()))
 			.then(WorkspaceUserInfoResponse::createWorkspaceUserInfoResponse);
 
