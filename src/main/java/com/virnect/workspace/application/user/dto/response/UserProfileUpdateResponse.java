@@ -16,14 +16,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserProfileUpdateResponse {
-	@ApiModelProperty(value = "사용자 식별자", example = "498b1839dc29ed7bb2ee90ad6985c608")
-    private String uuid;
-    @ApiModelProperty(value = "프로필 이미지 url", example = "http://localhost:8081/users/upload/2020-04-07_ilzUZjnHMZqhoRpkqMUn.jpg")
-    private String profile;
-
 	public static final UserProfileUpdateResponse EMPTY = new UserProfileUpdateResponse();
+	@ApiModelProperty(value = "사용자 식별자", example = "498b1839dc29ed7bb2ee90ad6985c608")
+	private String uuid;
+	@ApiModelProperty(value = "프로필 이미지 url", example = "http://localhost:8081/users/upload/2020-04-07_ilzUZjnHMZqhoRpkqMUn.jpg")
+	private String profile;
 
-	public boolean isEmpty(){
+	public boolean isEmpty() {
 		return StringUtils.isEmpty(uuid);
 	}
 }

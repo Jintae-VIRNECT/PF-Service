@@ -26,7 +26,7 @@ public class WorkspaceTitleUpdateRequest {
 
 	@ApiModelProperty(value = "고객사명", required = true, position = 1)
 	@NotBlank
-	@Length(max=20, message = "워크스페이스 고객사명은 최대 20자까지 가능합니다.")
+	@Length(max = 20, message = "워크스페이스 고객사명은 최대 20자까지 가능합니다.")
 	private String title;
 
 	@Override

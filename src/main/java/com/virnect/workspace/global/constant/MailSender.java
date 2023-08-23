@@ -10,13 +10,13 @@ import lombok.Getter;
  * DESCRIPTION:
  */
 public enum MailSender {
-    MASTER("no-reply@virnect.com");
+	MASTER("no-reply@virnect.com");
 
-    @Getter
-    private String value;
+	@Getter
+	private final String value;
 
-    MailSender(String value) {
-        this.value = value;
-    }
+	MailSender(String value) {
+		this.value = value;
+	}
 
 }

@@ -1,10 +1,12 @@
 package com.virnect.workspace.event.invite;
 
-import com.virnect.workspace.dao.cache.UserInviteRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import com.virnect.workspace.dao.cache.UserInviteRepository;
 
 /**
  * Project: PF-Workspace
@@ -17,11 +19,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component
 public class InviteSessionDeleteEventHandler {
-    private final UserInviteRepository userInviteRepository;
+	private final UserInviteRepository userInviteRepository;
 
-    @EventListener(InviteSessionDeleteEvent.class)
-    public void inviteSessionDeleteEventListener(InviteSessionDeleteEvent inviteSessionDeleteEvent) {
-        log.info("[WORKSPACE INVITE SESSION DELETE EVENT] - [{}]", inviteSessionDeleteEvent.getSessionCode());
-        userInviteRepository.deleteById(inviteSessionDeleteEvent.getSessionCode());
-    }
+	@EventListener(InviteSessionDeleteEvent.class)
+	public void inviteSessionDeleteEventListener(InviteSessionDeleteEvent inviteSessionDeleteEvent) {
+		log.info("[WORKSPACE INVITE SESSION DELETE EVENT] - [{}]", inviteSessionDeleteEvent.getSessionCode());
+		userInviteRepository.deleteById(inviteSessionDeleteEvent.getSessionCode());
+	}
 }

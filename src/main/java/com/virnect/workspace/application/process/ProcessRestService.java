@@ -1,10 +1,11 @@
 package com.virnect.workspace.application.process;
 
-import com.virnect.workspace.application.process.dto.SubProcessCountResponse;
-import com.virnect.workspace.global.common.ApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+
+import com.virnect.workspace.application.process.dto.SubProcessCountResponse;
+import com.virnect.workspace.global.common.ApiResponse;
 
 /**
  * Project: PF-Workspace
@@ -15,12 +16,12 @@ import org.springframework.web.bind.annotation.PathVariable;
  */
 @FeignClient(name = "process-server", fallbackFactory = ProcessRestFallbackFactory.class)
 public interface ProcessRestService {
-    /**
-     * smic 때 사용했던 api
-     * @param workerUUID
-     * @return
-     */
-    @GetMapping("/processes/subProcesses/count/onWorker/{workerUUID}")
-    ApiResponse<SubProcessCountResponse> getSubProcessCount(@PathVariable("workerUUID") String workerUUID);
+	/**
+	 * smic 때 사용했던 api
+	 * @param workerUUID
+	 * @return
+	 */
+	@GetMapping("/processes/subProcesses/count/onWorker/{workerUUID}")
+	ApiResponse<SubProcessCountResponse> getSubProcessCount(@PathVariable("workerUUID") String workerUUID);
 
 }

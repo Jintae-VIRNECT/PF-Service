@@ -13,7 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SubProcessCountResponse {
-    private String workerUUID;
-    private Integer countProgressing;
-    private Integer countAssigned;
+	private String workerUUID;
+	private Integer countProgressing;
+	private Integer countAssigned;
 }

@@ -59,6 +59,7 @@ import com.virnect.workspace.infra.file.FileService;
 @Service
 @Profile("onpremise")
 public class OffWorkspaceServiceImpl extends WorkspaceService {
+	private static final int MAX_HAVE_WORKSPACE_AMOUNT = 1; //최대 생성 가능한 워크스페이스 수
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceUserPermissionRepository workspaceUserPermissionRepository;
 	private final FileService fileUploadService;
@@ -94,8 +95,6 @@ public class OffWorkspaceServiceImpl extends WorkspaceService {
 		this.applicationEventPublisher = applicationEventPublisher;
 		this.workspacePermissionRepository = workspacePermissionRepository;
 	}
-
-	private static final int MAX_HAVE_WORKSPACE_AMOUNT = 1; //최대 생성 가능한 워크스페이스 수
 
 	@Override
 	public WorkspaceInfoDTO createWorkspace(WorkspaceCreateRequest workspaceCreateRequest) {
@@ -171,7 +170,6 @@ public class OffWorkspaceServiceImpl extends WorkspaceService {
 
 		WorkspaceSetting workspaceSetting = getFirstWorkspaceSetting(workspaceId);
 
-
 		workspaceSetting.setTitle(workspaceTitleUpdateRequest.getTitle());
 		workspaceSettingRepository.save(workspaceSetting);
 
@@ -195,7 +193,6 @@ public class OffWorkspaceServiceImpl extends WorkspaceService {
 
 		WorkspaceSetting workspaceSetting = getFirstWorkspaceSetting(workspaceId);
 
-
 		String defaultLogo = getLogoUrl(workspaceLogoUpdateRequest.getDefaultLogo(), workspaceId);
 		workspaceSetting.setDefaultLogo(defaultLogo);
 
@@ -217,7 +214,7 @@ public class OffWorkspaceServiceImpl extends WorkspaceService {
 	@Override
 	public WorkspaceFaviconUpdateResponse updateWorkspaceFavicon(
 		String workspaceId, WorkspaceFaviconUpdateRequest workspaceFaviconUpdateRequest
-	)  {
+	) {
 		WorkspaceUserPermission workspaceUser = workspaceUserPermissionRepository.findWorkspaceUserPermission(
 				workspaceId, workspaceFaviconUpdateRequest.getUserId())
 			.orElseThrow(() -> new WorkspaceException(ErrorCode.ERR_WORKSPACE_USER_NOT_FOUND));

@@ -13,14 +13,14 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GuestMemberRegistrationRequest {
-    private String masterUserUUID;
-    private String workspaceUUID;
+	private String masterUserUUID;
+	private String workspaceUUID;
 
-    @Override
-    public String toString() {
-        return "GuestMemberRegistrationRequest{" +
-                "masterUserUUID='" + masterUserUUID + '\'' +
-                ", workspaceUUID='" + workspaceUUID + '\'' +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "GuestMemberRegistrationRequest{" +
+			"masterUserUUID='" + masterUserUUID + '\'' +
+			", workspaceUUID='" + workspaceUUID + '\'' +
+			'}';
+	}
 }

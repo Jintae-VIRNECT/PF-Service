@@ -20,11 +20,10 @@ import com.virnect.workspace.dto.response.PageMetadataRestResponse;
 @Getter
 @RequiredArgsConstructor
 public class UserInfoListRestResponse {
-	private final List<UserInfoRestResponse> userInfoList;
-	private final PageMetadataRestResponse pageMeta;
-
 	public static final UserInfoListRestResponse EMPTY = new UserInfoListRestResponse(
 		Collections.emptyList(), new PageMetadataRestResponse());
+	private final List<UserInfoRestResponse> userInfoList;
+	private final PageMetadataRestResponse pageMeta;
 
 	public boolean isEmpty() {
 		return CollectionUtils.isEmpty(userInfoList);

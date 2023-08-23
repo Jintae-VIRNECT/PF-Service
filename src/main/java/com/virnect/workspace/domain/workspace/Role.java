@@ -1,5 +1,9 @@
 package com.virnect.workspace.domain.workspace;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Project: PF-Workspace
  * DATE: 2021-08-09
@@ -8,17 +12,19 @@ package com.virnect.workspace.domain.workspace;
  * DESCRIPTION:
  */
 public enum Role {
-    MASTER,
-    MANAGER,
-    MEMBER,
-    GUEST;
+	MASTER,
+	MANAGER,
+	MEMBER,
+	GUEST;
 
-    /*public static boolean anyMatchMasterManagerMember(Role requestRole) {
-        return requestRole == MASTER || requestRole == MANAGER || requestRole == MEMBER;
-    }
+	public static List<Role> getMatchedList(String filter) {
 
-    public static boolean anyMatchMasterManager(Role requestRole) {
-        return requestRole == MASTER || requestRole == MANAGER;
-    }*/
+		List<String> filterList = Arrays.asList(
+			filter.toUpperCase().split(",").length == 0 ? new String[] {filter.toUpperCase()} :
+				filter.toUpperCase().split(","));
 
+		return Arrays.stream(Role.values()).
+			filter(role -> filterList.contains(role.name()))
+			.distinct().collect(Collectors.toList());
+	}
 }

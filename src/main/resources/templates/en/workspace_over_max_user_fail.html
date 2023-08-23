@@ -1,253 +1,257 @@
-<xmeta http-equiv="Content-Type" content="text/html; charset=utf-8" xmlns:th="http://www.thymeleaf.org">
-	<link
-		rel="stylesheet"
-		href="https://fonts.googleapis.com/css?family=Roboto:500&display=swap"
-	/>
-	<style>
-		.info-table a:link, span.MsoHyperlink {
-			mso-style-priority:100 !important;
-			color:#333333 !important;
-			color:#333333;
-			text-decoration:none !important;
-		}
-	</style>
+<xmeta content="text/html; charset=utf-8" http-equiv="Content-Type" xmlns:th="http://www.thymeleaf.org">
+    <link
+            href="https://fonts.googleapis.com/css?family=Roboto:500&display=swap"
+            rel="stylesheet"
+    />
+    <style>
+        .info-table a:link, span.MsoHyperlink {
+            mso-style-priority: 100 !important;
+            color: #333333 !important;
+            color: #333333;
+            text-decoration: none !important;
+        }
+    </style>
 
-			<div align="center">
-				<table
-					width="680"
-					cellpadding="0"
-					cellspacing="0"
-					background="#fff"
-					style="font-family:'Roboto','Apple SD Gothic Neo', sans-serif,Dotum,Arial;background:#fff;border:1px solid #e8edf1;"
-				>
-					<tbody>
-						<tr style="margin:0;padding:0;">
-							<td style="margin:0;padding:0;border-bottom:1px solid #e2e7ed">
-								<img
-									src="http://image.virnect.com/images/mailling_service_en/virnect_logo.png"
-									width="680"
-									height="85"
-									alt=""
-									style="margin:0;padding:0;vertical-align:top;border:0;"
-									loading="lazy"
-								/>
-							</td>
-						</tr>
-						<tr style="margin:0;padding:0;">
-							<td
-								style="margin:0;padding:35px 40px;color:#333;font-size:16px;line-height:1.6"
-							>
-								<p
-									style="margin:0;padding:0;color:#333;font-size:15px;font-family:'Roboto','Apple SD Gothic Neo', sans-serif,Dotum,Arial;line-height:1.6"
-								>
-									The Public service using the Basic Plan allows max 49 users including the master to participate in one workspace. <br>
-									If you want to use more VIRNECT products and services with more users, you need to change the service. <br>
-									Please <a th:href="@{${contactUrl}}" th:style="'font-size:14px;color:#0054f7;font-weight:bold;text-decoration:underline;'" >contact us</a> to experience the wider and more powerful VIRNECT products and services.
-								</p>
+    <div align="center">
+        <table
+                background="#fff"
+                cellpadding="0"
+                cellspacing="0"
+                style="font-family:'Roboto','Apple SD Gothic Neo', sans-serif,Dotum,Arial;background:#fff;border:1px solid #e8edf1;"
+                width="680"
+        >
+            <tbody>
+            <tr style="margin:0;padding:0;">
+                <td style="margin:0;padding:0;border-bottom:1px solid #e2e7ed">
+                    <img
+                            alt=""
+                            height="85"
+                            loading="lazy"
+                            src="http://image.virnect.com/images/mailling_service_en/virnect_logo.png"
+                            style="margin:0;padding:0;vertical-align:top;border:0;"
+                            width="680"
+                    />
+                </td>
+            </tr>
+            <tr style="margin:0;padding:0;">
+                <td
+                        style="margin:0;padding:35px 40px;color:#333;font-size:16px;line-height:1.6"
+                >
+                    <p
+                            style="margin:0;padding:0;color:#333;font-size:15px;font-family:'Roboto','Apple SD Gothic Neo', sans-serif,Dotum,Arial;line-height:1.6"
+                    >
+                        The Public service using the Basic Plan allows max 49 users including the master to participate in one workspace. <br>
+                        If you want to use more VIRNECT products and services with more users, you need to change the service. <br>
+                        Please <a th:href="@{${contactUrl}}" th:style="'font-size:14px;color:#0054f7;font-weight:bold;text-decoration:underline;'">contact
+                        us</a> to experience the wider and more powerful VIRNECT products and services.
+                    </p>
 
-								<table
-									width="600"
-									cellpadding="0"
-									cellspacing="0"
-									style="margin:0 0 8px;padding:0;"
-									   >
-									<tr>
-										<td style="padding-top: 44px;font-family:'Roboto','Apple SD Gothic Neo', sans-serif,Dotum,Arial;font-weight:bold;text-align:left;">Workspace details</td>
-										<td style="padding-top: 44px;text-align: right;font-size:14px;color:#0054f7;font-weight:bold;text-decoration:underline;">
-                                            <a th:href="@{${workstationHomeUrl}}">Go to Workstation home</a></td>
-									</tr>
-								</table>
-								<table
-									width="600"
-									cellpadding="0"
-									cellspacing="0"
-									style="margin:0 0;padding:0;font-family:'Roboto','Apple SD Gothic Neo', sans-serif,Dotum,Arial;text-align:left;border-top:2px solid #1a1c1d;"
-								   class="info-table"
-								>
-									<tbody>
-										<tr style="margin:0;padding:0;">
-											<td colspan="2" style="margin:0;padding:8px 0;"></td>
-										</tr>
-										<tr style="margin:0;padding:0;">
-											<th
-												colspan="1"
-												rowspan="1"
-												style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
-											>
-												Workspace name:
-											</th>
-											<td
-												style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
-											>
-												<p>[[${workspaceName}]]</p>
-											</td>
-										</tr>
-										<tr style="margin:0;padding:0;">
-											<th
-												colspan="1"
-												rowspan="1"
-												style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
-											>
-												Master nickname:
-											</th>
-											<td
-												style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
-											>
-												<p>[[${workspaceMasterNickName}]]</p>
-											</td>
-										</tr>
-										<tr style="margin:0;padding:0;">
-											<th
-												colspan="1"
-												rowspan="1"
-												style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
-											>
-												Master account:
-											</th>
-											<td
-												style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
-											>
-												<p>[[${workspaceMasterEmail}]]</p>
-											</td>
-										</tr>
-										<tr style="margin:0;padding:0;">
-											<td colspan="2" style="margin:0;padding:8px 0;"></td>
-										</tr>
-										<tr style="margin:0;padding:0;">
-											<td
-												colspan="2"
-												style="margin:0;padding:0;border-bottom:1px solid #e2e7ed"
-											></td>
-										</tr>
-										<tr style="margin:0;padding:0;">
-											<td colspan="2" style="margin:0;padding:8px 0;"></td>
-										</tr>
-										<tr style="margin:0;padding:0;">
-											<th
-												colspan="1"
-												rowspan="1"
-												style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
-											>
-												User nickname:
-											</th>
-											<td
-												style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
-											>
-												<p>[[${userNickName}]]</p>
-											</td>
-										</tr>
-										<tr style="margin:0;padding:0;">
-											<th
-												colspan="1"
-												rowspan="1"
-												style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
-											>
-												User account:
-											</th>
-											<td
-												style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
-											>
-												<p>[[${userEmail}]]</p>
-											</td>
-										</tr>
-										<tr style="margin:0;padding:0;">
-											<th
-												colspan="1"
-												rowspan="1"
-												style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
-											>
-												Plans assigned unsuccessfully:
-											</th>
-											<td
-												style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
-											>
-                                                <img th:if="${#strings.contains(plan,'REMOTE')}"
-                                                     th:style="'vertical-align:middle;'"
-                                                     th:src="'http://image.virnect.com/images/mailling_service/plan_remote.png'">
-                                                <span th:if="${#strings.contains(plan,'REMOTE')}"
-                                                      th:style="'border: 1px solid #959ba5;color: #959ba5;font-size: 11px; font-weight: 500;font-family: Roboto, Dotum, serif;vertical-align: middle;display: inline-block; padding: 2px 6px; border-radius: 3px;margin-top:2px;'">
+                    <table
+                            cellpadding="0"
+                            cellspacing="0"
+                            style="margin:0 0 8px;padding:0;"
+                            width="600"
+                    >
+                        <tr>
+                            <td style="padding-top: 44px;font-family:'Roboto','Apple SD Gothic Neo', sans-serif,Dotum,Arial;font-weight:bold;text-align:left;">
+                                Workspace details
+                            </td>
+                            <td style="padding-top: 44px;text-align: right;font-size:14px;color:#0054f7;font-weight:bold;text-decoration:underline;">
+                                <a th:href="@{${workstationHomeUrl}}">Go to Workstation home</a></td>
+                        </tr>
+                    </table>
+                    <table
+                            cellpadding="0"
+                            cellspacing="0"
+                            class="info-table"
+                            style="margin:0 0;padding:0;font-family:'Roboto','Apple SD Gothic Neo', sans-serif,Dotum,Arial;text-align:left;border-top:2px solid #1a1c1d;"
+                            width="600"
+                    >
+                        <tbody>
+                        <tr style="margin:0;padding:0;">
+                            <td colspan="2" style="margin:0;padding:8px 0;"></td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <th
+                                    colspan="1"
+                                    rowspan="1"
+                                    style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
+                            >
+                                Workspace name:
+                            </th>
+                            <td
+                                    style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
+                            >
+                                <p>[[${workspaceName}]]</p>
+                            </td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <th
+                                    colspan="1"
+                                    rowspan="1"
+                                    style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
+                            >
+                                Master nickname:
+                            </th>
+                            <td
+                                    style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
+                            >
+                                <p>[[${workspaceMasterNickName}]]</p>
+                            </td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <th
+                                    colspan="1"
+                                    rowspan="1"
+                                    style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
+                            >
+                                Master account:
+                            </th>
+                            <td
+                                    style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
+                            >
+                                <p>[[${workspaceMasterEmail}]]</p>
+                            </td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <td colspan="2" style="margin:0;padding:8px 0;"></td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <td
+                                    colspan="2"
+                                    style="margin:0;padding:0;border-bottom:1px solid #e2e7ed"
+                            ></td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <td colspan="2" style="margin:0;padding:8px 0;"></td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <th
+                                    colspan="1"
+                                    rowspan="1"
+                                    style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
+                            >
+                                User nickname:
+                            </th>
+                            <td
+                                    style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
+                            >
+                                <p>[[${userNickName}]]</p>
+                            </td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <th
+                                    colspan="1"
+                                    rowspan="1"
+                                    style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
+                            >
+                                User account:
+                            </th>
+                            <td
+                                    style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
+                            >
+                                <p>[[${userEmail}]]</p>
+                            </td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <th
+                                    colspan="1"
+                                    rowspan="1"
+                                    style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
+                            >
+                                Plans assigned unsuccessfully:
+                            </th>
+                            <td
+                                    style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
+                            >
+                                <img th:if="${#strings.contains(plan,'REMOTE')}"
+                                     th:src="'http://image.virnect.com/images/mailling_service/plan_remote.png'"
+                                     th:style="'vertical-align:middle;'">
+                                <span th:if="${#strings.contains(plan,'REMOTE')}"
+                                      th:style="'border: 1px solid #959ba5;color: #959ba5;font-size: 11px; font-weight: 500;font-family: Roboto, Dotum, serif;vertical-align: middle;display: inline-block; padding: 2px 6px; border-radius: 3px;margin-top:2px;'">
                                                     [[${planRemoteType}]]
                                                 </span>
-                                                <span th:if="${#strings.contains(plan,'REMOTE')}">&nbsp;&nbsp;/&nbsp;&nbsp;</span>
+                                <span th:if="${#strings.contains(plan,'REMOTE')}">&nbsp;&nbsp;/&nbsp;&nbsp;</span>
 
-                                                <img th:if="${#strings.contains(plan,'MAKE')}"
-                                                     th:style="'vertical-align:middle;'"
-                                                     th:src="'http://image.virnect.com/images/mailling_service/plan_make.png'">
-                                                <span th:if="${#strings.contains(plan,'MAKE')}"
-                                                      th:style="'border: 1px solid #959ba5;color: #959ba5;font-size: 11px; font-weight: 500;font-family: Roboto, Dotum, serif;vertical-align: middle;display: inline-block; padding: 2px 6px; border-radius: 3px;margin-top:2px;'">
+                                <img th:if="${#strings.contains(plan,'MAKE')}"
+                                     th:src="'http://image.virnect.com/images/mailling_service/plan_make.png'"
+                                     th:style="'vertical-align:middle;'">
+                                <span th:if="${#strings.contains(plan,'MAKE')}"
+                                      th:style="'border: 1px solid #959ba5;color: #959ba5;font-size: 11px; font-weight: 500;font-family: Roboto, Dotum, serif;vertical-align: middle;display: inline-block; padding: 2px 6px; border-radius: 3px;margin-top:2px;'">
                                                     [[${planMakeType}]]
                                                 </span>
-                                                <span th:if="${#strings.contains(plan,'MAKE')}">&nbsp;&nbsp;/&nbsp;&nbsp;</span>
+                                <span th:if="${#strings.contains(plan,'MAKE')}">&nbsp;&nbsp;/&nbsp;&nbsp;</span>
 
-                                                <img th:if="${#strings.contains(plan,'VIEW')}"
-                                                     th:style="'vertical-align:middle;'"
-                                                     th:src="'http://image.virnect.com/images/mailling_service/plan_view.png'">
-                                                <span th:if="${#strings.contains(plan,'VIEW')}"
-                                                      th:style="'border: 1px solid #959ba5;color: #959ba5;font-size: 11px; font-weight: 500;font-family: Roboto, Dotum, serif;vertical-align: middle;display: inline-block; padding: 2px 6px; border-radius: 3px;margin-top:2px;'">
+                                <img th:if="${#strings.contains(plan,'VIEW')}"
+                                     th:src="'http://image.virnect.com/images/mailling_service/plan_view.png'"
+                                     th:style="'vertical-align:middle;'">
+                                <span th:if="${#strings.contains(plan,'VIEW')}"
+                                      th:style="'border: 1px solid #959ba5;color: #959ba5;font-size: 11px; font-weight: 500;font-family: Roboto, Dotum, serif;vertical-align: middle;display: inline-block; padding: 2px 6px; border-radius: 3px;margin-top:2px;'">
                                                     [[${planViewType}]]
                                                 </span>
-											</td>
-										</tr>
-										<tr style="margin:0;padding:0;">
-											<td colspan="2" style="margin:0;padding:8px 0;"></td>
-										</tr>
-										<tr style="margin:0;padding:0;">
-											<td
-												colspan="2"
-												style="margin:0;padding:0;border-bottom:1px solid #e2e7ed"
-											></td>
-										</tr>
-										<tr style="margin:0;padding:0;">
-											<td
-												colspan="2"
-												style="margin:0;padding:16px 0;"
-											></td>
-										</tr>
-									</tbody>
-								</table>
+                            </td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <td colspan="2" style="margin:0;padding:8px 0;"></td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <td
+                                    colspan="2"
+                                    style="margin:0;padding:0;border-bottom:1px solid #e2e7ed"
+                            ></td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <td
+                                    colspan="2"
+                                    style="margin:0;padding:16px 0;"
+                            ></td>
+                        </tr>
+                        </tbody>
+                    </table>
 
-								<p>
-									<a th:href="@{${contactUrl}}" th:style="'margin: 0 4px;'"><img src="http://image.virnect.com/images/mailling_service_en/inquiry.png"></a>
-								</p>
+                    <p>
+                        <a th:href="@{${contactUrl}}" th:style="'margin: 0 4px;'"><img
+                                src="http://image.virnect.com/images/mailling_service_en/inquiry.png"></a>
+                    </p>
 
-							</td>
-						</tr>
-						<tr style="margin:0;padding:0;">
-							<td height="100" style="height:36px;margin:0;padding:0;">&nbsp;
+                </td>
+            </tr>
+            <tr style="margin:0;padding:0;">
+                <td height="100" style="height:36px;margin:0;padding:0;">&nbsp;
 
-							</td>
-						</tr>
-						<tr style="margin:0;padding:0;">
-							<td style="margin:0;padding:0;">
-								<img
-									src="http://image.virnect.com/images/mailling_service/img-banner.png"
-									width="680"
-									height="180"
-									alt=""
-									style="margin:0;padding:0;vertical-align:top;border:0;"
-									loading="lazy"
-								/>
-							</td>
-						</tr>
+                </td>
+            </tr>
+            <tr style="margin:0;padding:0;">
+                <td style="margin:0;padding:0;">
+                    <img
+                            alt=""
+                            height="180"
+                            loading="lazy"
+                            src="http://image.virnect.com/images/mailling_service/img-banner.png"
+                            style="margin:0;padding:0;vertical-align:top;border:0;"
+                            width="680"
+                    />
+                </td>
+            </tr>
 
-						<tr>
-							<td
-								style="margin:0;padding:30px 40px;color:#333;font-size:12px;line-height:1.2"
-							>
-								This is a No-reply email. Please contact
-								<a
-									th:href="@{${supportUrl}}"
-									target="_blank"
-									title="contact customer center"
-									th:style="'color:#0054f7;font-weight:bold;text-decoration:underline;'"
-									rel="noreferrer noopener"
-									> customer center</a
-								> for any questions.
-								<p style="color: #696969;font-size: 12px">©VIRNECT CO., LTD. All rights reserved.</p>
-							</td>
-						</tr>
+            <tr>
+                <td
+                        style="margin:0;padding:30px 40px;color:#333;font-size:12px;line-height:1.2"
+                >
+                    This is a No-reply email. Please contact
+                    <a
+                            rel="noreferrer noopener"
+                            target="_blank"
+                            th:href="@{${supportUrl}}"
+                            th:style="'color:#0054f7;font-weight:bold;text-decoration:underline;'"
+                            title="contact customer center"
+                    > customer center</a
+                    > for any questions.
+                    <p style="color: #696969;font-size: 12px">©VIRNECT CO., LTD. All rights reserved.</p>
+                </td>
+            </tr>
 
-					</tbody>
-				</table>
-			</div>
-		</xmeta>
+            </tbody>
+        </table>
+    </div>
+</xmeta>

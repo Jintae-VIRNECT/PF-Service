@@ -8,7 +8,7 @@ package com.virnect.workspace.global.constant;
  * DESCRIPTION:
  */
 public enum UUIDType {
-    PIN_NUMBER,
-    WORKSPACE_UUID,
-    INVITE_CODE;
+	PIN_NUMBER,
+	WORKSPACE_UUID,
+	INVITE_CODE
 }

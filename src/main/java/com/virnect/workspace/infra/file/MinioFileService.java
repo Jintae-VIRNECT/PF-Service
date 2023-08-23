@@ -74,7 +74,8 @@ public class MinioFileService implements FileService {
 			String uploadPath = minioClient.getObjectUrl(bucket, objectName);
 			log.info("[FILE UPLOAD] Upload Result path : [{}],", uploadPath);
 			return uploadPath;
-		} catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidBucketNameException | InvalidKeyException | InvalidResponseException | NoSuchAlgorithmException | ServerException | XmlParserException | IOException exception) {
+		} catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidBucketNameException | InvalidKeyException |
+				 InvalidResponseException | NoSuchAlgorithmException | ServerException | XmlParserException | IOException exception) {
 			log.error(exception.getClass().toString());
 			log.error(exception.getMessage());
 			throw new WorkspaceException(ErrorCode.ERR_UNEXPECTED_SERVER_ERROR);
@@ -108,8 +109,9 @@ public class MinioFileService implements FileService {
 				);
 			}
 
-		} catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidBucketNameException | InvalidKeyException | InvalidResponseException | IOException |
-			NoSuchAlgorithmException | ServerException | XmlParserException exception) {
+		} catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidBucketNameException | InvalidKeyException |
+				 InvalidResponseException | IOException |
+				 NoSuchAlgorithmException | ServerException | XmlParserException exception) {
 			log.error(exception.getMessage());
 			throw new WorkspaceException(ErrorCode.ERR_UNEXPECTED_SERVER_ERROR);
 		}
@@ -143,7 +145,8 @@ public class MinioFileService implements FileService {
 			String uploadPath = minioClient.getObjectUrl(bucket, objectName);
 			log.info("[FILE UPLOAD] Upload Result path : [{}],", uploadPath);
 			return uploadPath;
-		} catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidBucketNameException | InvalidKeyException | InvalidResponseException | NoSuchAlgorithmException | ServerException | XmlParserException | IOException exception) {
+		} catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidBucketNameException | InvalidKeyException |
+				 InvalidResponseException | NoSuchAlgorithmException | ServerException | XmlParserException | IOException exception) {
 			log.error(exception.getClass().toString());
 			log.error(exception.getMessage());
 			throw new WorkspaceException(ErrorCode.ERR_UNEXPECTED_SERVER_ERROR);

@@ -1,10 +1,10 @@
 package com.virnect.workspace.dto.response;
 
+import java.time.LocalDateTime;
+
 import io.swagger.annotations.ApiModel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @ApiModel
 @Getter

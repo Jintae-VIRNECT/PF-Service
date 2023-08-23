@@ -1,8 +1,9 @@
 package com.virnect.workspace.event.history;
 
-import com.virnect.workspace.domain.workspace.Workspace;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
+import com.virnect.workspace.domain.workspace.Workspace;
 
 /**
  * Project: PF-Workspace
@@ -14,16 +15,16 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class HistoryAddEvent {
-    private final String message;
-    private final String userId;
-    private final Workspace workspace;
+	private final String message;
+	private final String userId;
+	private final Workspace workspace;
 
-    @Override
-    public String toString() {
-        return "HistoryAddEvent{" +
-                "message='" + message + '\'' +
-                ", userId='" + userId + '\'' +
-                ", workspace=" + workspace.getUuid() +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "HistoryAddEvent{" +
+			"message='" + message + '\'' +
+			", userId='" + userId + '\'' +
+			", workspace=" + workspace.getUuid() +
+			'}';
+	}
 }
