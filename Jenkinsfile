@@ -133,7 +133,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        docker images --quiet --filter=dangling=true | xargs --no-run-if-empty docker rmi
+                        docker images --quiet --filter=dangling=true | xargs --no-run-if-empty docker rmi -f
                     '''
                     APP = docker.build("""${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}""", "-f ./docker/Dockerfile .")
                 }
