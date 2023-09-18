@@ -132,9 +132,6 @@ pipeline {
         stage ('build docker image') {
             steps {
                 script {
-                    sh '''
-                        docker images --quiet --filter=dangling=true | xargs --no-run-if-empty docker rmi -f
-                    '''
                     APP = docker.build("""${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}""", "-f ./docker/Dockerfile .")
                 }
             }
@@ -312,7 +309,6 @@ pipeline {
                         sed -i 's/tg-2lax\\">${REPO_NAME}.*/tg-2lax\\"\\>${REPO_NAME}:$BUILD_TIMESTAMP\\<\\/th\\>/g' index.html
                         sed -i 's/tg-1lax\\">${REPO_NAME}.*/tg-1lax\\"\\>${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar\\<\\/th\\>/g' index.html 
                         docker rmi -f ${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
-                        docker images --quiet --filter=dangling=true | xargs --no-run-if-empty docker rmi
                         rm -rf ${ONPRE_DIR}/${REPO_NAME}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar
                         cd ../../
                         test -f RemoteOnpre.tar && sudo rm -rf RemoteOnpre.tar || echo notarimage
@@ -402,7 +398,6 @@ pipeline {
                         sed -i 's/tg-2lax\\">${REPO_NAME}.*/tg-2lax\\"\\>${REPO_NAME}:$BUILD_TIMESTAMP\\<\\/th\\>/g' index.html
                         sed -i 's/tg-1lax\\">${REPO_NAME}.*/tg-1lax\\"\\>${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar\\<\\/th\\>/g' index.html 
                         docker rmi -f ${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
-                        docker images --quiet --filter=dangling=true | xargs --no-run-if-empty docker rmi
                         rm -rf ${ONPRE_DIR}/${REPO_NAME}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar
                         cd ../../
                         test -f RemoteOnpre.tar && sudo rm -rf RemoteOnpre.tar || echo notarimage
