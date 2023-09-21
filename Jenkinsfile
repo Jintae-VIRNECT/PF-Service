@@ -16,6 +16,10 @@ pipeline {
         NEXT_VERSION = getNextSemanticVersion(to: [type: 'REF', value: 'HEAD'], patchPattern: '^[Ff]ix.*').toString()
         SLACK_CHANNEL = "${SLACK_ALERT_CHANNEL}"
         AUTHOR = sh(returnStdout: true, script : 'git --no-pager show -s --pretty="format: %an"')
+        ONPRE_URL = 'root@192.168.0.2'
+        ONPRE_STG_URL = 'vntuser@192.168.0.212'
+        ONPRE_DIR = '/data/onpre_dev_tar'
+        ONPRE_ED = '1'//(0:disable , 1:enable)
     }
 
     stages {
@@ -139,6 +143,72 @@ pipeline {
             }
         }
         
+        stage ('save onpremise tar | send remote server') {
+            when { anyOf { branch 'staging'; branch 'develop'} }
+            environment {
+                //DIR_EXIST = sh(script: "find ${ONPRE_DIR}/${REPO_NAME}", returnStatus: true)
+                ONPRE_ADDR = "root@192.168.0.2,vntuser@192.168.0.212"
+            }
+            steps {
+                script {
+                    if ("${ONPRE_ED}"=="1"){
+                        env.ONPRE_ADDR.tokenize(",").each { addr ->
+                            echo "Server is $addr"
+                        }
+                        if ("${BRANCH_NAME}"=="develop"){
+                            withCredentials([usernamePassword(credentialsId: 'onpre_dev', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                                def remote = [:]
+                                remote.name = "onpre_dev"
+                                remote.host = "${ONPRE_URL.substring(5)}"
+                                remote.allowAnyHosts = true
+                                remote.user = USERNAME
+                                remote.password = PASSWORD
+                                remote.failOnError = true
+                                sshCommand remote: remote, command: """
+                                cd ${ONPRE_DIR}/
+                                test -d ${REPO_NAME} && echo ${REPO_NAME} || sudo mkdir ${REPO_NAME}
+                                cd ${ONPRE_DIR}/${REPO_NAME}
+                                touch ${REPO_NAME}-${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.txt
+                                """
+                            }
+                            sh '''
+                            cd ${ONPRE_DIR}/
+                            test -d ${REPO_NAME} && echo ${REPO_NAME} || sudo mkdir ${REPO_NAME}
+                            cd ${ONPRE_DIR}/${REPO_NAME}
+                            sudo docker save -o ${ONPRE_DIR}/${REPO_NAME}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar ${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
+                            sudo chown -R jenkins:jenkins ${ONPRE_DIR}/${REPO_NAME}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar
+                            scp -P 22 ${ONPRE_DIR}/${REPO_NAME}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar ${ONPRE_URL}:${ONPRE_DIR}/${REPO_NAME}
+                            '''
+                        } else {
+                            withCredentials([usernamePassword(credentialsId: 'onpre_stg', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                                def remote = [:]
+                                remote.name = "onpre_stg"
+                                remote.host = "${ONPRE_STG_URL.substring(8)}"
+                                remote.allowAnyHosts = true
+                                remote.user = USERNAME
+                                remote.password = PASSWORD
+                                remote.failOnError = true
+                                sshCommand remote: remote, command: """
+                                cd ${ONPRE_DIR}/
+                                test -d ${REPO_NAME} && echo ${REPO_NAME} || sudo mkdir ${REPO_NAME}
+                                cd ${ONPRE_DIR}/${REPO_NAME}
+                                touch ${REPO_NAME}-${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.txt
+                                """
+                            }
+                            sh '''
+                            cd ${ONPRE_DIR}/
+                            test -d ${REPO_NAME} && echo ${REPO_NAME} || sudo mkdir ${REPO_NAME}
+                            cd ${ONPRE_DIR}/${REPO_NAME}
+                            sudo docker save -o ${ONPRE_DIR}/${REPO_NAME}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar ${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
+                            sudo chown -R jenkins:jenkins ${ONPRE_DIR}/${REPO_NAME}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar
+                            scp -P 22 ${ONPRE_DIR}/${REPO_NAME}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar ${ONPRE_STG_URL}:${ONPRE_DIR}/${REPO_NAME}
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        
         stage ('save image to nexus') {
             steps {
                 script {
@@ -213,30 +283,40 @@ pipeline {
                     }
                 }
 
-                // onpremise
-                /*script {
-                    withCredentials([usernamePassword(credentialsId: 'server_credentials', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                // onpremise develop
+                script {
+                    if ("${ONPRE_ED}"=="1"){
+                        withCredentials([usernamePassword(credentialsId: 'onpre_dev', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                         def remote = [:]
-                        remote.name = "${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}" 
-                        remote.host = "${DEV_ONPREMISE_SERVER}"
-                        remote.allowAnyHosts = true 
-                        remote.user = USERNAME 
+                        remote.name = "onpre_dev"
+                        remote.host = "${ONPRE_URL.substring(5)}"
+                        remote.allowAnyHosts = true
+                        remote.user = USERNAME
                         remote.password = PASSWORD
                         remote.failOnError = true
-
                         sshCommand remote: remote, command: """
-                            docker login ${NEXUS_REGISTRY}
-                            docker pull ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
-                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} || true
-                            docker run --restart=on-failure:10 \
-                                -d \
-                                -e VIRNECT_ENV=onpremise \
-                                -e CONFIG_SERVER=${DEV_CONFIG_SERVER} \
-                                -p ${PORT}:${PORT} \
-                                --name=${REPO_NAME} ${NEXUS_REGISTRY}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
+                        cd ${ONPRE_DIR}/                            
+                        test -d ${REPO_NAME} && echo ${REPO_NAME} || sudo mkdir ${REPO_NAME}
+                        docker stop ${REPO_NAME} && docker rm ${REPO_NAME} || true
+                        cd ${ONPRE_DIR}/${REPO_NAME}
+                        pwd
+                        docker load -i ${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar
+                        docker image tag ${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER} ${REPO_NAME}:latest
+                        sudo docker save -o ${ONPRE_DIR}/${REPO_NAME}/${REPO_NAME}.tar ${REPO_NAME}:latest
+                        cd ..
+                        docker-compose up -d
+                        cd virnectDownload
+                        sed -i 's/tg-2lax\\">${REPO_NAME}.*/tg-2lax\\"\\>${REPO_NAME}:$BUILD_TIMESTAMP\\<\\/th\\>/g' index.html
+                        sed -i 's/tg-1lax\\">${REPO_NAME}.*/tg-1lax\\"\\>${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar\\<\\/th\\>/g' index.html 
+                        docker rmi -f ${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
+                        rm -rf ${ONPRE_DIR}/${REPO_NAME}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar
+                        cd ../../
+                        test -f RemoteOnpre.tar && sudo rm -rf RemoteOnpre.tar || echo notarimage
+                        tar -cf RemoteOnpre.tar onpre_dev_tar
                         """
+                        }
                     }
-                }*/
+                }
             }
 
             
@@ -292,41 +372,40 @@ pipeline {
                     )
                 }
                 
-                // onpremise
-                /*script {
-                    sshPublisher(
-                        continueOnError: false, failOnError: true,
-                        publishers: [
-                            sshPublisherDesc(
-                                configName: 'aws-onpremise-qa',
-                                verbose: true,
-                                transfers: [
-                                    sshTransfer(
-                                        execCommand: 'aws ecr get-login --region ap-northeast-2 --no-include-email | bash'
-                                    ),
-                                    sshTransfer(
-                                        execCommand: "docker pull ${aws_ecr_address}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}"
-                                    ),
-                                    sshTransfer(
-                                        execCommand: """
-                                            echo '${REPO_NAME} Container stop and delete'
-                                            docker stop ${REPO_NAME} && docker rm ${REPO_NAME} 
-
-                                            echo '${REPO_NAME} New Container start'
-                                            docker run --restart=on-failure:10 \
-                                                    -d \
-                                                    -e VIRNECT_ENV=onpremise \
-                                                    -e CONFIG_SERVER=${STG_ONPRE_CONFIG_SERVER} \
-                                                    -e WRITE_YOUR=ENVIRONMENT_VARIABLE_HERE \
-                                                    -p ${PORT}:${PORT} \
-                                                    --name=${REPO_NAME} ${aws_ecr_address}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
-                                        """
-                                    )
-                                ]
-                            )
-                        ]
-                    )
-                }*/
+                // onpremise staging
+                script {
+                    if ("${ONPRE_ED}"=="1"){
+                        withCredentials([usernamePassword(credentialsId: 'onpre_stg', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                        def remote = [:]
+                        remote.name = "onpre_stg"
+                        remote.host = "${ONPRE_STG_URL.substring(8)}"
+                        remote.allowAnyHosts = true
+                        remote.user = USERNAME
+                        remote.password = PASSWORD
+                        remote.failOnError = true
+                        sshCommand remote: remote, command: """
+                        cd ${ONPRE_DIR}/                            
+                        test -d ${REPO_NAME} && echo ${REPO_NAME} || mkdir ${REPO_NAME}
+                        docker stop ${REPO_NAME} && docker rm ${REPO_NAME} || true
+                        cd ${ONPRE_DIR}/${REPO_NAME}
+                        pwd
+                        docker load -i ${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar
+                        docker image tag ${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER} ${REPO_NAME}:latest
+                        docker save -o ${ONPRE_DIR}/${REPO_NAME}/${REPO_NAME}.tar ${REPO_NAME}:latest
+                        cd ..
+                        docker-compose up -d
+                        cd virnectDownload
+                        sed -i 's/tg-2lax\\">${REPO_NAME}.*/tg-2lax\\"\\>${REPO_NAME}:$BUILD_TIMESTAMP\\<\\/th\\>/g' index.html
+                        sed -i 's/tg-1lax\\">${REPO_NAME}.*/tg-1lax\\"\\>${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar\\<\\/th\\>/g' index.html 
+                        docker rmi -f ${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}
+                        rm -rf ${ONPRE_DIR}/${REPO_NAME}/${REPO_NAME}:${NEXT_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}.tar
+                        cd ../../
+                        test -f RemoteOnpre.tar && sudo rm -rf RemoteOnpre.tar || echo notarimage
+                        sudo tar -cf RemoteOnpre.tar onpre_dev_tar
+                        """
+                        }
+                    }
+                }
             }
             
             post {
@@ -346,7 +425,7 @@ pipeline {
                         sh '''
                             git add build.gradle
                             git commit -m "chore: SOFTWARE VERSION UPDATED"
-                            git push https://$TOKEN@github.com/virnect-corp/$REPO_NAME.git
+                            git push https://$TOKEN@github.com/virnect-corp/$REPO_NAME.git +$BRANCH_NAME
                         '''
 
                         env.CHANGE_LOG = gitChangelog returnType: 'STRING', 
