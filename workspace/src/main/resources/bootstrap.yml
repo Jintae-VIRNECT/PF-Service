@@ -1,0 +1,13 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: workspace-server
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER}
+      profile: ${VIRNECT_ENV}
+      name: ${spring.application.name}
+  profiles:
+    active: ${VIRNECT_ENV}

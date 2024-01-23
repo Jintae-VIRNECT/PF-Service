@@ -1,0 +1,199 @@
+plugins {
+    id 'org.springframework.boot' version '2.3.8.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
+    id "io.franzbecker.gradle-lombok" version "3.3.0"
+    id 'java'
+    id 'jacoco'
+}
+
+ext {
+    set('springCloudVersion', 'Hoxton.SR10')
+    set('mapstructVersion', '1.4.2.Final')
+    jacocoExcludes = [
+
+    ]
+}
+
+group = 'com.virnect'
+version = '1.6.0'
+sourceCompatibility = '1.8'
+
+springBoot {
+    buildInfo()
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'mysql:mysql-connector-java'
+    runtimeOnly 'com.h2database:h2'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+
+    // Netflix Feign Client
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    // ModelMapper
+    implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.3.0'
+
+    // Query DSL
+    implementation("com.querydsl:querydsl-jpa") // querydsl
+    implementation("com.querydsl:querydsl-apt") // querydsl
+
+    // Common
+    implementation group: 'commons-io', name: 'commons-io', version: '2.4'
+
+    // Apache Common Lang
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+
+    // AWS
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.415' // AWS Storage Service
+    implementation 'com.amazonaws:aws-java-sdk-ses:1.11.415' // AWS Simple Email Service
+
+    //Swagger Libraries
+    implementation 'io.springfox:springfox-swagger2:2.9.2'
+    implementation 'io.springfox:springfox-swagger-ui:2.9.2'
+
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    //Eureka Client
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+    //Spring data Envers
+    implementation 'org.springframework.data:spring-data-envers'
+
+    // Zipkin
+    implementation 'org.springframework.cloud:spring-cloud-starter-sleuth'
+    implementation 'org.springframework.cloud:spring-cloud-starter-zipkin'
+
+    // monitoring
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    // Configuration
+    implementation 'org.springframework.cloud:spring-cloud-config-client'
+
+    // Minio
+    implementation 'io.minio:minio:7.1.4'
+
+    // feign oktthp
+    implementation 'io.github.openfeign:feign-okhttp'
+
+    // map struct
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+    testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+
+    // aop
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+    //p6spy
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.8'
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty("spring.active.profiles", "test")
+    environment("VIRNECT_ENV", "test")
+}
+
+// querydsl 적용
+def querydslDir = "$buildDir/generated/querydsl"
+
+querydsl {
+    library = "com.querydsl:querydsl-apt"
+    jpa = true
+    querydslSourcesDir = querydslDir
+}
+
+sourceSets {
+    main.java.srcDir querydslDir
+}
+
+
+compileQuerydsl {
+    options.annotationProcessorPath = configurations.querydsl
+}
+
+configurations {
+    querydsl.extendsFrom compileClasspath
+}
+
+// separate jar into app and library layers
+task moveLib {
+    doLast {
+        def unpackDir = "$buildDir/unpack"
+        ant.move(file: "${unpackDir}/app/BOOT-INF/lib", toFile: "${unpackDir}/lib")
+    }
+}
+
+task unpackJar(type: Copy) {
+    def unpackDir = "$buildDir/unpack"
+
+    delete unpackDir
+    from zipTree(jar.getArchiveFile())
+    into "$unpackDir/app"
+
+    finalizedBy moveLib
+}
+
+build {
+    finalizedBy unpackJar
+}
+/**
+ * Jacoco Configuration
+ */
+
+jacoco {
+    toolVersion = "0.8.7"
+}
+
+jacocoTestReport {
+    dependsOn test
+
+    reports {
+        csv.enabled true
+        xml.enabled true
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: jacocoExcludes)
+        }))
+    }
+
+    finalizedBy jacocoTestCoverageVerification
+}
+
+jacocoTestCoverageVerification {
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: jacocoExcludes)
+        }))
+    }
+}

@@ -1,0 +1,226 @@
+<xmeta content="text/html; charset=utf-8" http-equiv="Content-Type" xmlns:th="http://www.thymeleaf.org">
+    <link
+            href="https://fonts.googleapis.com/css?family=Noto+Sans+KR&display=swap"
+            rel="stylesheet"
+    />
+    <style>
+        .info-table a:link, span.MsoHyperlink {
+            mso-style-priority: 100 !important;
+            color: #333333 !important;
+            color: #333333;
+            text-decoration: none !important;
+        }
+    </style>
+
+    <div align="center">
+        <table
+                background="#fff"
+                cellpadding="0"
+                cellspacing="0"
+                class="info-table"
+                style="font-family:'Noto Sans KR','Apple SD Gothic Neo', sans-serif,Dotum,Arial;background:#fff;border:1px solid #e8edf1;"
+                width="680"
+        >
+            <tbody>
+            <tr style="margin:0;padding:0;">
+                <td style="margin:0;padding:0;border-bottom:1px solid #e2e7ed">
+                    <img
+                            alt=""
+                            height="85"
+                            loading="lazy"
+                            src="http://image.virnect.com/images/mailling_service/virnect_logo.png"
+                            style="margin:0;padding:0;vertical-align:top;border:0;"
+                            width="680"
+                    />
+                </td>
+            </tr>
+            <tr style="margin:0;padding:0;">
+                <td
+                        style="margin:0;padding:35px 40px;color:#333;font-size:16px;line-height:1.6"
+                >
+                    <p
+                            style="margin:0;padding:0;color:#333;font-size:15px;font-family:'Noto Sans KR','Apple SD Gothic Neo', sans-serif,Dotum,Arial;line-height:1.6"
+                    >
+                        워크스페이스에서 할당된 플랜 정보가 변경되었습니다.
+                    </p>
+
+                    <table
+                            cellpadding="0"
+                            cellspacing="0"
+                            class="info-table"
+                            style="margin:0 0 8px;padding:0;"
+                            width="600"
+                    >
+                        <tr>
+                            <td style="padding-top: 44px;font-family:'Noto Sans KR','Apple SD Gothic Neo', sans-serif,Dotum,Arial;font-weight:bold;text-align:left;">
+                                워크스페이스 정보
+                            </td>
+                            <td style="padding-top: 44px;text-align: right;font-size:14px;color:#0054f7;font-weight:bold;text-decoration:underline;">
+                                <a th:href="@{${workstationHomeUrl}}">워크스테이션 홈 바로가기</a></td>
+                        </tr>
+                    </table>
+                    <table
+                            cellpadding="0"
+                            cellspacing="0"
+                            class="info-table"
+                            style="margin:0 0;padding:0;font-family:'Noto Sans KR','Apple SD Gothic Neo', sans-serif,Dotum,Arial;text-align:left;border-top:2px solid #1a1c1d;"
+                            width="600"
+                    >
+                        <tbody>
+                        <tr style="margin:0;padding:0;">
+                            <td colspan="2" style="margin:0;padding:8px 0;"></td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <th
+                                    colspan="1"
+                                    rowspan="1"
+                                    style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
+                            >
+                                워크스페이스 이름:
+                            </th>
+                            <td
+                                    style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
+                            >
+                                <p>[[${workspaceName}]]</p>
+                            </td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <th
+                                    colspan="1"
+                                    rowspan="1"
+                                    style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
+                            >
+                                마스터 닉네임:
+                            </th>
+                            <td
+                                    style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
+                            >
+                                <p>[[${workspaceMasterNickName}]]</p>
+                            </td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <th
+                                    colspan="1"
+                                    rowspan="1"
+                                    style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
+                            >
+                                마스터 계정:
+                            </th>
+                            <td
+                                    style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
+                            >
+                                <p>[[${workspaceMasterEmail}]]</p>
+                            </td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <td colspan="2" style="margin:0;padding:8px 0;"></td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <td colspan="2" style="margin:0;padding:8px 0;border-top: 1px solid #e2e7ed;"></td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <th
+                                    colspan="1"
+                                    rowspan="1"
+                                    style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
+                            >
+                                사용자 닉네임:
+                            </th>
+                            <td
+                                    style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
+                            >
+                                <p>[[${responseUserNickName}]]</p>
+                            </td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <th
+                                    colspan="1"
+                                    rowspan="1"
+                                    style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
+                            >
+                                사용자 계정:
+                            </th>
+                            <td
+                                    style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
+                            >
+                                <p>[[${responseUserEmail}]]</p>
+                            </td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <th
+                                    colspan="1"
+                                    rowspan="1"
+                                    style="width:160px;height:40px;color:#878d91;font-weight:400;line-height:40px;text-align:left;vertical-align:middle;"
+                            >
+                                할당된 플랜:
+                            </th>
+                            <td
+                                    style="height:40px;color:#333333;font-weight:700;text-align:left;vertical-align:middle;"
+                            >
+                                <img th:if="${#strings.contains(plan,'REMOTE')}"
+                                     th:src="'http://image.virnect.com/images/mailling_service/plan_remote.png'"/>
+                                <img th:if="${#strings.contains(plan,'MAKE')}"
+                                     th:src="'http://image.virnect.com/images/mailling_service/plan_make.png'"/>
+                                <img th:if="${#strings.contains(plan,'VIEW')}"
+                                     th:src="'http://image.virnect.com/images/mailling_service/plan_view.png'"/>
+                            </td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <td colspan="2" style="margin:0;padding:8px 0;"></td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <td
+                                    colspan="2"
+                                    style="margin:0;padding:0;border-bottom:1px solid #e2e7ed"
+                            ></td>
+                        </tr>
+                        <tr style="margin:0;padding:0;">
+                            <td
+                                    colspan="2"
+                                    style="margin:0;padding:16px 0;"
+                            ></td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </td>
+            </tr>
+            <tr style="margin:0;padding:0;">
+                <td height="100" style="height:20px;margin:0;padding:0;">&nbsp;
+
+                </td>
+            </tr>
+            <tr style="margin:0;padding:0;">
+                <td style="margin:0;padding:0;">
+                    <img
+                            alt=""
+                            height="180"
+                            loading="lazy"
+                            src="http://image.virnect.com/images/mailling_service/img-banner.png"
+                            style="margin:0;padding:0;vertical-align:top;border:0;"
+                            width="680"
+                    />
+                </td>
+            </tr>
+
+            <tr>
+                <td
+                        style="margin:0;padding:30px 40px;color:#333;font-size:12px;line-height:1.2"
+                >
+                    본 메일은 발신 전용으로 회신되지 않습니다. 궁금한 사항은
+                    <a
+                            rel="noreferrer noopener"
+                            target="_blank"
+                            th:href="@{${supportUrl}}"
+                            th:style="'color:#0054f7;font-weight:bold;text-decoration:underline;'"
+                            title="VIRNECT 고객 센터 바로가기, 새창열림"
+                    >고객 센터</a
+                    >로 문의해 주세요.
+                    <p style="color: #696969;font-size: 12px">©VIRNECT CO., LTD. All rights reserved.</p>
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+    </div>
+</xmeta>

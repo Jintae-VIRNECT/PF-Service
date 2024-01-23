@@ -1,0 +1,16 @@
+FROM openjdk:8
+ENV APP_HOME=/usr/app/
+
+WORKDIR $APP_HOME
+
+## Write your own build process script.
+
+# Example
+# rootProject.name variable is located settings.gradle file
+# version variables is located build.gradle file
+# COPY ./build/libs/${rootProject.name}-${version}.jar ./${rootProject.name}-${version}.jar
+
+EXPOSE 8080
+
+## Command executed when container is start up.
+CMD ["java","-Dspring.profiles.active=develop", "-jar","Remote-ServiceServer-1.2.jar"]
