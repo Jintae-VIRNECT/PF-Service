@@ -1,0 +1,31 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: platform-server
+  config:
+    import: "optional:configserver:${CONFIG_SERVER}"
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    open-in-view: false
+  datasource:
+    url: jdbc:mysql://localhost:3306/platform?serverTimezone=Asia/Seoul
+    username: root
+    password: root
+  redis:
+    host: 192.168.0.9
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    non-secure-port-enabled: false
+    secure-port-enabled: true
+    secure-port: ${server.port}
+  client:
+    service-url:
+      defaultZone: http://192.168.0.9:8761/eureka
+    registry-fetch-interval-seconds: 3
+    enabled: true
