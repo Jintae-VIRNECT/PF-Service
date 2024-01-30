@@ -6,15 +6,27 @@ spring:
     name: platform-server
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     open-in-view: false
   datasource:
-    url: jdbc:mysql://192.168.0.9:3306/platform?serverTimezone=Asia/Seoul
-    username: virnect-onpremise
-    password: qjsprxm123
+    #    url: jdbc:mysql://192.168.0.9:3306/platform?serverTimezone=Asia/Seoul
+    #    username: virnect-onpremise
+    #    password: qjsprxm123
+    url: jdbc:mysql://localhost:3306/platform?serverTimezone=Asia/Seoul
+    username: root
+    password: root
   redis:
     host: 192.168.0.9
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: true
+  sleuth:
+    sampler:
+      probability: 1.0
+  zipkin:
+    base-url: http://192.168.0.9:9411/
 
 eureka:
   instance:
@@ -26,15 +38,15 @@ eureka:
     service-url:
       defaultZone: http://192.168.0.9:8761/eureka
     registry-fetch-interval-seconds: 3
-    enabled: true
+    enabled: false
 
 feign:
   hystrix:
     enabled: true
-  #  client:
-  #    config:
-  #      default:
-  #        loggerLevel: FULL
+  client:
+    config:
+      default:
+        loggerLevel: FULL
   httpClient:
     disableSslValidation: true
     enabled: false
@@ -42,6 +54,26 @@ feign:
     enabled: true
 
 
+
+ribbon:
+  eureka:
+    enabled: false
+
+license-server:
+  ribbon:
+    listOfServers: https://192.168.0.9:8632
+message-server:
+  ribbon:
+    listOfServers: https://192.168.0.9:8084
+remote-service-server:
+  ribbon:
+    listOfServers: https://192.168.0.9:8000
+account-server:
+  ribbon:
+    listOfServers: https://192.168.0.9:8081
+content-server:
+  ribbon:
+    listOfServers: https://192.168.0.9:8078
 ## Minio
 minio:
   access-key: "virnect"
@@ -51,3 +83,23 @@ minio:
   resource: "workspace/profile"
   extension: "gif,jpg,jpeg,png"
   prefix: "https://192.168.0.9:9000/virnect-platform/"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  health:
+    mail:
+      enabled: false
+  endpoint:
+    health:
+      show-details: ALWAYS
+    loggers:
+      enabled: true
+#logging:
+#  level:
+#    com.virnect.platform.feign.rest: debug
+
+hystrix:
+  command.default.execution.isolation.thread.timeoutInMilliseconds: 10000
