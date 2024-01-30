@@ -1,0 +1,13 @@
+server:
+  port: 8001
+
+spring:
+  profiles:
+    active: ${VIRNECT_ENV}
+  application:
+    name: platform-service-server
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER}
+      profile: ${VIRNECT_ENV}
+      name: ${spring.application.name}

@@ -1,4 +1,4 @@
-package com.virnect.workspace.api;
+package com.virnect.platform.workspace.api;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -17,7 +17,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.virnect.workspace.dto.request.WorkspaceMemberPasswordChangeRequest;
+import com.virnect.platform.workspace.dto.request.WorkspaceMemberPasswordChangeRequest;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)

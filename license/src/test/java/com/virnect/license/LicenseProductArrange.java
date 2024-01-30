@@ -1,4 +1,4 @@
-// package com.virnect.license;
+// package com.virnect.platform.license;
 //
 // import java.util.ArrayList;
 // import java.util.Arrays;
@@ -13,15 +13,15 @@
 //
 // import lombok.extern.slf4j.Slf4j;
 //
-// import com.virnect.license.dao.license.LicenseRepository;
-// import com.virnect.license.dao.licenseplan.LicensePlanRepository;
-// import com.virnect.license.dao.licenseproduct.LicenseProductRepository;
-// import com.virnect.license.dao.product.ProductRepository;
-// import com.virnect.license.domain.license.License;
-// import com.virnect.license.domain.licenseplan.LicensePlan;
-// import com.virnect.license.domain.licenseplan.PlanStatus;
-// import com.virnect.license.domain.product.LicenseProduct;
-// import com.virnect.license.domain.product.Product;
+// import com.virnect.platform.license.dao.license.LicenseRepository;
+// import com.virnect.platform.license.dao.licenseplan.LicensePlanRepository;
+// import com.virnect.platform.license.dao.licenseproduct.LicenseProductRepository;
+// import com.virnect.platform.license.dao.product.ProductRepository;
+// import com.virnect.platform.license.domain.license.License;
+// import com.virnect.platform.license.domain.licenseplan.LicensePlan;
+// import com.virnect.platform.license.domain.licenseplan.PlanStatus;
+// import com.virnect.platform.license.domain.product.LicenseProduct;
+// import com.virnect.platform.license.domain.product.Product;
 //
 // @Slf4j
 // @SpringBootTest

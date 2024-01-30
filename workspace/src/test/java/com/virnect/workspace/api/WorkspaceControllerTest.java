@@ -1,4 +1,4 @@
-package com.virnect.workspace.api;
+package com.virnect.platform.workspace.api;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.SneakyThrows;
 
-import com.virnect.workspace.dto.request.WorkspaceTitleUpdateRequest;
+import com.virnect.platform.workspace.dto.request.WorkspaceTitleUpdateRequest;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)

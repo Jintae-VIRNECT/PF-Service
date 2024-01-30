@@ -1,3 +1,3 @@
 # Environment Post Processor
 org.springframework.boot.env.EnvironmentPostProcessor=\
-com.virnect.workspace.RequestTraceEnvironmentPostProcessor
+com.virnect.platform.workspace.RequestTraceEnvironmentPostProcessor

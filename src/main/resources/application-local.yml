@@ -4,17 +4,15 @@ server:
 spring:
   application:
     name: platform-server
-  config:
-    import: "optional:configserver:${CONFIG_SERVER}"
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     open-in-view: false
   datasource:
-    url: jdbc:mysql://localhost:3306/platform?serverTimezone=Asia/Seoul
-    username: root
-    password: root
+    url: jdbc:mysql://192.168.0.9:3306/platform?serverTimezone=Asia/Seoul
+    username: virnect-onpremise
+    password: qjsprxm123
   redis:
     host: 192.168.0.9
 
@@ -29,3 +27,27 @@ eureka:
       defaultZone: http://192.168.0.9:8761/eureka
     registry-fetch-interval-seconds: 3
     enabled: true
+
+feign:
+  hystrix:
+    enabled: true
+  #  client:
+  #    config:
+  #      default:
+  #        loggerLevel: FULL
+  httpClient:
+    disableSslValidation: true
+    enabled: false
+  okhttp:
+    enabled: true
+
+
+## Minio
+minio:
+  access-key: "virnect"
+  secret-key: "qjsprxm123"
+  server: "https://192.168.0.9:9000"
+  bucket: "virnect-platform"
+  resource: "workspace/profile"
+  extension: "gif,jpg,jpeg,png"
+  prefix: "https://192.168.0.9:9000/virnect-platform/"

@@ -1,4 +1,4 @@
-package com.virnect.license;
+package com.virnect.platform.license;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -15,10 +15,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import com.virnect.license.dao.license.LicenseRepository;
-import com.virnect.license.dao.licenseplan.LicensePlanRepository;
-import com.virnect.license.domain.license.License;
-import com.virnect.license.domain.licenseplan.LicensePlan;
+import com.virnect.platform.license.dao.license.LicenseRepository;
+import com.virnect.platform.license.dao.licenseplan.LicensePlanRepository;
+import com.virnect.platform.license.domain.license.License;
+import com.virnect.platform.license.domain.licenseplan.LicensePlan;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
